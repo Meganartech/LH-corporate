@@ -128,7 +128,7 @@ import LicenceFileCreation from "./AuthenticationPages/LicenceFileCreation.js";
 import NewRole from "./Registration/NewRole.js";
 import ViewDynamicRole from "./DynamicRole/ViewDynamicRole";
 import EditDynamicRole from "./DynamicRole/ViewDynamicRole.js";
-
+import RoleRegistration from "./Registration/RoleRegisteration.js";
 function App() {
   useEffect(() => {
     pcoded();
@@ -1603,6 +1603,8 @@ function App() {
               </ErrorBoundary>
             }
           />
+          <Route path="/register/:role" element={<RoleRegistration />} />
+          <Route path="/register" element={<RoleRegistration />} />
           <Route
             path="/LicenceExpired"
             element={
