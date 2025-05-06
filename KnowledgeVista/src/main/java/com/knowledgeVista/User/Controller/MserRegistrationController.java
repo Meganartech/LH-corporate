@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -23,8 +24,6 @@ import com.knowledgeVista.Email.EmailService;
 import com.knowledgeVista.License.LicenseController;
 import com.knowledgeVista.License.Madmin_Licence;
 import com.knowledgeVista.License.mAdminLicenceRepo;
-import com.knowledgeVista.Role.RoleService;
-import com.knowledgeVista.Role.Roles;
 import com.knowledgeVista.User.Muser;
 import com.knowledgeVista.User.MuserAddInfoDto;
 import com.knowledgeVista.User.MuserDto;
@@ -59,7 +58,10 @@ private EmailService emailservice;
 	private mAdminLicenceRepo madminrepo;
 	
 	@Autowired
-	private RoleService roleService;
+	private MuserRoleRepository muserRole;
+	
+	@Autowired
+	private AddUsers addUser;
 	
 	  @Value("${spring.environment}")
 	    private String environment;
@@ -761,7 +763,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	            roleUser = optRoleUser.get();
 	        } else {
 	            // If role doesn't exist, create it
-	            Roles newRole = roleService.addRole(role, null); // or link with parent role if needed
+	            MuserRoles newRole = addUser.addRole(role, null); // or link with parent role if needed
 	            roleUser = new MuserRoles();
 	            roleUser.setRoleName(newRole.getRoleName());
 	            muserrolerepository.save(roleUser); // Save the new role in the `muser_roles` table
@@ -809,5 +811,10 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	                .body("{\"message\": \"Internal Server Error\"}");
 	    }
 	}  
+
+    public List<MuserRoles> getAllRoles() {
+        return muserRole.findAll();
+    }
+
 }
 	
