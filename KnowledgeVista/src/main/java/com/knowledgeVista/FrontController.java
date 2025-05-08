@@ -873,6 +873,22 @@ public class FrontController {
 		return muserreg.registerAdmin(request, username, psw, email, institutionName, dob, role, phone, skills, profile,
 				isActive, countryCode);
 	}
+	
+	@PostMapping("/register")
+	public ResponseEntity<?> registerUser(HttpServletRequest request,
+	        @RequestParam(required = false) String username,
+	        @RequestParam String psw,
+	        @RequestParam String email,
+	        @RequestParam(required = false) LocalDate dob,
+	        @RequestParam String role,
+	        @RequestParam String phone,
+	        @RequestParam(required = false) String skills,
+	        @RequestParam(required = false) MultipartFile profile,
+	        @RequestParam Boolean isActive,
+	        @RequestParam(defaultValue = "+91") String countryCode) {
+
+	    return muserreg.registerUserByRole(request, username, psw, email, dob, role, phone, skills, profile, isActive, countryCode);
+	}
 
 	@GetMapping("/student/users/{email}")
 	public ResponseEntity<?> getUserByEmail(@PathVariable String email, @RequestHeader("Authorization") String token) {
