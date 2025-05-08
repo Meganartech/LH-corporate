@@ -31,8 +31,6 @@ import com.knowledgeVista.Course.Repository.CourseDetailRepository;
 import com.knowledgeVista.Course.Repository.videoLessonRepo;
 import com.knowledgeVista.License.licenseRepository;
 import com.knowledgeVista.Notification.Service.NotificationService;
-import com.knowledgeVista.Payments.Orderuser;
-import com.knowledgeVista.Payments.repos.OrderuserRepo;
 import com.knowledgeVista.User.Muser;
 import com.knowledgeVista.User.Repository.MuserRepositories;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
@@ -56,8 +54,6 @@ public class CourseController {
 
 	@Autowired
 	private licenseRepository licencerepo;
-	@Autowired
-	private OrderuserRepo orderuser;
 	@Autowired
 	private BatchRepository batchrepo;
 
@@ -97,7 +93,6 @@ public class CourseController {
 			Long usercount = muserRepository.countByRoleNameandInstitutionName("USER", institution);
 
 			Long totalAvailableSeats = coursedetailrepository.countTotalAvailableSeats(institution);
-			Long amountRecived = orderuser.getTotalAmountReceivedByInstitution(institution);
 			Long paidcourse = coursedetailrepository.countPaidCoursesByInstitution(institution);
 			Map<String, Long> response = new HashMap<>();
 			response.put("coursecount", count);
@@ -105,7 +100,6 @@ public class CourseController {
 			response.put("usercount", usercount);
 			response.put("availableseats", totalAvailableSeats);
 			response.put("paidcourse", paidcourse);
-			response.put("amountRecived", amountRecived);
 
 			return ResponseEntity.ok().body(response);
 		} catch (DecodingException ex) {
@@ -129,7 +123,6 @@ public class CourseController {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			Optional<Muser> opreq;
 			if (!"SYSADMIN".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
@@ -151,7 +144,6 @@ public class CourseController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
 			Long roleId = 1L;
 
 //	         Optional<Muser> opreq;
@@ -192,9 +184,6 @@ public class CourseController {
 					totaltrainercount += (trainercount != null ? trainercount : 0L);
 					Long usercount = muserRepository.countByRoleNameandInstitutionName("USER", institutions);
 					totalusercount += (usercount != null ? usercount : 0L);
-					// Get the total amount received, and if it's null, use 0L instead.
-					Long totalAmount = orderuser.getTotalAmountReceivedByInstitution(institutions);
-					totalamountRecived += (totalAmount != null ? totalAmount : 0L);
 
 					Long availableSeats = coursedetailrepository.countTotalAvailableSeats(institutions);
 					totalavailableSeats += (availableSeats != null ? availableSeats : 0L);
@@ -237,65 +226,23 @@ public class CourseController {
 		Long usercount = muserRepository.countByRoleNameandInstitutionName("USER", institution);
 
 		Long totalAvailableSeats = coursedetailrepository.countTotalAvailableSeats(institution);
-		Long amountRecived = orderuser.getTotalAmountReceivedByInstitution(institution);
 		Long paidcourse = coursedetailrepository.countPaidCoursesByInstitution(institution);
-		List<Orderuser> userpaymentdetails = orderuser.findAllByinstitutionName(institution);
-		userpaymentdetails.removeIf(order -> order.getAmountReceived() == 0);
 //            paymentdetails.forEach(order -> {
 //            	 System.out.println("Name: " + order.getUsername() +"Email: " + order.getEmail()+" | CourseName: " + order.getCourseName()+ " | BatchName: " + order.getBatchName() + " | Amount: " + order.getAmountReceived());
 ////            	 System.out.print("Email: " + order.getEmail()+" | CourseName: " + order.getCourseName()+ " | Amount: " + order.getAmountReceived() + " | Amount: " + order.getAmountReceived());
 //                 
 //            });
 		// ✅ Inner Class
-		class OrderResponse {
-			private String name;
-			private String courseName;
-			private String batchName;
-			private double amount;
-
-			public OrderResponse(String name, String courseName, String batchName, double amount) {
-				this.name = name;
-				this.courseName = courseName;
-				this.batchName = batchName;
-				this.amount = amount;
-			}
-
-			// Getters are required for Jackson to serialize the object
-			public String getName() {
-				return name;
-			}
-
-			public String getCourseName() {
-				return courseName;
-			}
-
-			public String getBatchName() {
-				return batchName;
-			}
-
-			public double getAmount() {
-				return amount;
-			}
-		}
-		// Convert List<Orderuser> to List of JSON objects
-		List<OrderResponse> jsonList = userpaymentdetails.stream().map(order -> new OrderResponse(order.getUsername(),
-				order.getCourseName(), order.getBatchName(), order.getAmountReceived())).collect(Collectors.toList());
-
-		// Convert list to JSON string using Jackson
-		ObjectMapper objectMapper = new ObjectMapper();
-		String jsonOutput = objectMapper.writeValueAsString(jsonList);
-
+		
 		Map<String, Long> response = new HashMap<>();
 		response.put("coursecount", count);
 		response.put("trainercount", trainercount);
 		response.put("usercount", usercount);
 		response.put("availableseats", totalAvailableSeats);
 		response.put("paidcourse", paidcourse);
-		response.put("amountRecived", amountRecived);
 
 		// ✅ Combine both JSON list and summary data
 		Map<String, Object> paymentdetails = new HashMap<>();
-		paymentdetails.put("paymentlist", jsonList); // List of orders
 		paymentdetails.put("paymentsummary", response); // Summary data
 
 		return paymentdetails;
@@ -352,9 +299,6 @@ public class CourseController {
 					if (opbatch.isPresent()) {
 						Batch existing = opbatch.get();
 						existing.getCourses().add(savedCourse);
-						if (existing.getAmount() == null) {
-							existing.setAmount(amount);
-						}
 						if (existing.getNoOfSeats() == null) {
 							existing.setNoOfSeats(Noofseats);
 						}
@@ -914,10 +858,6 @@ public class CourseController {
 		return trainer;
 	}
 
-	private boolean checkAllowedOrNotForuser(Long courseId, String email) {
-
-		boolean user = muserRepository.FindEnrolledOrNotByUserIdAndCourseId(email, courseId);
-		return user;
-	}
+	
 
 }

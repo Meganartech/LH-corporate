@@ -409,7 +409,6 @@ public class QuizzService {
 			}
 			Quizz quizz = opquizz.get();
 			Batch batch = opbatch.get();
-			Long courseId = quizz.getLessons().getCourseDetail().getCourseId();
 			if ("ADMIN".equals(role)) {
 				isalloted = true;
 			} else if ("TRAINER".equals(role)) {

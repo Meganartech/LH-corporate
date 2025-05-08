@@ -344,8 +344,7 @@ public class LicenseController {
 				.collect(Collectors.toList());
 		LocalDate currentDate = LocalDate.now();
 		java.util.Date Datecurrent = java.sql.Date.valueOf(currentDate);
-		long milliseconds = Datecurrent.getTime(); // Get the time in milliseconds
-		java.sql.Timestamp timestamp = new java.sql.Timestamp(milliseconds);
+		long milliseconds = Datecurrent.getTime(); 
 
 		String localFile = "";
 		for (License license : licenseList) {
@@ -395,7 +394,6 @@ public class LicenseController {
 			// Convert Date to LocalDate
 			LocalDate licenseEndDate = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			LocalDate today = LocalDate.now();
-			boolean va = licenseEndDate.isBefore(today);
 //		    -------------------------------------testarea-----------------------------
 			if ((valu.equals(valu1) || valu.equals(value2)) && !(licenseEndDate.isBefore(today))) {
 

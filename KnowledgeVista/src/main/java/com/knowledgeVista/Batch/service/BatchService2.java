@@ -13,20 +13,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import com.knowledgeVista.Batch.Repo.BatchRepository;
-import com.knowledgeVista.Course.Repository.CourseDetailRepository;
-import com.knowledgeVista.User.Repository.MuserRepositories;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
 
 @Service
 public class BatchService2 {
-	@Autowired
-	private CourseDetailRepository courseDetailRepository;
+	
 	@Autowired
 	private JwtUtil jwtUtil;
-	@Autowired
-	private MuserRepositories muserRepo;
+	
 	@Autowired
 	private BatchRepository batchrepo;
 	private static final Logger logger = LoggerFactory.getLogger(BatchService2.class);

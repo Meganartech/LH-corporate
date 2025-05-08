@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,21 +20,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knowledgeVista.Batch.Batch;
-import com.knowledgeVista.Batch.Batch.PaymentType;
 import com.knowledgeVista.Batch.BatchDto;
 import com.knowledgeVista.Batch.BatchImageDTO;
-import com.knowledgeVista.Batch.BatchInstallmentDto;
-import com.knowledgeVista.Batch.BatchInstallmentDtoWrapper;
-import com.knowledgeVista.Batch.BatchInstallmentdetails;
-import com.knowledgeVista.Batch.Batch_partPayment_Structure;
-import com.knowledgeVista.Batch.PendingPayments;
-import com.knowledgeVista.Batch.Repo.BatchInstallmentDetailsRepo;
-import com.knowledgeVista.Batch.Repo.BatchPartPayRepo;
 import com.knowledgeVista.Batch.Repo.BatchRepository;
-import com.knowledgeVista.Batch.Repo.PendingPaymentRepo;
 import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Course.CourseDetailDto.courseIdNameImg;
 import com.knowledgeVista.Course.Repository.CourseDetailRepository;
@@ -55,12 +44,6 @@ public class BatchService {
 	private MuserRepositories muserRepo;
 	@Autowired
 	private BatchRepository batchrepo;
-	@Autowired
-	private BatchInstallmentDetailsRepo installmentRepo;
-	@Autowired
-	private BatchPartPayRepo partayStructureRepo;
-	@Autowired
-	private PendingPaymentRepo pendingsRepo;
 	private static final Logger logger = LoggerFactory.getLogger(BatchService.class);
 
 	public List<Map<String, Object>> searchCourses(String courseName, String token) {
@@ -115,7 +98,7 @@ public class BatchService {
 	// Batch======================================
 
 	public ResponseEntity<?> saveBatch(String batchTitle, LocalDate startDate, LocalDate endDate, Long noOfSeats,
-			Long amount, String coursesJson, String trainersJson, MultipartFile batchImage, String token) {
+			 String coursesJson, String trainersJson, MultipartFile batchImage, String token) {
 		try {
 // Validate Token
 			if (!jwtUtil.validateToken(token)) {
@@ -144,8 +127,6 @@ public class BatchService {
 			batch.setStartDate(startDate);
 			batch.setEndDate(endDate);
 			batch.setNoOfSeats(noOfSeats);
-			batch.setAmount(amount);
-			batch.setPaytype(PaymentType.FULL);
 
 // Parse JSON data
 			ObjectMapper objectMapper = new ObjectMapper();
@@ -211,7 +192,6 @@ public class BatchService {
 // Prepare response
 			Map<String, Object> response = new HashMap<>();
 			response.put("batchName", batch.getBatchTitle());
-			response.put("amount", batch.getAmount());
 			response.put("batchId", batch.getId());
 
 			return ResponseEntity.ok(response);
@@ -347,7 +327,6 @@ public class BatchService {
 
 // Update batch details
 			batch.setBatchTitle(batchTitle);
-			batch.setAmount(amount);
 			batch.setNoOfSeats(noofSeats);
 			batch.setStartDate(startDate);
 			batch.setEndDate(endDate);
@@ -574,91 +553,9 @@ public class BatchService {
 	}
 //======================================PARTPAY batch====================================
 
-	public ResponseEntity<?> SavePartPay(Long batchId, List<BatchInstallmentdetails> installmentDetails, String token) {
-		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
-			}
-			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
-			if ("ADMIN".equals(role)) {
-				Optional<Batch> opbatch = batchrepo.findById(batchId);
-				if (opbatch.isEmpty()) {
-					return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Batch Not Found");
-				}
-
-				Batch batch = opbatch.get();
-				batch.setPaytype(PaymentType.PART);
-				Batch_partPayment_Structure paystructure = new Batch_partPayment_Structure();
-				paystructure.setApprovedBy(email);
-				paystructure.setCreatedBy(email);
-				paystructure.setDatecreated(LocalDate.now());
-				paystructure.setBatch(batch);
-				paystructure = partayStructureRepo.save(paystructure);
-				batchrepo.save(batch);
-				for (BatchInstallmentdetails installment : installmentDetails) {
-					BatchInstallmentdetails install = new BatchInstallmentdetails();
-					install.setDurationInDays(installment.getDurationInDays());
-					install.setInstallmentAmount(installment.getInstallmentAmount());
-					install.setInstallmentNumber(installment.getInstallmentNumber());
-					install.setPartpay(paystructure);
-					installmentRepo.save(install);
-				}
-				return ResponseEntity.ok("Installment Settings Saved SuccessFully");
-			}
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Only Admins Can Access This Page");
-		} catch (Exception e) {
-			logger.error("Error At Save PartPay", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-		}
-	}
-
-	public ResponseEntity<?> GetPartPayDetails(Long id, String token) {
-		try {
-			String role = jwtUtil.getRoleFromToken(token);
-			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
-				Optional<Batch> opbatch = batchrepo.findById(id);
-				if (opbatch.isPresent()) {
-					Batch batch = opbatch.get();
-					List<BatchInstallmentDto> response = partayStructureRepo.findInstallmentDetailsByBatchId(id);
-					BatchInstallmentDtoWrapper wrapper = new BatchInstallmentDtoWrapper();
-					wrapper.setBatchAmount(batch.getAmount());
-					wrapper.setBatchId(batch.getId());
-					wrapper.setBatchTitle(batch.getBatchTitle());
-					wrapper.setBatchInstallments(response);
-					return ResponseEntity.ok(wrapper);
-				} else {
-					return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No batch Found");
-				}
-
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Stdents Cannot Access This Page");
-
-			}
-		} catch (Exception e) {
-			logger.error("Exception occurred while deleting batch with ID " + id, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Error occurred while Getting the batch.");
-		}
-	}
-
-	// pending
+		// pending
 	// payments=================================================================================================
-	public ResponseEntity<?> GetPendingPayments(String token) {
-		try {
-			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
-			if ("USER".equals(role)) {
-				List<PendingPayments> payments = pendingsRepo.findPendingPaymentsByemail(email);
-				return ResponseEntity.ok(payments);
-			}
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Only Stdents Can Access This Page");
-		} catch (Exception e) {
-			logger.error("Error Getting Pending Paymets" + e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-			// TODO: handle exception
-		}
-	}
+	
 
 	// ==========================fetchimages of given batchIDs for fluter payment
 	// transaction============

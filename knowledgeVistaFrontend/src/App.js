@@ -11,6 +11,7 @@ import CertificateInputs from "./certificate/CertificateInputs";
 import Template from "./certificate/Template";
 import EditCourse from "./course/Update/EditCourse";
 import CourseView from "./course/Components/CourseView";
+import Mystudents from "./Trainer/Mystudents.js"
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import EditCourseForm from "./course/Update/EditCourseForm.js";
@@ -44,10 +45,6 @@ import About_Us from "./AuthenticationPages/About_Us";
 import baseUrl from "./api/utils.js";
 import axios from "axios";
 import RefreshToken from "./AuthenticationPages/RefreshToken.js";
-import MyPayments from "./Student/MyPayments.js";
-import UpdatePartialPaymentSettings from "./course/Components/UpdatePartialPaymentSettings.js";
-import Paymenttransactions from "./course/Components/Paymenttransactions.js";
-import Mystudents from "./Trainer/Mystudents.js";
 import AdminRegister from "./Registration/AdminRegister.js";
 import LicenceExpired from "./AuthenticationPages/LicenceExpired.js";
 import ViewAdmin from "./SysAdmin/ViewAdmin.js";
@@ -80,9 +77,6 @@ import Approvals from "./Registration/Approvals.js";
 import SocialLoginKeysAdmin from "./UserSettings/SocialLoginKeysAdmin.js";
 import FooterDetails from "./UserSettings/FooterDetails.js";
 import pcoded from "./assets/js/pcoded.js";
-import MainPaymentSettingPage from "./course/Payments/MainPaymentSettingPage.js";
-import UpdateStripePayment from "./course/Payments/UpdateStripepayment.js";
-import UpdatePaypalPayment from "./course/Payments/UpdatePaypalPayment.js";
 import CreateBatch from "./Batch/CreateBatch.js";
 import ViewAllBatch from "./Batch/ViewAllBatch.js";
 import EditBatch from "./Batch/EditBatch.js";
@@ -115,7 +109,6 @@ import EditModuleQuestion from "./course/ModuleTest.js/EditModuleQuestion.js";
 import SheduleModuleTest from "./course/ModuleTest.js/SheduleModuleTest.js";
 import StartModuleTest from "./course/ModuleTest.js/StartModuleTest.js";
 import Partialpaymentsetting from "./course/Components/Partialpaymentsetting.js";
-import PendingInstallments from "./Student/PendingInstallments.js";
 import CreateAssignment from "./Assignment/CreateAssignment.js";
 import GetAssignments from "./Assignment/GetAssignments.js";
 import EditAssignment from "./Assignment/EditAssignment.js";
@@ -428,16 +421,7 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/pendingInstallments"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                    <PendingInstallments />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
+          
             <Route
               path="/view/Grades/:email/:batchTitle/:batchId"
               element={
@@ -842,20 +826,7 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/payment/keys"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute
-                    onlyadmin={true}
-                    authenticationRequired={true}
-                    authorizationRequired={true}
-                  >
-                    <MainPaymentSettingPage />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
+            
             <Route
               path="/certificate"
               element={
@@ -977,30 +948,8 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/myPayments"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                    <MyPayments />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/payment/transactionHitory"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute
-                    authenticationRequired={true}
-                    onlyadmin={true}
-                    authorizationRequired={true}
-                  >
-                    <Paymenttransactions />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
+          
+           
 
             <Route
               path="/licenceDetails"
@@ -1210,19 +1159,7 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/batch/update/partpay/:batchTitle/:batchId"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute
-                    authenticationRequired={true}
-                    authorizationRequired={true}
-                  >
-                    <UpdatePartialPaymentSettings />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
+           
             <Route
               path="/batch/addNew"
               element={
@@ -1499,22 +1436,8 @@ function App() {
             />
             {/* SysAdminRoutes */}
           </Route>
-          <Route
-            path="/updatePayment"
-            element={
-              <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                <UpdateStripePayment />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/updatePaypalPayment"
-            element={
-              <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                <UpdatePaypalPayment />
-              </PrivateRoute>
-            }
-          />
+         
+         
           <Route
             path="/"
             element={

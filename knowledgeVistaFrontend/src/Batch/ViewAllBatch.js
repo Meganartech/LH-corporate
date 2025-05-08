@@ -186,15 +186,7 @@ const ViewAllBatch = () => {
                             ></i>
                             <span title={item.amount}>{item.amount}</span>
                           </div>
-                          <button
-                            className=" btn btn-sm btn-outline-primary"
-                            // onClick={() =>
-                            //   handlepaytype(item.courseId, userId, item.paytype)
-                            // }
-                            title="Enroll Now"
-                          >
-                            Enroll Now
-                          </button>
+                         
                         </div>
                       )}
                     </div>

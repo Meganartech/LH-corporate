@@ -26,9 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.knowledgeVista.Attendance.AttendanceService;
-import com.knowledgeVista.Batch.BatchInstallmentdetails;
 import com.knowledgeVista.Batch.SearchDto;
 import com.knowledgeVista.Batch.Assignment.Assignment;
 import com.knowledgeVista.Batch.Assignment.AssignmentQuestion;
@@ -66,16 +64,6 @@ import com.knowledgeVista.Meeting.ZoomMeetAccountController;
 import com.knowledgeVista.Meeting.ZoomMeetingService;
 import com.knowledgeVista.Meeting.zoomclass.MeetingRequest;
 import com.knowledgeVista.Notification.Controller.NotificationController;
-import com.knowledgeVista.Payments.Paymentsettings;
-import com.knowledgeVista.Payments.Paypalsettings;
-import com.knowledgeVista.Payments.Stripesettings;
-import com.knowledgeVista.Payments.controller.BatchPaymentService;
-import com.knowledgeVista.Payments.controller.EnablePaymentsController;
-import com.knowledgeVista.Payments.controller.PaymentIntegration;
-import com.knowledgeVista.Payments.controller.PaymentIntegration2;
-import com.knowledgeVista.Payments.controller.PaymentListController;
-import com.knowledgeVista.Payments.controller.PaymentSettingsController;
-import com.knowledgeVista.Settings.Feedback;
 import com.knowledgeVista.Settings.Controller.SettingsController;
 import com.knowledgeVista.User.MuserDto;
 import com.knowledgeVista.User.MuserRoles;
@@ -123,26 +111,11 @@ public class FrontController {
 	private Testcontroller testcontroller;
 
 	@Autowired
-	private PaymentIntegration payment;
-	@Autowired
-	private BatchPaymentService paymentservice;
-	@Autowired
-	private PaymentIntegration2 payment2;
-
-	@Autowired(required = false)
-	private PaymentListController paylist;
-
-	@Autowired
 	private LicenseController licence;
 
 	@Autowired
 	private LicenceControllerSecond licencesec;
 
-	@Autowired
-	private PaymentSettingsController settings;
-
-	@Autowired
-	private EnablePaymentsController enablectrl;
 	@Autowired
 	private AddUsers adduser;
 
@@ -485,108 +458,7 @@ public class FrontController {
 	}
 
 //----------------------PaymentIntegration----------------------	
-	@PostMapping("/Batch/getOrderSummary")
-	public ResponseEntity<?> getBatchOrderSummary(@RequestBody Map<String, Long> requestData,
-			@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return paymentservice.getBatchordersummary(requestData, token);
-		}
-	}
-
-	@PostMapping("/full/buyBatch/create")
-	public ResponseEntity<?> createOrderfullForBatch(@RequestBody Map<String, Long> requestData,
-			@RequestParam("gateway") String gateway, HttpServletRequest request,
-			@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return paymentservice.createOrderfullforBatch(requestData, gateway, token, request);
-		}
-	}
-
-	@GetMapping("/get/Pendings")
-	public ResponseEntity<?> getpendingPayments(@RequestHeader("Authorization") String token) {
-		return batchService.GetPendingPayments(token);
-	}
-	// =========batch end=========
-
-	@PostMapping("/buyCourse/payment")
-	public ResponseEntity<String> updatePaymentId(HttpServletRequest request,
-			@RequestBody Map<String, String> requestData, @RequestHeader("Authorization") String token) {
-
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return payment.updatePaymentId(request, requestData, token);
-
-		}
-	}
-
-	@PostMapping("/buyCourse/updatePaypalPaymentId")
-
-	public ResponseEntity<String> updatePayPalPayment(HttpServletRequest request,
-			@RequestBody Map<String, String> requestData, @RequestHeader("Authorization") String token) {
-
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return payment2.updatePayPalPayment(request, requestData, token);
-		}
-	}
-
-	@PostMapping("/buyCourse/updateStripepaymentid")
-
-	public ResponseEntity<String> updateStripepaymentid(HttpServletRequest request,
-			@RequestBody Map<String, String> requestData, @RequestHeader("Authorization") String token) {
-
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return payment.updateStripepaymentid(request, requestData, token);
-
-		}
-	}
-
-//-------------------------paymentListcontrller-------------
-	@GetMapping("/myPaymentHistory")
-	public ResponseEntity<?> ViewMypaymentHistry(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			if (paylist != null) {
-				return paylist.ViewMypaymentHistry(token);
-			}
-			return null;
-		}
-	}
-
-	@GetMapping("/viewPaymentList/{batchId}")
-	public ResponseEntity<?> GetPartPayDetails(@RequestHeader("Authorization") String token,
-			@PathVariable Long batchId) {
-		return batchService.GetPartPayDetails(batchId, token);
-	}
-
-	@GetMapping("/viewAllTransactionHistory")
-	public ResponseEntity<?> viewTransactionHistory(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			if (paylist != null) {
-				return paylist.viewTransactionHistory(token);
-			}
-			return null;
-		}
-	}
-
+	
 //-------------------------LicenseController-----------------------
 	@GetMapping("/api/v2/GetAllUser")
 	public ResponseEntity<?> getAllUserforLicencecheck(@RequestHeader("Authorization") String token) {
@@ -630,132 +502,10 @@ public class FrontController {
 	}
 
 	// ------------------------SettingsController------------------------
-	@GetMapping("/get/stripe/publishkey")
-	public ResponseEntity<?> getpublishkey(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.getpublishkey(token);
-		}
-	}
-
-	@PostMapping("/api/Paymentsettings")
-	public ResponseEntity<?> SavePaymentDetails(@RequestBody Paymentsettings data,
-			@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.SavePaymentDetails(data, token);
-		}
-	}
-
-	@GetMapping("/api/getPaymentDetails")
-	public ResponseEntity<?> GetPaymentDetails(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.GetPaymentDetails(token);
-		}
-	}
-
-	@PatchMapping("/api/update/{payid}")
-	public ResponseEntity<?> editpayment(@PathVariable Long payid,
-			@RequestParam(value = "razorpay_key", required = false) String razorpay_key,
-			@RequestParam(value = "razorpay_secret_key", required = false) String razorpay_secret_key,
-			@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.editpayment(payid, razorpay_key, razorpay_secret_key, token);
-		}
-	}
-
-	// =======Stripe========
-	@PostMapping("/api/save/stripekeys")
-	public ResponseEntity<?> SaveStripedetails(@RequestBody Stripesettings stripedata,
-			@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.SaveStripedetails(token, stripedata);
-		}
-	}
-
-	@GetMapping("/api/get/stripekeys")
-	public ResponseEntity<?> GetstripeKeys(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.GetstripeKeys(token);
-		}
-	}
-
-	// --------------paypal--------------
-	@PostMapping("/api/save/PaypalKeys")
-	public ResponseEntity<?> SavepaypalKeys(@RequestBody Paypalsettings paypaldata,
-			@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.SavePaypaldetails(token, paypaldata);
-		}
-	}
-
-	@GetMapping("/api/get/PaypalKeys")
-	public ResponseEntity<?> GetpaypalKeys(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return settings.GetpaypalKeys(token);
-		}
-	}
-
-	@PostMapping("/api/feedback")
-	public Feedback feedback(@RequestBody Feedback data) {
-
-		return settings.feedback(data);
-	}
+	
 
 	// ======================EnablePaymentCController==========================
-	@GetMapping("/get/paytypedetails")
-	public ResponseEntity<?> getpaytypedetails(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return enablectrl.getpaytypedetails(token);
-		}
-	}
-
-	@GetMapping("/get/paytypedetailsforUser")
-	public ResponseEntity<?> getpaytypedetailsforuser(@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Payment functionality disabled");
-		} else {
-			return enablectrl.getpaytypedetailsforuser(token);
-		}
-	}
-
-	@PostMapping("save/PayTypeDetails")
-	public Boolean updatePaymenttypes(@RequestParam Boolean isEnabled, @RequestParam String paymentTypeName,
-			@RequestHeader("Authorization") String token) {
-		if (paylist != null && activeProfile.equals("demo")) {
-
-			return false;
-		} else {
-			return enablectrl.updatePaymenttypes(isEnabled, paymentTypeName, token);
-		}
-	}
-
+	
 //--------------------AddUser---------------------------
 	@PostMapping("/admin/addTrainer")
 	public ResponseEntity<?> addTrainer(HttpServletRequest request, @RequestParam(required = false) String username,
@@ -1587,14 +1337,14 @@ public class FrontController {
 	@PostMapping(value = "/batch/save")
 	public ResponseEntity<?> saveBatch(@RequestParam("batchTitle") String batchTitle,
 			@RequestParam("startDate") LocalDate startDate, @RequestParam("endDate") LocalDate endDate,
-			@RequestParam("noOfSeats") Long noOfSeats, @RequestParam("amount") Long amount,
+			@RequestParam("noOfSeats") Long noOfSeats, 
 			@RequestParam("courses") String courses, // Assuming it's a JSON string of courses
 			@RequestParam("trainers") String trainers, // Assuming it's a JSON string of trainers
 			@RequestParam(value = "batchImage", required = false) MultipartFile batchImage,
 			@RequestHeader("Authorization") String token) {
 
 		// Your validation logic and service call here
-		return batchService.saveBatch(batchTitle, startDate, endDate, noOfSeats, amount, courses, trainers, batchImage,
+		return batchService.saveBatch(batchTitle, startDate, endDate, noOfSeats, courses, trainers, batchImage,
 				token);
 	}
 
@@ -1677,14 +1427,7 @@ public class FrontController {
 		return batchService.GetbatchImagesForMyPayments(token, batchIds);
 	}
 
-	@PostMapping("/Batch/Save/PartPayDetails")
-	public ResponseEntity<?> savePartPayment(@RequestParam Long batchId,
-			@RequestBody List<BatchInstallmentdetails> installmentDetails,
-			@RequestHeader("Authorization") String token) {
-
-		// Call the service layer to handle saving the part payment
-		return batchService.SavePartPay(batchId, installmentDetails, token);
-	}
+	
 
 //==========================================BAtchService2-----------------------------
 	@GetMapping("/user/GetBatches/{userId}")

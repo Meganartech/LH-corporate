@@ -5,8 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.knowledgeVista.Batch.Batch.PaymentType;
 import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.User.Muser;
 
@@ -33,7 +31,6 @@ public class BatchDto {
 	private List<String> course;
 	private List<String> trainer;
 	private byte[] batchImage;
-	private PaymentType paytype;
 	private String duration; // Add this for formatted duration
     // Constructor, getters and setters
 	  public BatchDto(Batch batch) {
@@ -45,8 +42,6 @@ public class BatchDto {
 	        this.batchImage = batch.getBatchImage();
 	        this.institutionName = batch.getInstitutionName();
 	        this.noOfSeats = batch.getNoOfSeats();
-	        this.amount = batch.getAmount();
-            this.paytype=batch.getPaytype();
 	        // Extract course names
 	        if (batch.getCourses() != null) {
 	            this.course = batch.getCourses().stream()
@@ -93,22 +88,7 @@ public class BatchDto {
 		this.trainerNames = trainerNames;
 	}
 
-	public BatchDto(Long id, String batchId, String batchTitle, LocalDate startDate, LocalDate endDate,
-			String institutionName, Long noOfSeats, Long amount, String courseNames, String trainerNames,
-			byte[] batchImage,PaymentType paytype) {
-		this.id = id;
-		this.batchId = batchId;
-		this.batchTitle = batchTitle;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.institutionName = institutionName;
-		this.noOfSeats = noOfSeats;
-		this.amount = amount;
-		this.courseNames = courseNames;
-		this.trainerNames = trainerNames;
-		this.batchImage = batchImage;
-		this.paytype=paytype;
-	}
+	
 	public BatchDto(Long id, String batchId, String batchTitle, LocalDate startDate, LocalDate endDate,
 			String institutionName, Long noOfSeats, Long amount, String courseNames, String trainerNames,
 			List<CourseDto> courses, List<TrainerDto> trainers, byte[] batchImage, String duration) {

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.knowledgeVista.Course.Repository.CourseDetailRepository;
-import com.knowledgeVista.Meeting.zoomclass.MeetingRequest.Settings;
 import com.knowledgeVista.Settings.ViewSettings;
 import com.knowledgeVista.Settings.Repo.ViewSettingsRepo;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;

@@ -611,38 +611,7 @@ useEffect(() => {
                     </span>
                     <span className="pcoded-mtext">payments</span>
                   </a>
-                  <ul className="pcoded-submenu">
-                    <li>
-                      <a
-                        href="#"
-                        data-path="/payment/keys"
-                        onClick={(e) => {
-                          handleClick(e, "/payment/keys");
-                        }}
-                        className="nav-link "
-                      >
-                        <span className="pcoded-micon">
-                          <i className="fa-solid fa-gear"></i>
-                        </span>
-                        <span className="pcoded-mtext">payment Keys</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        data-path="/payment/transactionHitory"
-                        onClick={(e) => {
-                          handleClick(e, "/payment/transactionHitory");
-                        }}
-                        className="nav-link "
-                      >
-                        <span className="pcoded-micon">
-                          <i className="fa-solid fa-clock-rotate-left"></i>
-                        </span>
-                        <span className="pcoded-mtext">Transactions</span>
-                      </a>
-                    </li>
-                  </ul>
+            
                 </li>
 
                 <li className="nav-item no-hasmenu">
@@ -1166,20 +1135,7 @@ useEffect(() => {
                   <span className="pcoded-mtext">History</span>
                       </a>
                     </li>
-                    <li>
-                      <a
-                        href="#"
-                        data-path="/pendingInstallments"
-                        onClick={(e) => {
-                          handleClick(e, "/pendingInstallments");
-                        }}
-                        className="nav-link "
-                      >
-                       <span className="pcoded-micon">
-                       <i className="fa-solid fa-list"></i> </span>
-                  <span className="pcoded-mtext">Pendings</span>
-                      </a>
-                    </li>
+                
                   
                   </ul>
                 </li>

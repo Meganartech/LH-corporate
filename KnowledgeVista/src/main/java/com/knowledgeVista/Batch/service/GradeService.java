@@ -31,7 +31,6 @@ import com.knowledgeVista.Course.Quizz.Repo.QuizzattemptRepo;
 import com.knowledgeVista.Course.Quizz.Repo.quizzRepo;
 import com.knowledgeVista.Course.Test.Repository.MusertestactivityRepo;
 import com.knowledgeVista.Course.moduleTest.MTSheduleListDto.UserResult;
-import com.knowledgeVista.Payments.repos.OrderuserRepo;
 import com.knowledgeVista.User.Muser;
 import com.knowledgeVista.User.Repository.MuserRepositories;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
@@ -46,7 +45,6 @@ public class GradeService {
 	private final QuizzattemptRepo quizzattemptRepo;
 	private final weightageService weightageService;
 	private final BatchRepository batchRepo;
-	private final OrderuserRepo orderuserRepo;
 	@Autowired
 	private SubmissionRepo submissionRepository;
 	@Autowired
@@ -58,7 +56,7 @@ public class GradeService {
 	// Constructor-based dependency injection
 	public GradeService(JwtUtil jwtUtil, MuserRepositories muserRepo, AttendanceService attendanceService,
 			MusertestactivityRepo testActivityRepo, QuizzattemptRepo quizzattemptRepo,
-			weightageService weightageService, BatchRepository batchRepo, OrderuserRepo orderuserRepo) {
+			weightageService weightageService, BatchRepository batchRepo) {
 		this.jwtUtil = jwtUtil;
 		this.muserRepo = muserRepo;
 		this.attendanceService = attendanceService;
@@ -66,7 +64,6 @@ public class GradeService {
 		this.quizzattemptRepo = quizzattemptRepo;
 		this.weightageService = weightageService;
 		this.batchRepo = batchRepo;
-		this.orderuserRepo = orderuserRepo;
 	}
 
 	private GradeDto getGradesbyBatchId(Muser user, Weightage weightage, Long batchId, String batchName) {
@@ -309,7 +306,6 @@ public class GradeService {
 		int userCount = 0;
 		Long seats = 0L;
 		Double totalAttendance = 0.0;
-		Long revenue = orderuserRepo.getTotalAmountReceivedByBatchId(batchId);
 		if (opbatch.isPresent()) {
 			Batch batch = opbatch.get();
 			seats = batch.getNoOfSeats();
@@ -332,7 +328,6 @@ public class GradeService {
 		response.put("FAIL", failCount);
 		response.put("TOTAL", userCount);
 		response.put("PRESENT", overallAttendance);
-		response.put("REVENUE", revenue);
 		response.put("STUDENTS", userCount);
 		response.put("SEATS", seats);
 		response.put("ABSENT", overAllNotAttendance);

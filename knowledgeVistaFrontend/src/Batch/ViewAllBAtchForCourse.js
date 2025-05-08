@@ -6,7 +6,6 @@ import withReactContent from "sweetalert2-react-content";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import altBatchImage from "../images/altBatchImage.jpg";
-import SelectPaymentGateway from "../course/Payments/SelectPaymentGateway";
 const ViewAllBAtchForCourse = () => {
   const { courseId } = useParams();
   const userId = sessionStorage.getItem("userid");
@@ -16,71 +15,8 @@ const ViewAllBAtchForCourse = () => {
   const [batch, setbatch] = useState([]);
   const Currency = sessionStorage.getItem("Currency");
   const navigate = useNavigate();
-  const[openselectgateway,setopenselectgateway]=useState(false)
-    const[orderData,setorderData]=useState({
-      userId:"",
-      batchId:"",
-      amount:"" ,
-      batchAmount:"",
-      batchName:"",
-      installment:"",
-      paytype:"",
-      url:""
-  })
-  const FetchOrderSummary = async (batchId, userId, paytype) => {
-    try {
-      let selectedPayType=0;//0->Full //1->PART
-      if (paytype === "PART") {
-        const result = await MySwal.fire({
-          title: "Select Payment Type",
-          text: "Do you want to pay fully or in installments?",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "Full Pay",
-          cancelButtonText: "Part Pay",
-        });
   
-        // Determine payment type based on user selection
-         selectedPayType = result.isDismissed ? 1 : 0;//0->Full //1->PART
-      
-      }
-        setsubmitting(true);
-  
-        // Prepare request data
-        const data = JSON.stringify({
-          batchId: batchId,
-          userId: userId,
-          paytype: selectedPayType, // Use local variable, not state
-        });
-  
-        // Make API call
-        const response = await axios.post(`${baseUrl}/Batch/getOrderSummary`, data, {
-          headers: {
-            Authorization: token,
-            "Content-Type": "application/json",
-          },
-        });
-  
-        setsubmitting(false);
-        setorderData(response.data);
-        console.log(response.data)
-        setopenselectgateway(true);
-      
-    } catch (error) {
-      setsubmitting(false);
-      setopenselectgateway(false);
-  
-      if (error.response && error.response.status === 400) {
-        MySwal.fire({
-          icon: "error",
-          title: "Error creating order:",
-          text: error.response.data ? error.response.data : "An error occurred",
-        });
-      } else {
-        throw error;
-      }
-    }
-  };
+
   
   useEffect(() => {
     const fetchBatchforcourse = async () => {
@@ -110,9 +46,7 @@ const ViewAllBAtchForCourse = () => {
           <div className="spinner"></div>
         </div>
       )}
-      {openselectgateway && (
-        <SelectPaymentGateway orderData={orderData} setorderData={setorderData} setopenselectgateway={setopenselectgateway}/>
-      )}
+    
       <div className="page-header"></div>
       <div className="card" style={{ height: "82vh", overflowY: "auto" }}>
         <div className="card-body">
@@ -259,15 +193,7 @@ const ViewAllBAtchForCourse = () => {
                                 ></i>
                                 <span title={item.amount}>{item.amount}</span>
                               </div>
-                              <button
-                                className=" btn btn-sm btn-outline-primary"
-                                onClick={() =>
-                                 FetchOrderSummary(item.id,userId,item.paytype)
-                                }
-                                title="Enroll Now"
-                              >
-                                Enroll Now
-                              </button>
+                           
                             </div>
                           )}
                         </div>

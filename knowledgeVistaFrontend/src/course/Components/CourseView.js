@@ -145,20 +145,6 @@ const CourseView = ({ filteredCourses }) => {
                               {item.amount}
                             </span>
                           </div>
-                          <button
-                            className=" btn btn-sm btn-outline-primary"
-                            onClick={(e) => {
-                              handleClick(
-                                e,
-                                item.courseId,
-                                item.amount,
-                                item.courseUrl
-                              );
-                            }}
-                            title="Enroll Now"
-                          >
-                            Enroll Now
-                          </button>
                         </div>
                       )}
                     </div>}
