@@ -37,11 +37,9 @@ public class BatchDto {
 	        this.id = batch.getId();
 	        this.batchId = batch.getBatchId();
 	        this.batchTitle = batch.getBatchTitle();
-	        this.startDate = batch.getStartDate();
-	        this.endDate = batch.getEndDate();
 	        this.batchImage = batch.getBatchImage();
 	        this.institutionName = batch.getInstitutionName();
-	        this.noOfSeats = batch.getNoOfSeats();
+	       
 	        // Extract course names
 	        if (batch.getCourses() != null) {
 	            this.course = batch.getCourses().stream()

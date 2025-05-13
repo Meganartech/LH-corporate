@@ -11,28 +11,18 @@ const CreateBatch = () => {
   const [searchQuerycourse,setSearchQuerycourse]=useState('')
   const [courses, setCourses] = useState({});
   const[selectedCourse,setSelectedCourse]=useState([])
-  const [trainers,setTrainers]=useState([]);
-  const [searchQueryTrainer,setSearchQueryTrainer]=useState('')
-  const[selectedTainers,setselectedTrainers]=useState([])
   const token = sessionStorage.getItem("token");
   const role=sessionStorage.getItem("role")
   const[batch,setbatch]=useState({
     batchTitle:"",
-    startDate:"",
-    endDate:"",
+    durationInHours:"",
     courses:selectedCourse,
-    trainers:selectedTainers,
-    noOfSeats:"",
-    amount:0,
     BatchImage:null,
     base64Image:null
   })
   const [errors, setErrors] = useState({
     batchTitle: "",
-    startDate: "",
-    endDate: "",
-    noOfSeats: "",
-    amount: "",
+    durationInHours:"",
     BatchImage:null,
     base64Image:null
   });
@@ -119,29 +109,7 @@ const CreateBatch = () => {
     setCourses({});
     setSearchQuerycourse('')
   };
-  const handletrainerclick = (trainer) => {
-   
-    setselectedTrainers((prevSelected) => {
-      // Check if trainer is already selected
-      const exists = prevSelected.find((trainerprev) => trainerprev.userId === trainer.userId);
-      let updatedtrainer
-      if (exists) {
-        // Remove the trainer if already selected
-        updatedtrainer= prevSelected
-      } else {
-        // Add the trainer if not selected
-        updatedtrainer= [...prevSelected, { userId: trainer.userId, username: trainer.username }];
-      }
-      setbatch((prev)=>({
-        ...prev,
-        trainers:updatedtrainer
-      }))
-      return updatedtrainer
-    });
-
-    setTrainers({});
-    setSearchQueryTrainer('')
-  };
+ 
   const handleCourseRemove = (course) => {
    
     setSelectedCourse((prevSelected) => {
@@ -171,24 +139,7 @@ const CreateBatch = () => {
     
     
   };
-  const handletrainerRemove = (trainer) => {
-   
-    setselectedTrainers((prevSelected) => {
-      // Check if trainer is already selected
-      const exists = prevSelected.find((trainerprev) => trainerprev.userId === trainer.userId);
-
-      if (exists) {
-        // Remove the trainer if already selected
-        let updatedtrainer= prevSelected.filter((trainerprev) => trainerprev.userId !== trainer.userId);
-        setbatch((prev)=>({
-          ...prev,
-          trainers:updatedtrainer
-        }))
-        return updatedtrainer
-      } 
-    });
-    
-  };
+ 
   const searchCourses = async (e) => {
     try {
       setSearchQuerycourse(e.target.value)
@@ -203,20 +154,7 @@ const CreateBatch = () => {
       console.error("Error fetching courses:", error);
     }
   };
-  const searchTrainers = async (e) => {
-    try {
-      setSearchQueryTrainer(e.target.value)
-      const response = await axios.get(`${baseUrl}/searchTrainer`, {
-        params: { userName: e.target.value },
-        headers: {
-          Authorization: token,
-        },
-      });
-      setTrainers(response.data);
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
-  };
+ 
  
   
   const handleBatchChange = (e) => {
@@ -240,58 +178,19 @@ const CreateBatch = () => {
           }));
         }
         break;
-      
+        case "durationInHours":
+          if (value && value <= 0) {
+            errorObj.durationInHours = "Duration cannot be zero or negative!";
+          } else {
+            errorObj.durationInHours = "";
+            setbatch((prev) => ({
+              ...prev,
+              [name]: value,
+            }));
+          }
+          break;
   
-      case "startDate":
-        if (value && batch.endDate && new Date(value) > new Date(batch.endDate)) {
-          errorObj.startDate = "Start date should be smaller than end date!";
-        } else {
-          errorObj.startDate = "";
-          setbatch((prev) => ({
-            ...prev,
-            [name]: value,
-          }));
-        }
-        break;
-  
-      case "endDate":
-        if (value && batch.startDate && new Date(value) < new Date(batch.startDate)) {
-          errorObj.endDate = "End date should be greater than start date!";
-        } else {
-          errorObj.endDate = "";
-          setbatch((prev) => ({
-            ...prev,
-            [name]: value,
-          }));
-        }
-        break;
-  
-      case "noOfSeats":
-        if (value && value <= 0) {
-          errorObj.noOfSeats = "Number of seats cannot be zero or negative!";
-        } else {
-          errorObj.noOfSeats = "";
-          setbatch((prev) => ({
-            ...prev,
-            [name]: value,
-          }));
-        }
-        break;
-  
-      case "amount":
-        // Optionally add validation for amount if needed
-        if (value && value < 0) {
-          errorObj.amount = "Amount cannot be negative!";
-        } else {
-          errorObj.amount = "";
-          setbatch((prev) => ({
-            ...prev,
-            [name]: value,
-          }));
-        }
-        break;
-  
-      default:
+         default:
         break;
     }
   
@@ -308,26 +207,19 @@ const CreateBatch = () => {
 
     // Validation checks
     if (!batch?.batchTitle) newErrors.batchTitle = "Batch title is required.";
-    if (!batch?.startDate) newErrors.startDate = "Start date is required.";
-    if (!batch?.endDate) newErrors.endDate = "End date is required.";
-    if (!batch?.noOfSeats) newErrors.noOfSeats = "Number of seats is required.";
-    if (!batch?.amount) newErrors.amount = "Amount is required.";
+    if (!batch?.durationInHours) newErrors.durationInHours = "Batch Duration is required.";
     if(!batch?.courses?.length<0)newErrors.courses="select atleast one Course"
      if(!batch?.trainers?.length<0)newErrors.trainers="select atleast one trainer"
     setErrors(newErrors);
-    console.log("errors",errors)
     if (Object.keys(newErrors)?.length > 0) {
       return;
     }
   
     const formData = new FormData();
     formData.append("batchTitle", batch.batchTitle);
-    formData.append("startDate", batch.startDate);
-    formData.append("endDate", batch.endDate);
-    formData.append("noOfSeats", batch.noOfSeats);
-    formData.append("amount", batch.amount);
     formData.append("courses", JSON.stringify(batch.courses)); // Sending courses as a JSON string
     formData.append("trainers", JSON.stringify(batch.trainers));
+    formData.append("durationInHours",batch.durationInHours);
  
     // Append batch image if exists
     if (batch.BatchImage) {
@@ -350,18 +242,12 @@ const CreateBatch = () => {
         })
         setbatch({
           batchTitle: "",
-          startDate: "",
-          endDate: "",
           courses: [],
           trainers: [],
-          noOfSeats: "",
-          amount: 0,
         });
         setSelectedCourse([]);
-        setselectedTrainers([])
         setErrors({});
         const batchId=response?.data?.batchId;
-        const amount=response?.data?.amount;
         const batchTitle=response?.data?.batchName;
         
         if(role==="ADMIN"){
@@ -423,42 +309,7 @@ const CreateBatch = () => {
                     <div className="invalid-feedback">{errors.batchTitle}</div>
                   </div>
                 </div>
-                <div className="form-group row p-3">
-                  <div className="col-sm-7">
-                    <div className="row">
-                      <label
-                        htmlFor="Duration"
-                        className="col-form-label col-sm-5 p-0"
-
-                      >
-                        Start Date <span className="text-danger">*</span>
-                      </label>
-                      <div className="col">
-                        <input type="date" 
-                         min={new Date().toISOString().split("T")[0]}
-                        className={`form-control ${errors.startDate && "is-invalid"} `} 
-                        value={batch.startDate} name="startDate" onChange={handleBatchChange} />
-                        <div className="invalid-feedback">{errors.startDate}</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-sm-5">
-                    <div className="row">
-                      <label className=" col-form-label col-sm-3">
-                        End Date <span className="text-danger">*</span>
-                      </label>
-                      <div className="col">
-                        <input type="date"
-                         className={`form-control ${errors.endDate && "is-invalid"} `} 
-                         value={batch.endDate}
-                          min={batch.startDate ? new Date(batch.startDate).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]}  
-                          name="endDate" onChange={handleBatchChange}/>
-                        <div className="invalid-feedback">{errors.endDate}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+               
 
                 <div className="form-group row">
                   <label className="col-sm-3 col-form-label">
@@ -508,56 +359,27 @@ const CreateBatch = () => {
       )}
                   </div>
                 </div>
-                <div className="form-group row">
+              
+
+
+<div className="form-group row">
                   <label className="col-sm-3 col-form-label">
-                    Trainers
-                 
+                    Duration (Hours) <span className="text-danger">*</span>
                   </label>
                   <div className="col-sm-9">
-                    <div className="inputlike">
-                    {selectedTainers?.length > 0 && (
-        <div className="listemail">
-          {selectedTainers.map((trainers) => (
-            <div key={trainers.userId} className="selectedemail">
-              {trainers.username}{" "}
-              <i
-                onClick={() => handletrainerRemove(trainers)}
-                className="fa-solid fa-xmark"
-              ></i>
-            </div>
-          ))}
-        </div>
-      )}
-
-                      <input
-                        type="input"
-                        id="customeinpu"
-                        placeholder="search trainers..."
-                        className={`form-control ${errors.trainers && "is-invalid"} `} 
-                        value={searchQueryTrainer}
-                        onChange={searchTrainers}
-                      />
-                      <div className="invalid-feedback">{errors.trainers}</div>
-                    </div>
-                    {trainers?.length > 0 && (
-        <div className="user-list">
-          {trainers.map((trainer) => (
-            <div key={trainer.userId} className="usersingle">
-              <label
-                id="must"
-                className="p-1 w-100"
-                htmlFor={trainer.username}
-                onClick={() => handletrainerclick(trainer)}
-              >
-                {trainer.username}
-              </label>
-            </div>
-          ))}
-        </div>
-      )}
+                    <input
+                      type="number"
+                      name="durationInHours"
+                      placeholder="Duration in Months"
+                      className={`form-control ${errors.durationInHours && "is-invalid"} `}
+                      value={batch.durationInHours}
+                      onChange={handleBatchChange}
+                    />
+                    <div className="invalid-feedback">{errors.durationInHours}</div>
                   </div>
                 </div>
 
+                
                 <div className="form-group row" >
                 <label htmlFor="BatchImage" 
                 className="col-sm-3 col-form-label">
@@ -594,42 +416,6 @@ const CreateBatch = () => {
                   </div>
                 </div>
               )}
-
-                <div className="form-group row">
-                  <label className="col-sm-3 col-form-label">
-                    No of Seats <span className="text-danger">*</span>
-                  </label>
-                  <div className="col-sm-9">
-                    <input
-                      type="number"
-                      name="noOfSeats"
-                      placeholder="No of Seats"
-                      className={`form-control ${errors.noOfSeats && "is-invalid"} `}
-                      value={batch.noOfSeats}
-                      onChange={handleBatchChange}
-                    />
-                    <div className="invalid-feedback">{errors.noOfSeats}</div>
-                  </div>
-                </div>
-                <div className="form-group row">
-                  <label
-                    htmlFor="courseAmount"
-                    className="col-sm-3 col-form-label"
-                  >
-                    Batch Amount <span className="text-danger">*</span>
-                  </label>
-                  <div className="col-sm-9">
-                    <input
-                      type="number"
-                      placeholder="Amount"
-                      name="amount"
-                      className={`form-control ${errors.amount && "is-invalid"} `}
-                      value={batch.amount}
-                      onChange={handleBatchChange}
-                    />
-                    <div className="invalid-feedback">{errors.amount}</div>
-                  </div>
-                </div>
               </div>
               <div className="cornerbtn">
                 <button

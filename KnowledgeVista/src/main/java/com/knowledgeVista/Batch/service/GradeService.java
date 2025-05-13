@@ -308,7 +308,6 @@ public class GradeService {
 		Double totalAttendance = 0.0;
 		if (opbatch.isPresent()) {
 			Batch batch = opbatch.get();
-			seats = batch.getNoOfSeats();
 			List<Muser> users = batch.getUsers();
 			userCount = users.size();
 			for (Muser singleuser : users) {

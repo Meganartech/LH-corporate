@@ -97,8 +97,8 @@ public class BatchService {
 	// ==================================save
 	// Batch======================================
 
-	public ResponseEntity<?> saveBatch(String batchTitle, LocalDate startDate, LocalDate endDate, Long noOfSeats,
-			 String coursesJson, String trainersJson, MultipartFile batchImage, String token) {
+	public ResponseEntity<?> saveBatch(String batchTitle,  Long durationInHours,
+			 String coursesJson, MultipartFile batchImage, String token) {
 		try {
 // Validate Token
 			if (!jwtUtil.validateToken(token)) {
@@ -123,15 +123,13 @@ public class BatchService {
 // Initialize batch
 			Batch batch = new Batch();
 			batch.setBatchTitle(batchTitle);
+			batch.setDurationInHours(durationInHours);
 			batch.setInstitutionName(addingMuser.getInstitutionName());
-			batch.setStartDate(startDate);
-			batch.setEndDate(endDate);
-			batch.setNoOfSeats(noOfSeats);
+		
 
 // Parse JSON data
 			ObjectMapper objectMapper = new ObjectMapper();
 			List<Map<String, Object>> courseList = objectMapper.readValue(coursesJson, List.class);
-			List<Map<String, Object>> trainerListJson = objectMapper.readValue(trainersJson, List.class);
 
 // Fetch and set courses
 			List<CourseDetail> courseDetails = new ArrayList<>();
@@ -141,45 +139,6 @@ public class BatchService {
 						() -> logger.warn("Course with ID {} not found. Skipping...", courseId));
 			}
 			batch.setCourses(courseDetails);
-
-// Fetch and set trainers
-			Set<Long> trainerIds = new HashSet<>();
-			List<Muser> trainerList = new ArrayList<>();
-
-// Include current user if they are a trainer
-			if ("TRAINER".equals(role)) {
-				trainerIds.add(addingMuser.getUserId());
-			}
-
-// Collect trainer IDs from JSON
-			for (Map<String, Object> trainerMap : trainerListJson) {
-				trainerIds.add(((Number) trainerMap.get("userId")).longValue());
-			}
-
-// Fetch trainers and update their allotted courses
-			for (Long trainerId : trainerIds) {
-				muserRepo.findtrainerByid(trainerId).ifPresentOrElse(user -> {
-					if (user.getAllotedCourses() == null) {
-						user.setAllotedCourses(new ArrayList<>());
-					}
-
-					boolean addedNewCourse = false;
-					for (CourseDetail course : courseDetails) {
-						if (!user.getAllotedCourses().contains(course)) {
-							user.getAllotedCourses().add(course);
-							addedNewCourse = true;
-						}
-					}
-
-					if (addedNewCourse) {
-						muserRepo.save(user);
-					}
-
-					trainerList.add(user);
-				}, () -> logger.warn("Trainer with ID {} not found. Skipping...", trainerId));
-			}
-
-			batch.setTrainers(trainerList);
 
 // Save batch image
 			if (batchImage != null && !batchImage.isEmpty()) {
@@ -204,7 +163,7 @@ public class BatchService {
 
 	// =================================Save Batch for
 	// CourseCreation===========================
-	public ResponseEntity<?> SaveBatchforCourseCreation(String batchTitle, LocalDate startDate, LocalDate endDate,
+	public ResponseEntity<?> SaveBatchforCourseCreation(String batchTitle, Long durationInHours,
 			String token) {
 		try {
 			if (!jwtUtil.validateToken(token)) {
@@ -221,10 +180,8 @@ public class BatchService {
 
 				Batch batch = new Batch();
 				batch.setBatchTitle(batchTitle);
+				batch.setDurationInHours(durationInHours);
 				batch.setInstitutionName(institutionName);
-				batch.setStartDate(startDate);
-				batch.setEndDate(endDate);
-
 				Batch savedBatch = batchrepo.save(batch);
 
 				return ResponseEntity.ok(savedBatch);
@@ -240,7 +197,7 @@ public class BatchService {
 
 	// =============================Edit Batch==============================
 	public ResponseEntity<?> updateBatch(Long batchId, String batchTitle, LocalDate startDate, LocalDate endDate,
-			Long noofSeats, Long amount, String coursesJson, String trainersJson, MultipartFile batchImage,
+			Long noofSeats, Long amount, String coursesJson, MultipartFile batchImage,
 			String token) {
 		try {
 // Validate the token
@@ -275,7 +232,6 @@ public class BatchService {
 // Parse JSON data
 			ObjectMapper objectMapper = new ObjectMapper();
 			List<Map<String, Object>> courseList = objectMapper.readValue(coursesJson, List.class);
-			List<Map<String, Object>> trainerListJson = objectMapper.readValue(trainersJson, List.class);
 
 // Fetch and update courses
 			Set<Long> newCourseIds = new HashSet<>();
@@ -291,45 +247,11 @@ public class BatchService {
 			batch.getCourses().clear();
 			batch.getCourses().addAll(updatedCourseDetails);
 
-// Fetch and update trainers
-			Set<Long> newTrainerIds = new HashSet<>();
-			List<Muser> updatedTrainers = new ArrayList<>();
 
-			for (Map<String, Object> trainerMap : trainerListJson) {
-				Long trainerId = ((Number) trainerMap.get("userId")).longValue();
-				newTrainerIds.add(trainerId);
-			}
-
-			for (Long trainerId : newTrainerIds) {
-				muserRepo.findById(trainerId).ifPresentOrElse(trainer -> {
-					if (trainer.getAllotedCourses() == null) {
-						trainer.setAllotedCourses(new ArrayList<>());
-					}
-
-					boolean addedNewCourse = false;
-					for (CourseDetail course : updatedCourseDetails) {
-						if (!trainer.getAllotedCourses().contains(course)) {
-							trainer.getAllotedCourses().add(course);
-							addedNewCourse = true;
-						}
-					}
-
-					if (addedNewCourse) {
-						muserRepo.save(trainer);
-					}
-
-					updatedTrainers.add(trainer);
-				}, () -> logger.warn("Trainer with ID {} not found. Skipping...", trainerId));
-			}
-
-			batch.getTrainers().clear();
-			batch.getTrainers().addAll(updatedTrainers);
 
 // Update batch details
 			batch.setBatchTitle(batchTitle);
-			batch.setNoOfSeats(noofSeats);
-			batch.setStartDate(startDate);
-			batch.setEndDate(endDate);
+			
 
 			if (batchImage != null && !batchImage.isEmpty()) {
 				batch.setBatchImage(batchImage.getBytes());
@@ -363,7 +285,6 @@ public class BatchService {
 				if (opbatch.isPresent()) {
 					BatchDto batch = opbatch.get();
 					batch.setCourses(batchrepo.findCoursesByBatchIdAndInstitutionName(id, institutionName));
-					batch.setTrainers(batchrepo.findTrainersByBatchIdAndInstitutionName(id, institutionName));
 					return ResponseEntity.ok(batch);
 				} else {
 					return ResponseEntity.status(HttpStatus.NO_CONTENT).body("batch Not Found");
@@ -457,7 +378,6 @@ public class BatchService {
 				Batch batch = optionalBatch.get();
 				// Remove the mappings for courses and trainers
 				batch.getCourses().clear();
-				batch.getTrainers().clear();
 
 				// Save the batch to update the mappings in the database
 				batchrepo.save(batch);

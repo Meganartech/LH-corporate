@@ -1,5 +1,7 @@
 package com.knowledgeVista.Batch.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,9 +79,7 @@ public class AssignBatch {
 	         Optional<Batch> opbatch=batchRepo.findById(BatchId);
 	         if(opbatch.isPresent()) {
 	        	 Batch batch=opbatch.get();
-	           if(batch.getNoOfSeats()<batch.getUserCountinBatch()+1) {
-	        	   return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Seats Filled...!");
-	           }
+	          
 	         List<CourseDetail>courses= batch.getCourses();
 				if (!user.getEnrolledbatch().contains(batch)) {
 					user.getEnrolledbatch().add(batch);
@@ -131,9 +131,9 @@ public class AssignBatch {
 
 		         // Construct the Sign-in Link
 		         String signInLink = domain + "/login";
-		         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MMM-yyyy"); // Example: 5-Jan-2025
-		         String formattedStartDate = batch.getStartDate().format(formatter);
-		         String formattedEndDate = batch.getEndDate().format(formatter);
+		         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MMM-yyyy HH:mm"); // Example: 5-Jan-2025
+		         String formattedStartDate = LocalDate.now().format(formatter);
+		         String formattedEndDate = LocalDateTime.now().plusHours(batch.getDurationInHours()).format(formatter);
 		         StringBuilder body = new StringBuilder();
 		         if("TRAINER".equals(type)) {
 		        	 body.append("<html>")

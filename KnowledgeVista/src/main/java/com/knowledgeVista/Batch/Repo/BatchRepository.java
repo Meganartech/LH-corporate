@@ -4,14 +4,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.knowledgeVista.Batch.Batch;
 import com.knowledgeVista.Batch.BatchDto;
 import com.knowledgeVista.Batch.BatchImageDTO;
@@ -43,12 +41,12 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			@Param("institutionName") String institutionName);
 
 	@Query("SELECT new com.knowledgeVista.Batch.BatchDto( "
-			+ "b.id, b.batchId, b.batchTitle, b.startDate, b.endDate, b.institutionName, b.noOfSeats"
+			+ "b.id, b.batchId, b.batchTitle, b.institutionName"
 			+ "COALESCE(CAST(STRING_AGG(c.courseName, ',') AS string), ''), "
 			+ "COALESCE(CAST(STRING_AGG(t.username, ',') AS string), ''), " + "b.BatchImage) "
 			+ "FROM Batch b " + "LEFT JOIN b.courses c " + "LEFT JOIN b.trainers t "
 			+ "WHERE b.id = :id AND b.institutionName = :institutionName "
-			+ "GROUP BY b.id, b.batchId, b.batchTitle, b.startDate, b.endDate, b.institutionName, b.noOfSeats")
+			+ "GROUP BY b.id, b.batchId, b.batchTitle,  b.institutionName")
 	Optional<BatchDto> findBatchDtoByIdAndInstitutionName(@Param("id") Long id,
 			@Param("institutionName") String institutionName);
 
@@ -111,8 +109,7 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			@Param("skills") String skills, Pageable pageable);
 
 	@Query(value = "SELECT b.id AS id, " + "b.batch_id AS batchId, " + "b.batch_title AS batchTitle, "
-			+ "b.start_date AS startDate, " + "b.end_date AS endDate, " + "b.institution_name AS institutionName, "
-			+ "b.no_of_seats AS noOfSeats, " 
+			+ "b.institution_name AS institutionName, "
 			+ "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
 			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, " + "b.batch_image AS batchImage, "
 			+ "TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration " + "FROM batch b "
@@ -121,7 +118,7 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			+ "LEFT JOIN batch_trainers bt ON b.id = bt.batch_id " + "LEFT JOIN muser t ON t.user_id = bt.user_id "
 			+ "WHERE bt.user_id = :trainerId " + // Fetch batches assigned to the trainer
 			"GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
-			+ "b.institution_name, b.no_of_seats " + "ORDER BY b.start_date DESC "
+			+ "b.institution_name, b.no_of_seats " 
 			+ "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
 	List<Map<String, Object>> findAssignedBatchesForTrainerIdWithPagination(@Param("trainerId") Long trainerId,
 			@Param("pageSize") int pageSize, @Param("offset") int offset);
@@ -131,8 +128,8 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	long countAssignedBatchesForTrainerId(@Param("trainerId") Long trainerId);
 
 	@Query(value = "SELECT b.id AS id, "
-			+ "b.batch_id AS batchId, b.batch_title AS batchTitle, b.start_date AS startDate, "
-			+ "b.end_date AS endDate, b.institution_name AS institutionName, b.no_of_seats AS noOfSeats, "
+			+ "b.batch_id AS batchId, b.batch_title AS batchTitle "
+			+ " b.institution_name AS institutionName "
 			 + "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
 			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, "
 			+ "b.batch_image AS batchImage, "
@@ -144,8 +141,8 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			+ "JOIN muser u ON u.user_id = :trainerId " + "WHERE b.institution_name = u.institution_name "
 			+ "AND NOT EXISTS (" + "    SELECT 1 FROM batch_trainers bt2 "
 			+ "    WHERE bt2.batch_id = b.id AND bt2.user_id = :trainerId" + ") "
-			+ "GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
-			+ "b.institution_name, b.no_of_seats" + "ORDER BY b.start_date DESC "
+			+ "GROUP BY b.id, b.batch_id, b.batch_title, "
+			+ "b.institution_name" 
 			+ "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
 	List<Map<String, Object>> findBatchesNotAssignedForTrainerIdWithPagination(@Param("trainerId") Long trainerId,
 			@Param("pageSize") int pageSize, @Param("offset") int offset);
@@ -156,8 +153,7 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 
 	// =================below For users====================
 	@Query(value = "SELECT b.id AS id, " + "b.batch_id AS batchId, " + "b.batch_title AS batchTitle, "
-			+ "b.start_date AS startDate, " + "b.end_date AS endDate, " + "b.institution_name AS institutionName, "
-			+ "b.no_of_seats AS noOfSeats, " 
+			 + "b.institution_name AS institutionName, "
 			+ "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
 			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, " + "b.batch_image AS batchImage, "
 			+ "TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration " + // Format duration
@@ -165,8 +161,8 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			+ "LEFT JOIN course_detail c ON c.course_id = bc.course_id "
 			+ "LEFT JOIN batch_trainers bt ON b.id = bt.batch_id " + "LEFT JOIN muser t ON t.user_id = bt.user_id "
 			+ "LEFT JOIN batch_users bu ON b.id = bu.batch_id " + "WHERE bu.user_id = :userId "
-			+ "GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
-			+ "b.institution_name, b.no_of_seats" + "ORDER BY b.start_date DESC "
+			+ "GROUP BY b.id, b.batch_id, b.batch_title, "
+			+ "b.institution_name, b.no_of_seats" 
 			+ "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
 	List<Map<String, Object>> findBatchesByUserIdWithPagination(@Param("userId") Long userId,
 			@Param("pageSize") int pageSize, @Param("offset") int offset);
@@ -176,8 +172,8 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	long countBatchesByUserId(@Param("userId") Long userId);
 
 	@Query(value = "SELECT b.id AS id, "
-			+ "b.batch_id AS batchId, b.batch_title AS batchTitle, b.start_date AS startDate, "
-			+ "b.end_date AS endDate, b.institution_name AS institutionName, b.no_of_seats AS noOfSeats, "
+			+ "b.batch_id AS batchId, b.batch_title AS batchTitle,  "
+			+ " b.institution_name AS institutionName,"
 			+ "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
 			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, "
 			+ "b.batch_image AS batchImage,  "
@@ -189,7 +185,7 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			+ "JOIN muser u ON u.user_id = :userId " + "WHERE b.institution_name = u.institution_name "
 			+ "AND NOT EXISTS ( " + "    SELECT 1 FROM batch_users bu "
 			+ "    WHERE bu.batch_id = b.id AND bu.user_id = :userId " + ") "
-			+ "GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
+			+ "GROUP BY b.id, b.batch_id, b.batch_title,  "
 			+ "b.institution_name, b.no_of_seats"
 			+ "HAVING b.no_of_seats > (SELECT COUNT(bu.user_id) FROM batch_users bu WHERE bu.batch_id = b.id) "
 			+ "ORDER BY b.start_date DESC " + "LIMIT :pageSize OFFSET :offset", nativeQuery = true)

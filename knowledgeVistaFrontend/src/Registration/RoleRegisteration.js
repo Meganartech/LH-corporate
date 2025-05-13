@@ -452,6 +452,7 @@ const RoleRegistration = () => {
                     <div className="inputlikeeffect">
                       <PhoneInput
                         placeholder="Enter phone number"
+                        id="phone"
                         value={phoneNumber || ""}
                         onChange={handlePhoneChange}
                         className={`form-control ${errors.phone && "is-invalid"}`}

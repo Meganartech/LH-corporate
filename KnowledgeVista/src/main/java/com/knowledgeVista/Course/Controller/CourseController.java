@@ -299,9 +299,7 @@ public class CourseController {
 					if (opbatch.isPresent()) {
 						Batch existing = opbatch.get();
 						existing.getCourses().add(savedCourse);
-						if (existing.getNoOfSeats() == null) {
-							existing.setNoOfSeats(Noofseats);
-						}
+						
 						batchrepo.save(existing);
 					}
 				}

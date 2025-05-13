@@ -1,8 +1,8 @@
 package com.knowledgeVista.Batch;
 
-import java.time.LocalDate;
 import java.util.List;
 
+import com.knowledgeVista.Batch.Enrollment.BatchEnrollment;
 import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Meeting.zoomclass.Meeting;
 import com.knowledgeVista.User.Muser;
@@ -17,6 +17,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import lombok.Getter;
@@ -38,11 +39,12 @@ public class Batch {
     @Column(name = "batchTitle")
     private String batchTitle;
 
-    @Column(name = "startDate")
-    private LocalDate startDate;
+    @OneToMany(mappedBy = "batch", cascade = CascadeType.ALL)
+    private List<BatchEnrollment> enrollments;
 
-    @Column(name = "endDate")
-    private LocalDate endDate;
+    @Column(name = "durationInHours")
+    private Long durationInHours;
+
     
     @Lob
     @Column(name="BatchImage" ,length=1000000)
@@ -76,11 +78,7 @@ public class Batch {
     private List<Meeting> meetings;
     
     private String BatchUrl="/MyBatches";
-    @Column(name = "noOfSeats")
-    private Long noOfSeats;
-
-
-   
+  
     @PostLoad
     @PostPersist
     public void generateBatchId() {

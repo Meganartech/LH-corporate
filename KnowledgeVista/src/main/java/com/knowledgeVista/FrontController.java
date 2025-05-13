@@ -1352,15 +1352,13 @@ public class FrontController {
 
 	@PostMapping(value = "/batch/save")
 	public ResponseEntity<?> saveBatch(@RequestParam("batchTitle") String batchTitle,
-			@RequestParam("startDate") LocalDate startDate, @RequestParam("endDate") LocalDate endDate,
-			@RequestParam("noOfSeats") Long noOfSeats, 
+			@RequestParam("durationInHours") Long durationInHours,
 			@RequestParam("courses") String courses, // Assuming it's a JSON string of courses
-			@RequestParam("trainers") String trainers, // Assuming it's a JSON string of trainers
 			@RequestParam(value = "batchImage", required = false) MultipartFile batchImage,
 			@RequestHeader("Authorization") String token) {
 
 		// Your validation logic and service call here
-		return batchService.saveBatch(batchTitle, startDate, endDate, noOfSeats, courses, trainers, batchImage,
+		return batchService.saveBatch(batchTitle, durationInHours, courses, batchImage,
 				token);
 	}
 
@@ -1368,24 +1366,23 @@ public class FrontController {
 	public ResponseEntity<?> EditBatch(@PathVariable("batchId") Long batchId,
 			@RequestParam("batchTitle") String batchTitle, @RequestParam("startDate") LocalDate startDate,
 			@RequestParam("endDate") LocalDate endDate, @RequestParam("noOfSeats") Long noOfSeats,
-			@RequestParam("amount") Long amount, @RequestParam("courses") String courses, // Assuming it's a JSON string
-																							// of courses
+			@RequestParam("amount") Long amount, @RequestParam("courses") String courses, // Assuming it's a JSON string																		// of courses
 			@RequestParam("trainers") String trainers, // Assuming it's a JSON string of trainers
 			@RequestParam(value = "batchImage", required = false) MultipartFile batchImage,
 			@RequestHeader("Authorization") String token) {
 
 		// Your validation logic and service call here
-		return batchService.updateBatch(batchId, batchTitle, startDate, endDate, noOfSeats, amount, courses, trainers,
+		return batchService.updateBatch(batchId, batchTitle, startDate, endDate, noOfSeats, amount, courses, 
 				batchImage, token);
 	}
 
 	@PostMapping(value = "/batch/partial/save")
 	public ResponseEntity<?> saveBatchforCourseCreation(@RequestParam("batchTitle") String batchTitle,
-			@RequestParam("startDate") LocalDate startDate, @RequestParam("endDate") LocalDate endDate,
+			@RequestParam("durationInHours") Long durationInHours,
 			@RequestHeader("Authorization") String token) {
 
 		// Your validation logic and service call here
-		return batchService.SaveBatchforCourseCreation(batchTitle, startDate, endDate, token);
+		return batchService.SaveBatchforCourseCreation(batchTitle, durationInHours, token);
 	}
 
 	@GetMapping("/Batch/get")
@@ -1725,17 +1722,17 @@ public class FrontController {
 
 	// ====================================Assign
 	// Batch===============================================================
-	@PostMapping("/AssignCourse/Batch")
-	public ResponseEntity<?> assignBatchToUser(HttpServletRequest request, @RequestParam Long userId,
-			@RequestParam Long batchId, @RequestHeader("Authorization") String token) {
-		return assignBatch.assignCoursesToUser(request, userId, batchId, token);
-	}
-
-	@PostMapping("/Trainer/AssignCourse/Batch")
-	public ResponseEntity<?> assignBatchToTrainer(HttpServletRequest request, @RequestParam Long userId,
-			@RequestParam Long batchId, @RequestHeader("Authorization") String token) {
-		return assignBatch.assignBatchesToTrainer(request, userId, batchId, token);
-	}
+//	@PostMapping("/AssignCourse/Batch")
+//	public ResponseEntity<?> assignBatchToUser(HttpServletRequest request, @RequestParam Long userId,
+//			@RequestParam Long batchId, @RequestHeader("Authorization") String token) {
+//		return assignBatch.assignCoursesToUser(request, userId, batchId, token);
+//	}
+//
+//	@PostMapping("/Trainer/AssignCourse/Batch")
+//	public ResponseEntity<?> assignBatchToTrainer(HttpServletRequest request, @RequestParam Long userId,
+//			@RequestParam Long batchId, @RequestHeader("Authorization") String token) {
+//		return assignBatch.assignBatchesToTrainer(request, userId, batchId, token);
+//	}
 
 	// ================AssignCourse=======================
 	@GetMapping("/AssignCourse/student/courselist")
