@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.knowledgeVista.Batch.SearchDto;
+import com.knowledgeVista.Batch.Enrollment.service.BatchEnrollmentService;
 import com.knowledgeVista.Batch.Repo.BatchRepository;
 import com.knowledgeVista.Email.EmailService;
 import com.knowledgeVista.User.Muser;
@@ -26,6 +28,7 @@ import com.knowledgeVista.User.Approvals.MuserApprovalRepo;
 import com.knowledgeVista.User.Approvals.MuserApprovals;
 import com.knowledgeVista.User.Repository.MuserRepoPageable;
 import com.knowledgeVista.User.Repository.MuserRepositories;
+import com.knowledgeVista.User.Repository.MuserRoleRepository;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,10 +37,15 @@ import jakarta.servlet.http.HttpServletRequest;
 public class Listview {
 	@Autowired
 	private MuserRepositories muserrepositories;
+	@Autowired
+	private MuserRoleRepository roleRepo;
+	@Autowired
+	private BatchEnrollmentService BatchenrollService;
 	 @Autowired
 	 private JwtUtil jwtUtil;
 	 @Autowired 
 	 private MuserRepoPageable muserPageRepo;
+	
 	 @Autowired
 	 private MuserApprovalRepo MuserApproval;
 	@Autowired
@@ -666,7 +674,8 @@ public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String to
 				muser.setInactiveDescription("");
 				muser.setSkills(approval.getSkills());
 				muser.setCountryCode(approval.getCountryCode());
-				muserrepositories.save(muser);
+				Muser usersaved =muserrepositories.save(muser);
+				BatchenrollService.AssignDefaultBatchesPub(usersaved);
 				List<String> bcc = null;
 				List<String> cc = null;
 				String institutionname = approval.getInstitutionName();
@@ -905,6 +914,44 @@ public List<SearchDto> getBatchesOfUser(String token, String email) {
         return Collections.emptyList(); // Return an empty list in case of an error
     }
 }
+
+
+public ResponseEntity<?> getRoleList(String token) {
+    try {
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String role = jwtUtil.getRoleFromToken(token);
+        String email = jwtUtil.getUsernameFromToken(token);
+        Optional<Muser> opreq = muserrepositories.findByEmail(email);
+        String institution = "";
+
+        if (opreq.isPresent()) {
+            Muser requser = opreq.get();
+            institution = requser.getInstitutionName();
+            boolean adminIsactive = muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
+            if (!adminIsactive) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
+           List<Map<String,Object>> roles= roleRepo.fetchAllRoles();
+           
+           return ResponseEntity.ok(roles);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        logger.error("Error fetching users by role", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+}
+
 
 
 }

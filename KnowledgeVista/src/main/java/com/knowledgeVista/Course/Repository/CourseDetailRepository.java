@@ -44,14 +44,15 @@ public interface CourseDetailRepository  extends JpaRepository<CourseDetail,Long
 	 @Query("SELECT COALESCE(SUM(cd.Noofseats - SIZE(cd.users)), 0) FROM CourseDetail cd WHERE cd.institutionName = :institutionName")
 	 Long countTotalAvailableSeats(@Param("institutionName") String institutionName);
 
-	
-	 @Query("SELECT c.courseId, c.courseName, c.amount " +
+	 @Query("SELECT new com.knowledgeVista.Course.CourseDetailDto(c.courseId, c.courseName, c.Duration) " +
 		       "FROM CourseDetail c " +
-		       "WHERE (:courseName IS NOT NULL AND :courseName <> '' AND LOWER(c.courseName) LIKE LOWER(CONCAT('%', :courseName, '%'))) " +
-		       "AND (:institutionName IS NOT NULL AND :institutionName <> '' AND LOWER(c.institutionName) LIKE LOWER(CONCAT('%', :institutionName, '%')))")
-		List<Object[]> searchCourseIdAndNameByCourseNameByInstitution(
-		    @Param("courseName") String courseName,
-		    @Param("institutionName") String institutionName);
+		       "WHERE (:courseName IS NULL OR LOWER(c.courseName) LIKE LOWER(CONCAT('%', :courseName, '%'))) " +
+		       "AND (:institutionName IS NULL OR LOWER(c.institutionName) = LOWER(:institutionName))")
+		List<CourseDetailDto> searchCourses(@Param("courseName") String courseName,
+		                                    @Param("institutionName") String institutionName);
+
+
+
 
 
 		@Query("SELECT u.email  " +

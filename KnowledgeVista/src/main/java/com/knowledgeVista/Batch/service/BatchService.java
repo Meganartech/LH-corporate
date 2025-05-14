@@ -26,6 +26,7 @@ import com.knowledgeVista.Batch.BatchDto;
 import com.knowledgeVista.Batch.BatchImageDTO;
 import com.knowledgeVista.Batch.Repo.BatchRepository;
 import com.knowledgeVista.Course.CourseDetail;
+import com.knowledgeVista.Course.CourseDetailDto;
 import com.knowledgeVista.Course.CourseDetailDto.courseIdNameImg;
 import com.knowledgeVista.Course.Repository.CourseDetailRepository;
 import com.knowledgeVista.User.Muser;
@@ -46,7 +47,7 @@ public class BatchService {
 	private BatchRepository batchrepo;
 	private static final Logger logger = LoggerFactory.getLogger(BatchService.class);
 
-	public List<Map<String, Object>> searchCourses(String courseName, String token) {
+	public List<CourseDetailDto> searchCourses(String courseName, String token) {
 		// Extract email from the JWT token
 		String email = jwtUtil.getUsernameFromToken(token);
 
@@ -54,13 +55,10 @@ public class BatchService {
 		String institutionName = muserRepo.findinstitutionByEmail(email);
 
 		// Query the course details repository
-		List<Object[]> results = courseDetailRepository.searchCourseIdAndNameByCourseNameByInstitution(courseName,
+		List<CourseDetailDto> results = courseDetailRepository.searchCourses(courseName,
 				institutionName);
+		return results;
 
-		// Convert List<Object[]> to List<Map<String, Object>>
-		return results.stream().map(row -> Map.of("courseId", row[0], // Map courseId to the first element of the row
-				"courseName", row[1], // Map courseName to the second element of the row
-				"amount", row[2])).collect(Collectors.toList());
 	}
 
 	public List<Map<String, Object>> searchbatch(String batchTitle, String token) {
@@ -196,8 +194,8 @@ public class BatchService {
 	}
 
 	// =============================Edit Batch==============================
-	public ResponseEntity<?> updateBatch(Long batchId, String batchTitle, LocalDate startDate, LocalDate endDate,
-			Long noofSeats, Long amount, String coursesJson, MultipartFile batchImage,
+	public ResponseEntity<?> updateBatch(Long batchId, String batchTitle, Long durationInHours,
+			 String coursesJson, MultipartFile batchImage,
 			String token) {
 		try {
 // Validate the token
@@ -250,8 +248,12 @@ public class BatchService {
 
 
 // Update batch details
+			if (batchTitle != null && !batchTitle.isEmpty()) {
 			batch.setBatchTitle(batchTitle);
-			
+			}
+			if(durationInHours !=null && durationInHours<0) {
+				batch.setDurationInHours(durationInHours);
+			}
 
 			if (batchImage != null && !batchImage.isEmpty()) {
 				batch.setBatchImage(batchImage.getBytes());

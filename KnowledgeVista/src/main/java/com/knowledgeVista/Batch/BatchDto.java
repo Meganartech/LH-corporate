@@ -1,7 +1,5 @@
 package com.knowledgeVista.Batch;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,11 +17,7 @@ public class BatchDto {
 	private Long id;
 	private String batchId;
 	private String batchTitle;
-	private LocalDate startDate;
-	private LocalDate endDate;
 	private String institutionName;
-	private Long noOfSeats;
-	private Long amount;
 	private String courseNames; // For aggregated course names
 	private String trainerNames; // For aggregated trainer names
 	private List<CourseDto> courses;
@@ -31,15 +25,14 @@ public class BatchDto {
 	private List<String> course;
 	private List<String> trainer;
 	private byte[] batchImage;
-	private String duration; // Add this for formatted duration
-    // Constructor, getters and setters
+	private Long durationInHours;
 	  public BatchDto(Batch batch) {
 	        this.id = batch.getId();
 	        this.batchId = batch.getBatchId();
 	        this.batchTitle = batch.getBatchTitle();
 	        this.batchImage = batch.getBatchImage();
 	        this.institutionName = batch.getInstitutionName();
-	       
+	        this.durationInHours=batch.getDurationInHours();
 	        // Extract course names
 	        if (batch.getCourses() != null) {
 	            this.course = batch.getCourses().stream()
@@ -64,46 +57,17 @@ public class BatchDto {
 	       
 	    }
 
-
-    public String getDuration() {
-        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM"); // "MMM" for abbreviated month
-        String startMonth = this.startDate.format(monthFormatter);
-        String endMonth = this.endDate.format(monthFormatter);
-        return startMonth + " to " + endMonth;
-    }
-	// Constructor matching the query
-	public BatchDto(Long id, String batchId, String batchTitle, LocalDate startDate, LocalDate endDate,
-			String institutionName, Long noOfSeats, Long amount, String courseNames, String trainerNames) {
-		this.id = id;
-		this.batchId = batchId;
-		this.batchTitle = batchTitle;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.institutionName = institutionName;
-		this.noOfSeats = noOfSeats;
-		this.amount = amount;
-		this.courseNames = courseNames;
-		this.trainerNames = trainerNames;
-	}
+	  public BatchDto(Long id, String batchId, String batchTitle, String institutionName,
+              byte[] batchImage, Long durationInHours) {
+  this.id = id;
+  this.batchId = batchId;
+  this.batchTitle = batchTitle;
+  this.institutionName = institutionName;
+  this.batchImage = batchImage;
+  this.durationInHours = durationInHours;
+  this.course = new ArrayList<>();
+  this.trainer = new ArrayList<>();
+}
 
 	
-	public BatchDto(Long id, String batchId, String batchTitle, LocalDate startDate, LocalDate endDate,
-			String institutionName, Long noOfSeats, Long amount, String courseNames, String trainerNames,
-			List<CourseDto> courses, List<TrainerDto> trainers, byte[] batchImage, String duration) {
-		super();
-		this.id = id;
-		this.batchId = batchId;
-		this.batchTitle = batchTitle;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.institutionName = institutionName;
-		this.noOfSeats = noOfSeats;
-		this.amount = amount;
-		this.courseNames = courseNames;
-		this.trainerNames = trainerNames;
-		this.courses = courses;
-		this.trainers = trainers;
-		this.batchImage = batchImage;
-		this.duration = duration;
 	}
-}

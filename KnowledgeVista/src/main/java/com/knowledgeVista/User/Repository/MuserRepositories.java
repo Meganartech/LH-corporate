@@ -218,6 +218,9 @@ public interface MuserRepositories extends JpaRepository<Muser, Long> {
 
 	@Query("SELECT u FROM Muser u WHERE u.role.roleId = ?1")
 	Optional<Muser> findByroleid(Long roleId);
+	
+	@Query("SELECT u FROM Muser u WHERE u.role.roleId = ?1")
+	List<Muser> findAllByroleid(Long roleId);
 
 	@Query("SELECT u FROM Muser u WHERE u.role.roleId = ?1")
 	List<Muser> findByroleidSAS(Long roleId);

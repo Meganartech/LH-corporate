@@ -108,7 +108,6 @@ import AddMoreMQuestion from "./course/ModuleTest.js/AddMoreMQuestion.js";
 import EditModuleQuestion from "./course/ModuleTest.js/EditModuleQuestion.js";
 import SheduleModuleTest from "./course/ModuleTest.js/SheduleModuleTest.js";
 import StartModuleTest from "./course/ModuleTest.js/StartModuleTest.js";
-import Partialpaymentsetting from "./course/Components/Partialpaymentsetting.js";
 import CreateAssignment from "./Assignment/CreateAssignment.js";
 import GetAssignments from "./Assignment/GetAssignments.js";
 import EditAssignment from "./Assignment/EditAssignment.js";
@@ -122,6 +121,8 @@ import NewRole from "./Registration/NewRole.js";
 import ViewDynamicRole from "./DynamicRole/ViewDynamicRole";
 import EditDynamicRole from "./DynamicRole/ViewDynamicRole.js";
 import RoleRegistration from "./Registration/RoleRegisteration.js";
+import RoleList from "./DynamicRole/RoleList.js";
+import ManageRole from "./DynamicRole/ManageRole.js";
 function App() {
   useEffect(() => {
     pcoded();
@@ -1149,16 +1150,6 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/batch/save/partpay/:batchTitle/:batchId"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authorizationRequired={true} onlyadmin={true}>
-                    <Partialpaymentsetting />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
            
             <Route
               path="/batch/addNew"
@@ -1327,6 +1318,35 @@ function App() {
                 </ErrorBoundary>
               }
             />
+
+             <Route
+              path="/role/ViewAll"
+              element={
+                <ErrorBoundary>
+                  <PrivateRoute
+                    authenticationRequired={true}
+                    authorizationRequired={true}
+                  >
+                    <RoleList />
+                  </PrivateRoute>
+                </ErrorBoundary>
+              }
+            />
+            
+             <Route
+              path="/manage/role"
+              element={
+                <ErrorBoundary>
+                  <PrivateRoute
+                    authenticationRequired={true}
+                    authorizationRequired={true}
+                  >
+                    <ManageRole />
+                  </PrivateRoute>
+                </ErrorBoundary>
+              }
+            />
+
 
 
             {/* SysAdminRoutes */}

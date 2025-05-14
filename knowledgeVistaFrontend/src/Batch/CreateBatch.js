@@ -96,13 +96,13 @@ const CreateBatch = () => {
         updatedCourses= prevSelected
       } else {
         // Add the course if not selected
-        updatedCourses= [...prevSelected, { courseId: course.courseId, courseName: course.courseName ,amount:course.amount}];
+        updatedCourses= [...prevSelected, { courseId: course.courseId, courseName: course.courseName ,amount:course.amount,duration:course.duration}];
       }
  
     setbatch((prevBatch) => ({
       ...prevBatch,
       courses:updatedCourses,
-      amount: Number(prevBatch.amount) + Number(course.amount), // Update batch amount
+      durationInHours: Number(prevBatch.durationInHours) + Number(course.duration), // Update batch amount
     }));
     return updatedCourses;
   })
@@ -123,11 +123,10 @@ const CreateBatch = () => {
           (courseprev) => courseprev.courseId !== course.courseId
         );
         setbatch((prevBatch) => {
-         
           return {
             ...prevBatch,
             courses: updatedCourses,
-            amount: Number(prevBatch.amount) - Number(course.amount), // Ensure proper subtraction
+            durationInHours: Number(prevBatch.durationInHours) - Number(course.duration), 
           };
         });
     
@@ -209,7 +208,6 @@ const CreateBatch = () => {
     if (!batch?.batchTitle) newErrors.batchTitle = "Batch title is required.";
     if (!batch?.durationInHours) newErrors.durationInHours = "Batch Duration is required.";
     if(!batch?.courses?.length<0)newErrors.courses="select atleast one Course"
-     if(!batch?.trainers?.length<0)newErrors.trainers="select atleast one trainer"
     setErrors(newErrors);
     if (Object.keys(newErrors)?.length > 0) {
       return;
@@ -217,8 +215,7 @@ const CreateBatch = () => {
   
     const formData = new FormData();
     formData.append("batchTitle", batch.batchTitle);
-    formData.append("courses", JSON.stringify(batch.courses)); // Sending courses as a JSON string
-    formData.append("trainers", JSON.stringify(batch.trainers));
+    formData.append("courses", JSON.stringify(batch.courses)); 
     formData.append("durationInHours",batch.durationInHours);
  
     // Append batch image if exists
@@ -242,19 +239,14 @@ const CreateBatch = () => {
         })
         setbatch({
           batchTitle: "",
-          courses: [],
-          trainers: [],
+          courses: []
         });
         setSelectedCourse([]);
         setErrors({});
         const batchId=response?.data?.batchId;
         const batchTitle=response?.data?.batchName;
-        
-        if(role==="ADMIN"){
-          navigate(`/batch/save/partpay/${batchTitle}/${batchId}`)
-        }else{
         navigate("/batch/viewall")
-        }
+        
       }
     } catch (error) {
       console.error("Error saving batch:", error);
@@ -334,7 +326,7 @@ const CreateBatch = () => {
                       <input
                         type="input"
                         id="customeinpu"
-                        className={`form-control ${errors.trainers && "is-invalid"} `} 
+                        className={`form-control ${errors.courses && "is-invalid"} `} 
                         placeholder="search Course..."
                         onChange={searchCourses}
                         value={searchQuerycourse}

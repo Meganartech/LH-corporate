@@ -21,26 +21,20 @@ const CourseCreation = () => {
     courseName: "",
     courseDescription: "",
     courseCategory: "",
-    courseAmount: "",
     Duration: "",
-    Noofseats: "",
     courseImage: "",
   });
   const courseName = useRef(null);
   const courseCategory = useRef(null);
   const courseDescription = useRef(null);
-  const courseAmount = useRef(null);
   const Duration = useRef(null);
-  const Noofseats = useRef(null);
   const courseImage = useRef(null);
   // Initial state for form data
   const [formData, setFormData] = useState({
     courseName: "",
     courseDescription: "",
     courseCategory: "",
-    courseAmount: "",
     Duration: "",
-    Noofseats: "",
     courseImage: null,
     base64Image: null,
     batches:selectedBatches
@@ -135,7 +129,7 @@ const CourseCreation = () => {
 
     // Parse value to a number where necessary
     const numericValue =
-      name === "courseAmount" || name === "Duration" || name === "Noofseats"
+      name === "Duration" 
         ? parseFloat(value)
         : value;
 
@@ -164,19 +158,11 @@ const CourseCreation = () => {
         ? "Course Description should not exceed 100 characters" 
         : "";
         break;
-      case "courseAmount":
-        error =
-          numericValue < 0
-            ? "Course amount must be greater than or equal to 0"
-            : "";
-        break;
+     
       case "Duration":
         error = numericValue < 1 ? "Duration must be greater than 0" : "";
         break;
-      case "Noofseats":
-        error =
-          numericValue < 1 ? "Number of seats must be greater than 0" : "";
-        break;
+     
       default:
         break;
     }
@@ -223,25 +209,13 @@ const CourseCreation = () => {
         block: "nearest",
         inline: "start",
       });
-    } else if (errors.courseAmount) {
-      courseAmount.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "start",
-      });
-    } else if (errors.Duration) {
+    }  else if (errors.Duration) {
       Duration.current.scrollIntoView({
         behavior: "smooth",
         block: "nearest",
         inline: "start",
       });
-    } else if (errors.Noofseats) {
-      Noofseats.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "start",
-      });
-    }
+    } 
   };
 
   useEffect(() => {
@@ -310,9 +284,7 @@ const CourseCreation = () => {
       "courseName",
       "courseDescription",
       "courseCategory",
-      "courseAmount",
       "Duration",
-      "Noofseats",
       "courseImage"
     ];
 
@@ -353,11 +325,9 @@ const CourseCreation = () => {
       formDataToSend.append("courseName", formData.courseName.trim());
       formDataToSend.append("courseDescription", formData.courseDescription);
       formDataToSend.append("courseCategory", formData.courseCategory);
-      formDataToSend.append("courseAmount", formData.courseAmount);
       formDataToSend.append("courseImage", formData.courseImage);
       formDataToSend.append("Trainer", formData.Trainer);
       formDataToSend.append("Duration", formData.Duration);
-      formDataToSend.append("Noofseats", formData.Noofseats);
       formDataToSend.append("batches",JSON.stringify(selectedBatches))
      
 
@@ -530,14 +500,14 @@ const CourseCreation = () => {
               )}
 
               {/* Duration, Number of Seats, and Course Amount */}
-              <div className="form-group row p-3">
-                <div className="col-sm-7" ref={Duration}>
-                  <div className="row">
+              <div className="form-group row ">
+              
+               
                     <label htmlFor="Duration"
-                     className="col-form-label col-sm-5 p-0 pt-2">
+                   className="col-sm-3 col-form-label" ref={Duration}>
                       Duration (Hours) <span className="text-danger">*</span>
                     </label>
-                    <div className="col">
+                    <div className="col-sm-9">
                       <input
                         type="number"
                         placeholder="Duration"
@@ -550,29 +520,9 @@ const CourseCreation = () => {
                       />
                       <div className="invalid-feedback">{errors.Duration}</div>
                     </div>
-                  </div>
-                </div>
+           
 
-                <div className="col-sm-5" ref={Noofseats}>
-                  <div className="row">
-                    <label htmlFor="Noofseats" className="col-form-label col-sm-5">
-                      Number of Seats <span className="text-danger">*</span>
-                    </label>
-                    <div className="col">
-                      <input
-                        type="number"
-                        placeholder="No Of Seats"
-                        id="Noofseats"
-                        name="Noofseats"
-                        className={`form-control ${errors.Noofseats && "is-invalid"}`}
-                        value={formData.Noofseats}
-                        onChange={handleChange}
-                        required
-                      />
-                      <div className="invalid-feedback">{errors.Noofseats}</div>
-                    </div>
-                  </div>
-                </div>
+               
               </div>
               <div className="form-group row">
                   <label className="col-sm-3 col-form-label">
@@ -643,27 +593,7 @@ const CourseCreation = () => {
 
                   </div>
                 </div>
-              <div className="form-group row" ref={courseAmount}>
-                 
-                    <label htmlFor="courseAmount" className="col-sm-3 col-form-label">
-                      Course Amount <span className="text-danger">*</span>
-                    </label>
-                    <div className="col-sm-9">
-                      <input
-                        type="number"
-                        placeholder="Amount"
-                        style={{ marginBottom: "4px" }}
-                        id="courseAmount"
-                        name="courseAmount"
-                        value={formData.courseAmount}
-                        className={`form-control ${errors.courseAmount && "is-invalid"}`}
-                        onChange={handleChange}
-                        required
-                      />
-                      <div className="invalid-feedback">{errors.courseAmount}</div>
-                    </div>
-              
-                </div>
+           
               {/* Submit and Cancel Buttons */}
             </form>
             <div className="cornerbtn">

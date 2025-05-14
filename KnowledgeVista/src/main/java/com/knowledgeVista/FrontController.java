@@ -32,6 +32,7 @@ import com.knowledgeVista.Batch.Assignment.Assignment;
 import com.knowledgeVista.Batch.Assignment.AssignmentQuestion;
 import com.knowledgeVista.Batch.Assignment.Service.AssignmentService;
 import com.knowledgeVista.Batch.Assignment.Service.AssignmentService2;
+import com.knowledgeVista.Batch.Enrollment.service.BatchEnrollmentService;
 import com.knowledgeVista.Batch.Event.EventController;
 import com.knowledgeVista.Batch.Weightage.Weightage;
 import com.knowledgeVista.Batch.Weightage.service.weightageService;
@@ -198,6 +199,9 @@ public class FrontController {
 
 	@Autowired
 	private AssignmentService2 assignmentService2;
+	
+	@Autowired 
+	private BatchEnrollmentService batchEnrollmentService;
 
 //-------------------ACTIVE PROFILE------------------
 	@GetMapping("/Active/Environment")
@@ -233,9 +237,9 @@ public class FrontController {
 	public ResponseEntity<?> addCourse(@RequestParam("courseImage") MultipartFile file,
 			@RequestParam("courseName") String courseName, @RequestParam("courseDescription") String description,
 			@RequestParam("courseCategory") String category, @RequestParam("Duration") Long Duration,
-			@RequestParam("Noofseats") Long Noofseats, @RequestParam("batches") String batches,
-			@RequestParam("courseAmount") Long amount, @RequestHeader("Authorization") String token) {
-		return courseController.addCourse(file, courseName, description, category, Duration, Noofseats, batches, amount,
+			 @RequestParam("batches") String batches,
+			 @RequestHeader("Authorization") String token) {
+		return courseController.addCourse(file, courseName, description, category, Duration,  batches,
 				token);
 	}
 
@@ -246,13 +250,11 @@ public class FrontController {
 			@RequestParam(value = "courseName", required = false) String courseName,
 			@RequestParam(value = "courseDescription", required = false) String description,
 			@RequestParam(value = "courseCategory", required = false) String category,
-			@RequestParam(value = "Noofseats", required = false) Long Noofseats,
 			@RequestParam(value = "Duration", required = false) Long Duration,
-			@RequestParam(value = "courseAmount", required = false) Long amount,
 			@RequestHeader("Authorization") String token) {
 
-		return courseController.updateCourse(token, courseId, file, courseName, description, category, Noofseats,
-				Duration, amount);
+		return courseController.updateCourse(token, courseId, file, courseName, description, category, 
+				Duration);
 
 	}
 
@@ -838,6 +840,10 @@ public class FrontController {
 		return listview.searchStudentsOfTrainer(username, email, phone, dob, skills, page, size, token);
 	}
 
+	 @GetMapping("/roles/getAll")
+	    public ResponseEntity<?> getRoleList( @RequestHeader("Authorization") String token) {
+	        return listview.getRoleList(token);
+	    }
 //------------------------MuserRegistrationController------------------------------
 	@PostMapping("/Student/register")
 	public ResponseEntity<?> RegisterStudent(HttpServletRequest request,
@@ -1333,7 +1339,7 @@ public class FrontController {
 
 	/// ======================Batch Service========================
 	@GetMapping("/searchCourse")
-	public List<Map<String, Object>> searchCourses(@RequestParam String courseName,
+	public List<CourseDetailDto> searchCourses(@RequestParam String courseName,
 			@RequestHeader("Authorization") String token) {
 		return batchService.searchCourses(courseName, token);
 	}
@@ -1364,16 +1370,13 @@ public class FrontController {
 
 	@PatchMapping(value = "/batch/Edit/{batchId}")
 	public ResponseEntity<?> EditBatch(@PathVariable("batchId") Long batchId,
-			@RequestParam("batchTitle") String batchTitle, @RequestParam("startDate") LocalDate startDate,
-			@RequestParam("endDate") LocalDate endDate, @RequestParam("noOfSeats") Long noOfSeats,
-			@RequestParam("amount") Long amount, @RequestParam("courses") String courses, // Assuming it's a JSON string																		// of courses
-			@RequestParam("trainers") String trainers, // Assuming it's a JSON string of trainers
+			@RequestParam("courses") String courses,
+			@RequestParam("batchTitle") String batchTitle,	@RequestParam("durationInHours") Long durationInHours,
 			@RequestParam(value = "batchImage", required = false) MultipartFile batchImage,
 			@RequestHeader("Authorization") String token) {
 
 		// Your validation logic and service call here
-		return batchService.updateBatch(batchId, batchTitle, startDate, endDate, noOfSeats, amount, courses, 
-				batchImage, token);
+		return batchService.updateBatch(batchId, batchTitle, durationInHours, courses, batchImage, token);
 	}
 
 	@PostMapping(value = "/batch/partial/save")
@@ -1453,7 +1456,6 @@ public class FrontController {
 	@GetMapping("/user/getOtherbatches/{userId}")
 	public ResponseEntity<?> getOtherBatches(@PathVariable Long userId, @RequestParam int page, @RequestParam int size,
 			@RequestHeader("Authorization") String token) {
-		System.out.println(size);
 		return batchService2.getOtherBatches(token, userId, page, size);
 	}
 
@@ -1469,6 +1471,19 @@ public class FrontController {
 			@RequestParam int size, @RequestHeader("Authorization") String token) {
 		return batchService2.getOtherBatchesForTrainer(token, userId, page, size);
 	}
+	
+	@GetMapping("/view/OtherBatches")
+	public ResponseEntity<?> getOtherBatchesforRole(@RequestParam Long roleId, @RequestParam int page, @RequestParam int size,
+			@RequestHeader("Authorization") String token) {
+		return batchService2.getOtherBatchesforRole(token, roleId, page, size);
+	}
+	
+	@GetMapping("/view/Batches")
+	public ResponseEntity<?> getBatchesforRole(@RequestParam Long roleId, @RequestParam int page, @RequestParam int size,
+			@RequestHeader("Authorization") String token) {
+		return batchService2.getBatchesforRole(token, roleId, page, size);
+	}
+
 
 	// -------------------Attendance Service---------------
 
@@ -1868,5 +1883,10 @@ public class FrontController {
     @GetMapping("/roles/all")
     public List<MuserRoles> getAllRoles() {
         return adduser.getAllRoles();
+    }
+    //BatchEnrollmentService======================================
+    @PostMapping("/roles/AssignBatch")
+    public ResponseEntity<?> AssignBatchToRole(@RequestParam Long roleId, @RequestParam Long batchId,  @RequestHeader("Authorization") String token) {
+        return batchEnrollmentService.AssignBatchTORole(token, roleId, batchId);
     }
 }

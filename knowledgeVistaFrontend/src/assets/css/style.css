@@ -25518,7 +25518,7 @@ div.dtk-focus-alt table.dataTable tbody th.focus {
   overflow: hidden;  /*Extra Added*/
 }
 .selectedBatch{
-  border: 2px solid var(--primary);
+  border: 3px solid var(--primary);
 }
 .batch{
   border-radius: 8px;

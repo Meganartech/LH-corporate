@@ -34,6 +34,12 @@ public class CourseDetailDto {
 		this.institutionName = institutionName;
 		this.noOfSeats = noOfSeats;
 	}
+	public CourseDetailDto(Long courseId, String courseName, Long duration) {
+		super();
+		this.courseId = courseId;
+		this.courseName = courseName;
+		this.duration = duration;
+	}
 	@Getter
 	@Setter
 	@NoArgsConstructor

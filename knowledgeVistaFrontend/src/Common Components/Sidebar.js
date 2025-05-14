@@ -351,6 +351,23 @@ useEffect(() => {
                     <span className="pcoded-mtext">People</span>
                   </a>
                   <ul className="pcoded-submenu">
+                       <li>
+                      <a
+                        href="#"
+                        data-path="/role/ViewAll"
+                        onClick={(e) => {
+                          handleClick(e, "/role/ViewAll");
+                        }}
+                        className="nav-link "
+                      >
+                        <span className="pcoded-micon">
+                          <i className="fa-solid fa-gear"></i>
+                        </span>
+                        <span className="pcoded-mtext">
+                         Manage
+                        </span>
+                      </a>
+                    </li>
                     <li>
                       <a
                         href="#"

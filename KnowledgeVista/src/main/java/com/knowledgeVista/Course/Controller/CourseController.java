@@ -251,7 +251,7 @@ public class CourseController {
 	// --------------------------working------------------------------------
 
 	public ResponseEntity<?> addCourse(MultipartFile file, String courseName, String description, String category,
-			Long Duration, Long Noofseats, String batches, Long amount, String token) {
+			Long Duration,  String batches,  String token) {
 		try {
 
 			if (!jwtUtil.validateToken(token)) {
@@ -284,10 +284,8 @@ public class CourseController {
 				courseDetail.setCourseName(courseName);
 				courseDetail.setCourseDescription(description);
 				courseDetail.setCourseCategory(category);
-				courseDetail.setAmount(amount);
 				courseDetail.setDuration(Duration);
 				courseDetail.setInstitutionName(institution);
-				courseDetail.setNoofseats(Noofseats);
 				courseDetail.setCourseImage(file.getBytes());
 
 				CourseDetail savedCourse = coursedetailrepository.save(courseDetail);
@@ -299,7 +297,6 @@ public class CourseController {
 					if (opbatch.isPresent()) {
 						Batch existing = opbatch.get();
 						existing.getCourses().add(savedCourse);
-						
 						batchrepo.save(existing);
 					}
 				}
@@ -335,97 +332,11 @@ public class CourseController {
 		}
 	}
 
-//``````````````````````````````````````````FOR TRAINER COURSE CREATION````````````````````````````````````````
-
-//	    public ResponseEntity<?> addCourseByTrainer( MultipartFile file,  String courseName, 
-//	    		String description, String category,
-//	    		Long Duration, Long Noofseats, Long amount, String token) 
-//	    {
-//		 if (!jwtUtil.validateToken(token)) {
-//	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//	     }
-//
-//	     jwtUtil.getRoleFromToken(token);
-//	     String email=jwtUtil.getUsernameFromToken(token);
-//	       Optional<Muser> optrainer=muserRepository.findByEmail(email);
-//	       if(optrainer.isPresent()) {
-//	    	   String username="";
-//	    		Muser trainer =optrainer.get();
-//	    		 username=trainer.getUsername();
-//	    		 String institution= trainer.getInstitutionName();
-//	    		 Long coursecount=coursedetailrepository.countCourseByInstitutionName(institution);
-//		    	 Long MaxCount=licencerepo.FindCourseCountByinstitution(institution);
-//		    	 if(coursecount+1 >MaxCount) {
-//		    		 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Course Limit Reached Add More Course By Upgrading Your Licence");
-//		    	 }
-//	    		 boolean adminIsactive=muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-//		   	    	if(!adminIsactive) {
-//		   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//		   	    	}
-//	    		 if(! "TRAINER".equals(trainer.getRole().getRoleName())) {
-//	                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//	    		 }
-//	        CourseDetail courseDetail = new CourseDetail();
-//	        courseDetail.setCourseName(courseName);
-//	        courseDetail.setCourseDescription(description);
-//	        courseDetail.setCourseCategory(category);
-//	        courseDetail.setAmount(amount);
-//	        courseDetail.setDuration(Duration);
-//	        courseDetail.setInstitutionName(institution);
-//	        courseDetail.setNoofseats(Noofseats);
-//	        try {
-//				courseDetail.setCourseImage(file.getBytes());
-//			} catch (IOException e) {
-//				courseDetail.setCourseImage(null);
-//				e.printStackTrace();    logger.error("", e);;
-//			}
-//	       
-//	        
-//	        // Save the CourseDetail object
-//	        CourseDetail savedCourse = coursedetailrepository.save(courseDetail);
-//	        
-//	        // Update the courseUrl based on the saved course's ID
-//	        String courseUrl = "/courses/"+savedCourse.getCourseName()+"/" + savedCourse.getCourseId();
-//	        savedCourse.setCourseUrl(courseUrl);
-//	       
-//
-//	        // Save the updated CourseDetail object
-//	       CourseDetail saved= coursedetailrepository.save(savedCourse);
-//	       
-//	       
-//	       Long courseId=saved.getCourseId();
-//	       String coursename =saved.getCourseName();
-//	      
-//	    		trainer.getAllotedCourses().add(saved);
-//	    		  muserRepository.save(trainer);
-//	    	
-//	    	String coursenametosend =saved.getCourseName();
-//		       String heading="New Course Added !";
-//		       String link=courseUrl;
-//		       String notidescription= "A new Course "+coursenametosend + " was added " + saved.getCourseDescription();
-//		      Long NotifyId =  notiservice.createNotification("CourseAdd",username,notidescription ,email,heading,link, Optional.ofNullable(file));
-//		        if(NotifyId!=null) {
-//		        	List<String> notiuserlist = new ArrayList<>(); 
-//		        	notiuserlist.add("ADMIN");
-//		        	notiuserlist.add("USER");
-//		        	notiuserlist.add("TRAINER");
-//		        	notiservice.CommoncreateNotificationUser(NotifyId,notiuserlist,institution);
-//		        }
-//	       Map<String, Object> response = new HashMap<>();
-//        response.put("message", "savedSucessfully");
-//        response.put("courseId", courseId);
-//        response.put("coursename", coursename);
-//	         return ResponseEntity.ok(response);
-//	     }else {
-//	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//	     }
-//	    }
-//	
 
 	// --------------------------working------------------------------------
 
 	public ResponseEntity<?> updateCourse(String token, Long courseId, MultipartFile file, String courseName,
-			String description, String category, Long Noofseats, Long Duration, Long amount) {
+			String description, String category,  Long Duration) {
 		try {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -475,15 +386,7 @@ public class CourseController {
 					if (Duration != null) {
 						existingCourseDetail.setDuration(Duration);
 					}
-					if (Noofseats != null) {
-						Long count = existingCourseDetail.getUserCount();
-						if (count <= Noofseats) {
-							existingCourseDetail.setNoofseats(Noofseats);
-						}
-					}
-					if (amount != null) {
-						existingCourseDetail.setAmount(amount);
-					}
+					
 					existingCourseDetail.setUsers(null);
 					existingCourseDetail.setVideoLessons(null);
 					if (file != null) {

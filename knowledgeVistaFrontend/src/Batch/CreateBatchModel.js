@@ -7,22 +7,13 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'; 
 
 const CreateBatchModel = ({ setSelectedBatches, closeModal,setErrors }) => {
-  const today = new Date();
-  const formattedToday = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-
-  // Calculate the same date next month
-  const nextMonthDate = new Date(today);
-  nextMonthDate.setMonth(today.getMonth() + 1); // Add one month
-  const formattedNextMonthDate = nextMonthDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
   const [batchTitle, setBatchTitle] = useState('First batch');
-  const [startDate, setStartDate] = useState(formattedToday); // Set initial start date to today
-  const [endDate, setEndDate] = useState(formattedNextMonthDate);
-
+  const [durationInHours,setdurationInHours]=useState('300');
   const handleSubmit = async () => {
     const token = sessionStorage.getItem('token'); // Get the token from sessionStorage
 
-    if (!batchTitle || !startDate || !endDate) {
+    if (!batchTitle || !durationInHours) {
       alert('Please fill all fields before submitting!');
       return;
     }
@@ -34,8 +25,7 @@ const CreateBatchModel = ({ setSelectedBatches, closeModal,setErrors }) => {
         {
           params: {
             batchTitle,
-            startDate,
-            endDate,
+            durationInHours
           },
           headers: {
             Authorization: token, // Add the token as a header
@@ -45,7 +35,6 @@ const CreateBatchModel = ({ setSelectedBatches, closeModal,setErrors }) => {
 
       if (response.status === 200) {
         const batch = response.data;
-        console.log("batch", batch);
 
         setSelectedBatches((prev) => [
           ...prev, // Spread the previous state (array)
@@ -101,35 +90,16 @@ const CreateBatchModel = ({ setSelectedBatches, closeModal,setErrors }) => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="start-date" className="col-form-label">
-                  Start Date:
+                <label htmlFor="durationInHours" className="col-form-label">
+                  Duration (Hours):
                 </label>
                 <input
-                  type="date"
+                  type="number"
                   className="form-control"
-                  id="start-date"
-                  min={formattedToday}
-                  value={startDate}
-                  onChange={(e) => {
-                    const newStartDate = e.target.value;
-                    setStartDate(newStartDate);
-                    if (newStartDate > endDate) {
-                      setEndDate(newStartDate); // Adjust end date if it is before the new start date
-                    }
-                  }}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="end-date" className="col-form-label">
-                  End Date:
-                </label>
-                <input
-                  type="date"
-                  className="form-control"
-                  id="end-date"
-                  min={startDate} // Set the min attribute dynamically based on the start date
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  id="durationInHours"
+                  min={1} // Set the min attribute dynamically based on the start date
+                  value={durationInHours}
+                  onChange={(e) => setdurationInHours(e.target.value)}
                 />
               </div>
             </form>
