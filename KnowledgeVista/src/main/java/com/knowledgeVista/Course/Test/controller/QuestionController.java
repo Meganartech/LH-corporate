@@ -54,7 +54,7 @@ public class QuestionController {
 		   try {
 		 
 
-		    String email=jwtUtil.getUsernameFromToken(token);
+		    String email=jwtUtil.getEmailFromToken(token);
 	         String institution="";
 		     Optional<Muser> opuser =muserRepository.findByEmail(email);
 		     if(opuser.isPresent()) {
@@ -151,7 +151,7 @@ public class QuestionController {
 			        }
 			        // Extract role from JWT token
 			        String role = jwtUtil.getRoleFromToken(token);
-			        String email=jwtUtil.getUsernameFromToken(token);
+			        String email=jwtUtil.getEmailFromToken(token);
 			         String institution="";
 				     Optional<Muser> opuser =muserRepository.findByEmail(email);
 				     if(opuser.isPresent()) {
@@ -196,7 +196,7 @@ public class QuestionController {
 		        }
 
 		        String role = jwtUtil.getRoleFromToken(token);
-		        String email = jwtUtil.getUsernameFromToken(token);
+		        String email = jwtUtil.getEmailFromToken(token);
 		        String institution = muserRepository.findinstitutionByEmail(email);
 
 		        if (institution == null) {
@@ -257,7 +257,7 @@ public class QuestionController {
 		        }
 		        // Extract role from JWT token
 		        String role = jwtUtil.getRoleFromToken(token);
-		        String email=jwtUtil.getUsernameFromToken(token);
+		        String email=jwtUtil.getEmailFromToken(token);
 		         String institution="";
 			     Optional<Muser> opuser =muserRepository.findByEmail(email);
 			     if(opuser.isPresent()) {
@@ -310,7 +310,7 @@ public class QuestionController {
 		        }
 		        // Extract role from JWT token
 		        String role = jwtUtil.getRoleFromToken(token);
-		        String email=jwtUtil.getUsernameFromToken(token);
+		        String email=jwtUtil.getEmailFromToken(token);
 		         String institution="";
 			     Optional<Muser> opuser =muserRepository.findByEmail(email);
 			     if(opuser.isPresent()) {

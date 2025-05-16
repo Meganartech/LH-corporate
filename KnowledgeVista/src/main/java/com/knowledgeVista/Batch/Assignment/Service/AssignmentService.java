@@ -60,7 +60,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -122,7 +122,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -148,7 +148,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -189,7 +189,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -240,7 +240,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -313,7 +313,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -355,7 +355,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -402,7 +402,7 @@ public class AssignmentService {
 	public ResponseEntity<?> getAssignmentSheduleDetails(Long courseId, Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 
 			if ("ADMIN".equals(role)) {
@@ -429,7 +429,7 @@ public class AssignmentService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -575,7 +575,7 @@ public class AssignmentService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 			Optional<AssignmentQuestion> opquest = QuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {

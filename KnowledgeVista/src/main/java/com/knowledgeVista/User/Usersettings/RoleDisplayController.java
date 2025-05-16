@@ -34,7 +34,7 @@ public class RoleDisplayController {
 			if (!jwtUtil.validateToken(token)) {return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Unauthorized access");
          }
-         String email=jwtUtil.getUsernameFromToken(token); 
+         String email=jwtUtil.getEmailFromToken(token); 
           String institution=muserRepository.findinstitutionByEmail(email);
           if(institution==null) {
         	  return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -79,7 +79,7 @@ public class RoleDisplayController {
 	 public ResponseEntity<?> postDisplayname(String token, Role_display_name roledisplaynames){
 		try {
 			 
-	         String email=jwtUtil.getUsernameFromToken(token); 
+	         String email=jwtUtil.getEmailFromToken(token); 
 	          String institution=muserRepository.findinstitutionByEmail(email);
 	          if(institution==null) {
 	        	  return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access"); 

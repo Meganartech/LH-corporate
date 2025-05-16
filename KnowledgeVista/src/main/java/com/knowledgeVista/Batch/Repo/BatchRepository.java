@@ -148,60 +148,85 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	long countBatchesNotAssignedForTrainerId(@Param("trainerId") Long trainerId);
 
 	// =================below For users====================
-	@Query(value = "SELECT b.id AS id, " + "b.batch_id AS batchId, " + "b.batch_title AS batchTitle, "
-			 + "b.institution_name AS institutionName, "
-			+ "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
-			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, " + "b.batch_image AS batchImage, "
-			+ "TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration " + // Format duration
-			"FROM batch b " + "LEFT JOIN batch_courses bc ON b.id = bc.batch_id "
-			+ "LEFT JOIN course_detail c ON c.course_id = bc.course_id "
-			+ "LEFT JOIN batch_trainers bt ON b.id = bt.batch_id " + "LEFT JOIN muser t ON t.user_id = bt.user_id "
-			+ "LEFT JOIN batch_users bu ON b.id = bu.batch_id " + "WHERE bu.user_id = :userId "
-			+ "GROUP BY b.id, b.batch_id, b.batch_title, "
-			+ "b.institution_name, b.no_of_seats" 
-			+ "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
-	List<Map<String, Object>> findBatchesByUserIdWithPagination(@Param("userId") Long userId,
-			@Param("pageSize") int pageSize, @Param("offset") int offset);
-
-	@Query(value = "SELECT COUNT(DISTINCT b.id) FROM batch b " + "LEFT JOIN batch_users bu ON b.id = bu.batch_id "
-			+ "WHERE bu.user_id = :userId", nativeQuery = true)
-	long countBatchesByUserId(@Param("userId") Long userId);
-
 	@Query(value = 
 		    "SELECT " +
 		    "    b.id AS id, " +
 		    "    b.batch_id AS batchId, " +
 		    "    b.batch_title AS batchTitle, " +
+		    "    b.duration_in_hours AS durationInHours, " +
 		    "    b.institution_name AS institutionName, " +
 		    "    COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, " +
-		    "    b.batch_image AS batchImage, " +
-		    "    TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration, " +
-		    "    (SELECT COUNT(bu.user_id) FROM batch_users bu WHERE bu.batch_id = b.id) AS enrolledUsers " +
+		    "    b.batch_image AS batchImage " +
 		    "FROM batch b " +
+		    "JOIN batch_enrollment be ON be.batch_id = b.id " +
 		    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
 		    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
-		    "JOIN muser u ON u.user_id = :userId " +
-		    "WHERE b.institution_name = u.institution_name " +
-		    "GROUP BY b.id, b.batch_id, b.batch_title, b.institution_name, b.batch_image, b.start_date, b.end_date " +
-		    "ORDER BY b.start_date DESC " +
-		    "LIMIT :pageSize OFFSET :offset",
-		    nativeQuery = true)
-		List<Map<String, Object>> findInstitutionBatchesWithPagination(
+		    "WHERE be.user_id = :userId " +
+		    "AND b.institution_name = :institutionName " +
+		    "GROUP BY b.id, b.batch_id, b.batch_title, b.duration_in_hours, b.institution_name, b.batch_image " +
+		    "ORDER BY b.batch_id DESC " +
+		    "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
+		List<Map<String, Object>> findBatchesEnrolledByUser(
 		    @Param("userId") Long userId,
+		    @Param("institutionName") String institutionName,
 		    @Param("pageSize") int pageSize,
 		    @Param("offset") int offset);
 
 
+		@Query(value = "SELECT COUNT(DISTINCT b.id) " +
+		    "FROM batch b " +
+		    "JOIN batch_enrollment be ON be.batch_id = b.id " +
+		    "WHERE be.user_id = :userId " +
+		    "AND b.institution_name = :institutionName", nativeQuery = true)
+		Long countBatchesEnrolledByUser(
+		    @Param("userId") Long userId,
+		    @Param("institutionName") String institutionName);
+
+
+		@Query(value = 
+			    "SELECT " +
+			    "    b.id AS id, " +
+			    "    b.batch_id AS batchId, " +
+			    "    b.batch_title AS batchTitle, " +
+			    "    b.duration_in_hours AS durationInHours, " +
+			    "    b.institution_name AS institutionName, " +
+			    "    COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, " +
+			    "    b.batch_image AS batchImage " +
+			    "FROM batch b " +
+			    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
+			    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
+			    "WHERE NOT EXISTS ( " +
+			    "    SELECT 1 FROM batch_enrollment be " +
+			    "    WHERE be.batch_id = b.id AND be.user_id = :userId " +
+			    ") " +
+			    "AND b.institution_name = :institutionName " +
+			    "GROUP BY b.id, b.batch_id, b.batch_title, b.duration_in_hours, b.institution_name, b.batch_image " +
+			    "ORDER BY b.batch_id DESC " +
+			    "LIMIT :pageSize OFFSET :offset",
+			    nativeQuery = true)
+			List<Map<String, Object>> findBatchesNotEnrolledByUser(
+			    @Param("userId") Long userId,
+			    @Param("institutionName") String institutionName,
+			    @Param("pageSize") int pageSize,
+			    @Param("offset") int offset);
 
 
 
+		@Query(value = 
+			    "SELECT COUNT(DISTINCT b.id) " +
+			    "FROM batch b " +
+			    "WHERE NOT EXISTS ( " +
+			    "    SELECT 1 FROM batch_enrollment be " +
+			    "    WHERE be.batch_id = b.id AND be.user_id = :userId " +
+			    ") " +
+			    "AND b.institution_name = :institutionName",
+			    nativeQuery = true)
+			long countBatchesNotEnrolledByUser(
+			    @Param("userId") Long userId,
+			    @Param("institutionName") String institutionName);
 
-	@Query(value = "SELECT COUNT(DISTINCT b.id) FROM batch b " + "LEFT JOIN batch_users bu ON b.id = bu.batch_id "
-			+ "WHERE (bu.user_id IS NULL OR bu.user_id != :userId) "
-			+ "AND b.no_of_seats > (SELECT COUNT(bu2.user_id) FROM batch_users bu2 WHERE bu2.batch_id = b.id)", nativeQuery = true)
-	long countBatchesNotEnrolledByUserId(@Param("userId") Long userId);
 
-	@Query("SELECT new com.knowledgeVista.Batch.BatchImageDTO(b.id,b.BatchImage) FROM Batch b WHERE b.id IN :ids")
+		@Query("SELECT new com.knowledgeVista.Batch.BatchImageDTO(b.id,b.BatchImage) FROM Batch b WHERE b.id IN :ids")
 	List<BatchImageDTO> findBatchImagesByIds(@Param("ids") List<Long> ids);
 	
 	

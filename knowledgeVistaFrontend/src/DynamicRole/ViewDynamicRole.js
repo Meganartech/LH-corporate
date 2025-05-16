@@ -287,7 +287,7 @@ const ViewDynamicRole = () => {
                     className="btn btn-primary mybtn"
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(`/register/${roleName}`);
+                      navigate(`/register?role=${roleName}`);
                     }}
                   >
                     <i className="fa-solid fa-plus"></i> Add {roleDisplay}
@@ -408,7 +408,7 @@ const ViewDynamicRole = () => {
                             </td>
                             <td className="text-center">
                               <Link
-                                to={`/assignCourse/${roleName}/${user.userId}`}
+                                to={`/assignCourse/${user.userId}`}
                                 className="hidebtn"
                               >
                                 <i className="fas fa-plus"></i>

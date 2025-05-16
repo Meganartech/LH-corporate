@@ -18,9 +18,11 @@ public class BatchEnrollment {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id") 
     private Muser user;
 
     @ManyToOne
+    @JoinColumn(name = "batch_id")
     private Batch batch;
 
     private LocalDateTime enrollmentDate;

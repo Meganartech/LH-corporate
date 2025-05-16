@@ -111,7 +111,7 @@ public class ZoomMeetingService {
 	@Transactional
 	public ResponseEntity<?> JoinMeeting(String token, Long MeetingId) {
 		try {
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
 			if (opuser.isPresent()) {
 				Muser user = opuser.get();
@@ -214,7 +214,7 @@ public class ZoomMeetingService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
 			if (opuser.isPresent()) {
 				Muser user = opuser.get();
@@ -255,7 +255,7 @@ public class ZoomMeetingService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
 			if (opuser.isPresent()) {
 				Muser user = opuser.get();
@@ -640,7 +640,7 @@ public class ZoomMeetingService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
 			if (opuser.isPresent()) {
 				opuser.get();
@@ -673,7 +673,7 @@ public class ZoomMeetingService {
 				System.out.println("token unauthorized");
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
 			if (opuser.isPresent()) {
 				Muser user = opuser.get();
@@ -715,7 +715,7 @@ public class ZoomMeetingService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 			}
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
 			if (opuser.isPresent()) {
 				opuser.get();
@@ -836,7 +836,7 @@ public class ZoomMeetingService {
 
 	public ResponseEntity<?> getVirtualClass(String token) {
 		try {
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepository.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("institution not found");

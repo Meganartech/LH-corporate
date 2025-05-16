@@ -69,7 +69,7 @@ public class ModuleTestService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institution = muserRepository.findinstitutionByEmail(email);
 			if (institution == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Institution Not Found");
@@ -93,7 +93,7 @@ public class ModuleTestService {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institution = muserRepository.findinstitutionByEmail(email);
 
 			if (institution == null) {
@@ -358,7 +358,7 @@ public class ModuleTestService {
 			String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String insitution = muserRepository.findinstitutionByEmail(email);
 			if (insitution == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -408,7 +408,7 @@ public class ModuleTestService {
 	public ResponseEntity<?> getModuleTestSheduleDetails(Long courseId, Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 
 			if ("ADMIN".equals(role)) {
@@ -436,7 +436,7 @@ public class ModuleTestService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 			if (opmuser.isEmpty()) {
@@ -495,7 +495,7 @@ public class ModuleTestService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 			if (opmuser.isEmpty()) {

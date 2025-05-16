@@ -43,7 +43,7 @@ public class Batch {
     private List<BatchEnrollment> enrollments;
 
     @Column(name = "durationInHours")
-    private Long durationInHours;
+    private Long durationInHours=100L;
 
     
     @Lob

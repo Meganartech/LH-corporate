@@ -40,7 +40,7 @@ const NewRole = () => {
         cancelButtonText: "No, thanks"
       }).then((result) => {
         if (result.isConfirmed) {
-          navigate(`/register/${newRoleName.toLowerCase()}`);
+        navigate(`/register?role=${newRoleName.toLowerCase()}`);
         } else {
           setNewRoleName("");
           setParentRoleId("");

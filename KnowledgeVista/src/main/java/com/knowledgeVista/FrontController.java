@@ -36,7 +36,7 @@ import com.knowledgeVista.Batch.Enrollment.service.BatchEnrollmentService;
 import com.knowledgeVista.Batch.Event.EventController;
 import com.knowledgeVista.Batch.Weightage.Weightage;
 import com.knowledgeVista.Batch.Weightage.service.weightageService;
-import com.knowledgeVista.Batch.service.AssignBatch;
+import com.knowledgeVista.Batch.service.EnrollNotificationService;
 import com.knowledgeVista.Batch.service.BatchService;
 import com.knowledgeVista.Batch.service.BatchService2;
 import com.knowledgeVista.Batch.service.GradeService;
@@ -78,6 +78,7 @@ import com.knowledgeVista.User.Controller.MserRegistrationController;
 import com.knowledgeVista.User.LabellingItems.FooterDetails;
 import com.knowledgeVista.User.LabellingItems.controller.FooterDetailsController;
 import com.knowledgeVista.User.LabellingItems.controller.LadellingitemController;
+import com.knowledgeVista.User.SecurityConfiguration.CheckAccessAnnotation;
 import com.knowledgeVista.User.Usersettings.RoleDisplayController;
 import com.knowledgeVista.User.Usersettings.Role_display_name;
 
@@ -173,7 +174,7 @@ public class FrontController {
 	@Autowired
 	private GradeService gradeService;
 	@Autowired
-	private AssignBatch assignBatch;
+	private EnrollNotificationService assignBatch;
 
 	private static final Logger logger = LoggerFactory.getLogger(FrontController.class);
 
@@ -301,7 +302,9 @@ public class FrontController {
 
 //----------------------------COURSE CONTROLLER SECOND-----------------------------------
 	@GetMapping("/dashboard/storage")
+	 @CheckAccessAnnotation
 	public ResponseEntity<?> getstorageDetails(@RequestHeader("Authorization") String token) {
+		System.out.println(">>> Controller method storage called");
 		return coursesec.getstoragedetails(token);
 	}
 
@@ -1750,7 +1753,7 @@ public class FrontController {
 //	}
 
 	// ================AssignCourse=======================
-	@GetMapping("/AssignCourse/student/courselist")
+	@GetMapping("/view/courselist")
 	public ResponseEntity<List<CourseDetailDto>> getCoursesForUser(@RequestHeader("Authorization") String token) {
 		return assign.getCoursesForUser(token);
 	}
@@ -1886,7 +1889,14 @@ public class FrontController {
     }
     //BatchEnrollmentService======================================
     @PostMapping("/roles/AssignBatch")
-    public ResponseEntity<?> AssignBatchToRole(@RequestParam Long roleId, @RequestParam Long batchId,  @RequestHeader("Authorization") String token) {
-        return batchEnrollmentService.AssignBatchTORole(token, roleId, batchId);
+    @CheckAccessAnnotation
+    public ResponseEntity<?> AssignBatchToRole(HttpServletRequest request,@RequestParam Long roleId, @RequestParam Long batchId,  @RequestHeader("Authorization") String token) {
+        return batchEnrollmentService.AssignBatchTORole(request ,token, roleId, batchId);
+    }
+    
+    @PostMapping("/Assign/batch")
+    @CheckAccessAnnotation
+    public ResponseEntity<?> AssignBatchTOUser(HttpServletRequest request,@RequestParam Long userId, @RequestParam Long batchId,  @RequestHeader("Authorization") String token) {
+        return batchEnrollmentService.AssignBatchTOUser(request,token, userId, batchId);
     }
 }

@@ -35,7 +35,7 @@ public class AuthenticationController {
 
 	public ResponseEntity<String> logout(String token) {
 
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> userOptional = muserRepositories.findByEmail(email);
 		if (userOptional.isPresent()) {
 			Muser user = userOptional.get();
@@ -73,7 +73,7 @@ public class AuthenticationController {
 								institution);
 						if (isActiveAdmin.equals(true)) {
 							String Role = user.getRole().getRoleName();
-							String jwtToken = jwtUtil.generateToken(username, Role);
+							String jwtToken = jwtUtil.generateToken(user.getUsername(), Role,user.getInstitutionName(),user.getUserId(),user.getEmail());
 							user.setLastactive(LocalDateTime.now());
 							muserRepositories.save(user);
 							// Prepare response body as JSON
@@ -94,7 +94,7 @@ public class AuthenticationController {
 						}
 					} else {
 						String Role = user.getRole().getRoleName();
-						String jwtToken = jwtUtil.generateToken(username, Role);
+						String jwtToken = jwtUtil.generateToken(user.getUsername(), Role,user.getInstitutionName(),user.getUserId(),user.getEmail());
 						user.setLastactive(LocalDateTime.now());
 						muserRepositories.save(user);
 						// Prepare response body as JSON

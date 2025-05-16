@@ -99,7 +99,7 @@ public class videolessonController {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String username = "";
 			String institution = "";
 
@@ -228,7 +228,7 @@ public class videolessonController {
 	    }
 	   
 	    String role = jwtUtil.getRoleFromToken(token);
-	    String email = jwtUtil.getUsernameFromToken(token);
+	    String email = jwtUtil.getEmailFromToken(token);
 	    String username = "";
 	    String institution = "";
 
@@ -402,7 +402,7 @@ public ResponseEntity<?>getDocFile(String fileName, int slideNumber,String token
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 		String role = jwtUtil.getRoleFromToken(token);
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> opuser = muserRepo.findByEmail(email);
 
 		if (!opuser.isPresent()) {
@@ -479,7 +479,7 @@ public ResponseEntity<?>UserAccessCheck(String fileName, int slideNumber,Muser u
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepo.findByEmail(email);
 
 			if (!opuser.isPresent()) {
@@ -678,7 +678,7 @@ public ResponseEntity<?>UserAccessCheck(String fileName, int slideNumber,Muser u
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 
 			String institution = "";
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
@@ -725,7 +725,7 @@ public ResponseEntity<?>getDocsName(Long lessonId , String token){
         if("ADMIN".equals(role)) {
         	return ResponseEntity.ok(docsDetailsRepository.findByLessonId(lessonId));
         }
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> opuser = muserRepository.findByEmail(email);
 		if (opuser.isPresent()) {
 			Muser user = opuser.get();
@@ -778,7 +778,7 @@ public ResponseEntity<?>getMiniatureDetails(Long lessonId,Long Id , String token
         if("ADMIN".equals(role)) {
         	return ResponseEntity.ok(docsDetailsRepository.findMiniatureById(Id));
         }
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> opuser = muserRepository.findByEmail(email);
 		if (opuser.isPresent()) {
 			Muser user = opuser.get();
@@ -829,7 +829,7 @@ public ResponseEntity<?>getMiniatureDetails(Long lessonId,Long Id , String token
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 
 			String institution = "";
 			Optional<Muser> opuser = muserRepository.findByEmail(email);

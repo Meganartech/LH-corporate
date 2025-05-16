@@ -49,7 +49,7 @@ public class LicenceControllerSecond {
 	    		if (!jwtUtil.validateToken(token)) {
 		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		         }
-	    		String uemail = jwtUtil.getUsernameFromToken(token);
+	    		String uemail = jwtUtil.getEmailFromToken(token);
 	            Optional<Muser> opuser= muserrepo.findByEmail(uemail);
 	            if(opuser.isPresent()) {
 

@@ -105,7 +105,7 @@ public class LicenseController {
 		if (!jwtUtil.validateToken(token)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String uemail = jwtUtil.getUsernameFromToken(token);
+		String uemail = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> opuser = muserrepo.findByEmail(uemail);
 		if (opuser.isPresent()) {
 
@@ -289,7 +289,7 @@ public class LicenseController {
 		if (!jwtUtil.validateToken(token)) {
 			return new ResponseEntity<>(401, HttpStatus.UNAUTHORIZED);
 		}
-		String uemail = jwtUtil.getUsernameFromToken(token);
+		String uemail = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> opuser = muserrepo.findByEmail(uemail);
 		Long course = 0L;
 		if (opuser.isPresent()) {
@@ -450,7 +450,7 @@ public class LicenseController {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
 		try {
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserrepo.findByEmail(email);
 			if (opuser.isPresent()) {
 				Muser user = opuser.get();
@@ -866,7 +866,7 @@ public class LicenseController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
 
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserrepo.findByEmail(email);
 			if (!optionalUser.isPresent() || !optionalUser.get().getRole().getRoleName().equals("SYSADMIN")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

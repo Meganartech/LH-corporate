@@ -32,7 +32,7 @@ public class FooterDetailsController {
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	   	     }
-	   	     String email=jwtUtil.getUsernameFromToken(token);
+	   	     String email=jwtUtil.getEmailFromToken(token);
 	   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
 	   	     String institution="";
 	   	     if(opreq.isPresent()) {
@@ -74,7 +74,7 @@ public class FooterDetailsController {
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	   	     }
-	   	     String email=jwtUtil.getUsernameFromToken(token);
+	   	     String email=jwtUtil.getEmailFromToken(token);
 	   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
 	   	     String institution="";
 	   	     if(opreq.isPresent()) {

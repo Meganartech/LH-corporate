@@ -34,7 +34,7 @@ public class ZoomMeetAccountController {
 	    	 if (!jwtUtil.validateToken(token)) {
 	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 	    	 }
-	         String email=jwtUtil.getUsernameFromToken(token); 
+	         String email=jwtUtil.getEmailFromToken(token); 
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
 	        	 Muser user=opuser.get();
@@ -64,7 +64,7 @@ public class ZoomMeetAccountController {
 	    	 if (!jwtUtil.validateToken(token)) {
 	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 	    	 }
-	         String email=jwtUtil.getUsernameFromToken(token); 
+	         String email=jwtUtil.getEmailFromToken(token); 
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
 	        	 Muser user=opuser.get();
@@ -92,7 +92,7 @@ public class ZoomMeetAccountController {
 	    	 if (!jwtUtil.validateToken(token)) {
 	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
 	    	 }
-	         String email=jwtUtil.getUsernameFromToken(token); 
+	         String email=jwtUtil.getEmailFromToken(token); 
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
 	        	 Muser user=opuser.get();

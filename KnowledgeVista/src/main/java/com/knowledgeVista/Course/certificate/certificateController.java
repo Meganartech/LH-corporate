@@ -48,7 +48,7 @@ public class certificateController {
 	         }
 
 	         String role = jwtUtil.getRoleFromToken(token);
-	         String email=jwtUtil.getUsernameFromToken(token); 
+	         String email=jwtUtil.getEmailFromToken(token); 
 	         String userinstitution="";
 		     Optional<Muser> opuser =muserRepository.findByEmail(email);
 		     if(opuser.isPresent()) {
@@ -108,7 +108,7 @@ public class certificateController {
 
 	        // Get the role from the token
 	        String role = jwtUtil.getRoleFromToken(token);
-	        String email=jwtUtil.getUsernameFromToken(token);
+	        String email=jwtUtil.getEmailFromToken(token);
 	      
 	         String institution="";
 		     Optional<Muser> opuser =muserRepository.findByEmail(email);
@@ -177,7 +177,7 @@ public class certificateController {
 		        }
 
 		        jwtUtil.getRoleFromToken(token);
-		        String email=jwtUtil.getUsernameFromToken(token);
+		        String email=jwtUtil.getEmailFromToken(token);
 		         String institution="";
 			     Optional<Muser> opuser =muserRepository.findByEmail(email);
 			     if(opuser.isPresent()) {
@@ -221,7 +221,7 @@ public class certificateController {
 	public ResponseEntity<?> sendAllCertificate( String token) {
 		 try {
 	
-	    String username = jwtUtil.getUsernameFromToken(token);
+	    String username = jwtUtil.getEmailFromToken(token);
 	    Optional<Muser> opuser = muserRepository.findByEmail(username);
 	    if (opuser.isPresent()) {
 	        Muser user = opuser.get();

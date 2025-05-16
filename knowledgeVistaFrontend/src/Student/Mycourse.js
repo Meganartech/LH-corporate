@@ -12,7 +12,7 @@ const Mycourse = () => {
       try {
         // Replace {userId} with the actual user ID
         const response = await axios.get(
-          `${baseUrl}/AssignCourse/student/courselist`,
+          `${baseUrl}/view/courselist`,
           {
             headers: {
               Authorization: token,

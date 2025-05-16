@@ -40,6 +40,7 @@ public class BatchService2 {
 
 			// Check user role
 			String role = jwtUtil.getRoleFromToken(token);
+			String institution=jwtUtil.getInstitutionFromToken(token);
 			if (!"ADMIN".equals(role) && !"TRAINER".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Only Admin Can Access This Page");
 			}
@@ -50,10 +51,10 @@ public class BatchService2 {
 			int offset = pageable.getPageNumber() * pageSize; // Offset calculation
 
 			// Fetch paginated data
-			List<Map<String, Object>> batches = batchrepo.findBatchesByUserIdWithPagination(userId, pageSize, offset);
+			List<Map<String, Object>> batches = batchrepo.findBatchesEnrolledByUser(userId,institution, pageSize, offset);
 
 			// Fetch total count for pagination
-			long totalRecords = batchrepo.countBatchesByUserId(userId);
+			long totalRecords = batchrepo.countBatchesEnrolledByUser(userId,institution);
 
 			// Create Page object
 			Page<Map<String, Object>> pagedResponse = new PageImpl<>(batches, pageable, totalRecords);
@@ -75,6 +76,7 @@ public class BatchService2 {
 
 			// Check user role
 			String role = jwtUtil.getRoleFromToken(token);
+			String institution=jwtUtil.getInstitutionFromToken(token);
 			if (!"ADMIN".equals(role) && !"TRAINER".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Cannot Access This Page");
 			}
@@ -85,11 +87,11 @@ public class BatchService2 {
 			int offset = pageable.getPageNumber() * pageSize; // Offset calculation
 
 			// Fetch paginated data
-			List<Map<String, Object>> batches = batchrepo.findInstitutionBatchesWithPagination(userId, pageSize,
+			List<Map<String, Object>> batches = batchrepo.findBatchesNotEnrolledByUser(userId,institution, pageSize,
 					offset);
 
 			// Fetch total count for pagination
-			long totalRecords = batchrepo.countBatchesNotEnrolledByUserId(userId);
+			long totalRecords = batchrepo.countBatchesNotEnrolledByUser(userId,institution);
 
 			// Create Page object
 			Page<Map<String, Object>> pagedResponse = new PageImpl<>(batches, pageable, totalRecords);
@@ -183,7 +185,7 @@ public class BatchService2 {
 	        }
 
 	        // Get user
-	        String email = jwtUtil.getUsernameFromToken(token);
+	        String email = jwtUtil.getEmailFromToken(token);
 	        Optional<Muser> opUser = muserRepo.findByEmail(email);
 
 	        if (opUser.isPresent()) {
@@ -232,7 +234,7 @@ public class BatchService2 {
 	        }
 
 	        // Get user
-	        String email = jwtUtil.getUsernameFromToken(token);
+	        String email = jwtUtil.getEmailFromToken(token);
 	        Optional<Muser> opUser = muserRepo.findByEmail(email);
 
 	        if (opUser.isPresent()) {

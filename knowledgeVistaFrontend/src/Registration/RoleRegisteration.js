@@ -8,11 +8,13 @@ import axios from "axios";
 import PhoneInput, { parsePhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const RoleRegistration = () => {
   const MySwal = withReactContent(Swal);
-  const { role } = useParams(); // Get role from URL
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const role = params.get('role');
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -28,7 +30,7 @@ const RoleRegistration = () => {
     profile: null,
     countryCode: "",
     isActive: true,
-    role: role ? role.toUpperCase() : "TRAINER", // Dynamic role from URL or default
+    role: role ? role.toUpperCase() : "USER", // Dynamic role from URL or default
   });
 
   const [errors, setErrors] = useState({

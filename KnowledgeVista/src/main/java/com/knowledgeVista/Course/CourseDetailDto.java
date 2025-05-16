@@ -40,6 +40,19 @@ public class CourseDetailDto {
 		this.courseName = courseName;
 		this.duration = duration;
 	}
+	public CourseDetailDto(Long courseId, String courseName, String courseUrl, String courseDescription,
+			String courseCategory, Long amount, byte[] courseImage, Long duration, String institutionName) {
+		super();
+		this.courseId = courseId;
+		this.courseName = courseName;
+		this.courseUrl = courseUrl;
+		this.courseDescription = courseDescription;
+		this.courseCategory = courseCategory;
+		this.amount = amount;
+		this.courseImage = courseImage;
+		this.duration = duration;
+		this.institutionName = institutionName;
+	}
 	@Getter
 	@Setter
 	@NoArgsConstructor

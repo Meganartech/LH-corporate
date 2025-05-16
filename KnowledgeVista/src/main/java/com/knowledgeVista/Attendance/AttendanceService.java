@@ -152,7 +152,7 @@ public ResponseEntity<?> getMyAttendance(String token,Long batchId, Pageable pag
 	    	 }  	
 	         String role=jwtUtil.getRoleFromToken(token); 
 	         if("USER".equals(role)) {
-	        	 String email=jwtUtil.getUsernameFromToken(token);
+	        	 String email=jwtUtil.getEmailFromToken(token);
 	        	 Long userId=muserRepository.findidByEmail(email);
 	        	 if(userId==null) {
 	        		 return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

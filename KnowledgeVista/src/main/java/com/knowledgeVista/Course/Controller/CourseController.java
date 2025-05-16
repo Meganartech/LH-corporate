@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.knowledgeVista.Batch.Batch;
+import com.knowledgeVista.Batch.Enrollment.repo.BatchEnrollmentRepo;
 import com.knowledgeVista.Batch.Repo.BatchRepository;
 import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Course.CourseDetailDto;
@@ -56,7 +57,8 @@ public class CourseController {
 	private licenseRepository licencerepo;
 	@Autowired
 	private BatchRepository batchrepo;
-
+@Autowired
+private BatchEnrollmentRepo batchEnrollRepo;
 	@Value("${spring.environment}")
 	private String environment;
 
@@ -71,7 +73,7 @@ public class CourseController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 
 			Optional<Muser> opreq = muserRepository.findByEmail(email);
 			String institution = "";
@@ -258,7 +260,7 @@ public class CourseController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String username = "";
 			String institution = "";
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
@@ -343,7 +345,7 @@ public class CourseController {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String username = "";
 			String institution = "";
 			Optional<Muser> opuser = muserRepository.findByEmail(email);
@@ -428,7 +430,7 @@ public class CourseController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 		String role = jwtUtil.getRoleFromToken(token);
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 		String institution = "";
 		Optional<Muser> opuser = muserRepository.findByEmail(email);
 		if (opuser.isPresent()) {
@@ -463,7 +465,7 @@ public class CourseController {
 		if (!jwtUtil.validateToken(token)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 		String institution = "";
 		Optional<Muser> opuser = muserRepository.findByEmail(email);
 		if (opuser.isPresent()) {
@@ -500,7 +502,7 @@ public class CourseController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
 
-			String adding = jwtUtil.getUsernameFromToken(token);
+			String adding = jwtUtil.getEmailFromToken(token);
 			String institution = "";
 			Optional<Muser> opaddinguser = muserRepository.findByEmail(adding);
 			// adding Admin or trainer is present or not
@@ -544,9 +546,9 @@ public class CourseController {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 
-			String adding = jwtUtil.getUsernameFromToken(token);
+			String adding = jwtUtil.getEmailFromToken(token);
 			String institution = "";
 			Optional<Muser> opaddinguser = muserRepository.findByEmail(adding);
 			if (opaddinguser.isPresent()) {
@@ -621,86 +623,43 @@ public class CourseController {
 
 	// ---------------------WORKING--------------)
 	public ResponseEntity<?> getLessons(Long courseId, String token) {
-		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+	    try {
+	        if (!jwtUtil.validateToken(token)) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	        }
 
-			String role = jwtUtil.getRoleFromToken(token);
-			String adding = jwtUtil.getUsernameFromToken(token);
-			String institution = "";
-			Optional<Muser> opaddinguser = muserRepository.findByEmail(adding);
-			if (opaddinguser.isPresent()) {
-				Muser addinguser = opaddinguser.get();
-				institution = addinguser.getInstitutionName();
-				boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-				if (!adminIsactive) {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-				}
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-			if (!"ADMIN".equals(role)) {
-				Optional<CourseDetail> opcourse = coursedetailrepository.findByCourseIdAndInstitutionName(courseId,
-						institution);
-				if (opcourse.isPresent()) {
-					CourseDetail course = opcourse.get();
+	        String role = jwtUtil.getRoleFromToken(token);
+	        String email = jwtUtil.getEmailFromToken(token);
 
-					String email = jwtUtil.getUsernameFromToken(token);
-					Optional<Muser> opuser = muserRepository.findByEmail(email);
-					if (!opuser.isPresent()) {
-						return ResponseEntity.notFound().build();
-					}
-					Muser user = opuser.get();
+	        Optional<Muser> userOpt = muserRepository.findByEmail(email);
+	        if (userOpt.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+	        }
 
-					if ("TRAINER".equals(role)) {
-						if (course.getAmount() == 0) {
-							return getVideoLessonsResponse(courseId);
-						}
-						// if (user.getAllotedCourses().stream().anyMatch(course ->
-						// course.getCourseId().equals(courseId))) {
-						if (muserRepository.existsByTrainerIdAndCourseId(user.getUserId(), courseId)) {
-							return getVideoLessonsResponse(courseId);
-						}
+	        Muser user = userOpt.get();
+	        String institution = user.getInstitutionName(); // ✅ Ensure Muser has this field
 
-					} else if ("USER".equals(role)) {
-						if (course.getAmount() == 0) {
-							Boolean enrolled = muserRepository.existsByuserIdAndCourseId(user.getUserId(), courseId);
-							if (!enrolled) {
-								user.getCourses().add(course);
-								muserRepository.save(user);
-								return getVideoLessonsResponse(courseId);
-							}
-							return getVideoLessonsResponse(courseId);
-						}
+	        // ✅ Common course check for both ADMIN and USER
+	        Optional<CourseDetail> courseOpt = coursedetailrepository.findByCourseIdAndInstitutionName(courseId, institution);
+	        if (courseOpt.isEmpty()) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found in your institution");
+	        }
 
-						// if (user.getCourses().stream().anyMatch(course ->
-						// course.getCourseId().equals(courseId))) {
-						if (muserRepository.existsByuserIdAndCourseId(user.getUserId(), courseId)) {
-							return getVideoLessonsResponse(courseId);
-						}
-					}
-				} else {
-					return ResponseEntity.notFound().build();
-				}
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			} else {
-				Optional<CourseDetail> opcourse = coursedetailrepository.findByCourseIdAndInstitutionName(courseId,
-						institution);
-				if (opcourse.isPresent()) {
-					opcourse.get();
-					return getVideoLessonsResponse(courseId);
+	        if ("ADMIN".equals(role)) {
+	            return getVideoLessonsResponse(courseId);
+	        } else {
+	            boolean hasAccess = batchEnrollRepo.existsActiveCourseForUser(user.getUserId(), courseId);
+	            if (hasAccess) {
+	                return getVideoLessonsResponse(courseId);
+	            } else {
+	                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Access denied: course not enrolled or expired");
+	            }
+	        }
 
-				} else {
-					return ResponseEntity.notFound().build();
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error("", e);
-			;
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
+	    } catch (Exception e) {
+	        logger.error("Error getting lessons", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
 	}
 
 	private ResponseEntity<?> getVideoLessonsResponse(Long courseId) {
@@ -726,7 +685,7 @@ public class CourseController {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institution = muserRepository.findinstitutionByEmail(email);
 			boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
 			if (!adminIsactive) {

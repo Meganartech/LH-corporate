@@ -33,7 +33,7 @@ public class EmailController {
 	    	   if (!jwtUtil.validateToken(token)) {
 		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		         }
-	    	   String email = jwtUtil.getUsernameFromToken(token);
+	    	   String email = jwtUtil.getEmailFromToken(token);
 		         Optional<Muser>opmuser=muserRepository.findByEmail(email);
 		         if(opmuser.isPresent()) {
 		        	 Muser user=opmuser.get();
@@ -86,7 +86,7 @@ public class EmailController {
 		         if(!role.equals("ADMIN")) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
 		         }
-		         String email = jwtUtil.getUsernameFromToken(token);
+		         String email = jwtUtil.getEmailFromToken(token);
 		         Optional<Muser>opmuser=muserRepository.findByEmail(email);
 		         if(opmuser.isPresent()) {
 		        	 Muser user=opmuser.get();

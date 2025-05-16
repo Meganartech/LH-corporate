@@ -184,7 +184,7 @@ public class GradeService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
 			}
 
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepo.findByEmail(email);
 			if (opuser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -280,7 +280,7 @@ public class GradeService {
 	public ResponseEntity<?> getBatchAnalysis(Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");

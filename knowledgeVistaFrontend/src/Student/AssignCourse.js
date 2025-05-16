@@ -153,7 +153,7 @@ const handleAssignCourse = async () => {
 
   try {
       const response = await axios.post(
-          `${baseUrl}/AssignCourse/Batch`,
+          `${baseUrl}/Assign/batch`,
           {},
           {
               headers: {
@@ -173,6 +173,7 @@ const handleAssignCourse = async () => {
               text: response?.data,
           });
           fetchAssignedBAtches();
+          fetchOtherBAtches();
       }
   } catch (error) {
       console.error("Error assigning course:", error);
@@ -381,20 +382,7 @@ const renderPaginationButtons = () => {
           <b>Courses:</b> {item?.coursenames || "N/A"}
         </small>
         <small className="batchlist">
-          <b>Trainers:</b> {item?.trainernames || "N/A"}
-        </small>
-        <small className="batchlist">
-          <b>Duration:</b> {item.duration || "N/A"}
-          <div className="amt">
-            <i
-              className={
-                Currency === "INR"
-                  ? "fa-solid fa-indian-rupee-sign pr-1"
-                  : "fa-solid fa-dollar-sign pr-1"
-              }
-            ></i>
-            <span>{item.amount}</span>
-          </div>
+          <b>Duration:</b> {item.durationinhours ? `${item.durationinhours} hrs` : "N/A"}
         </small>
       </div>
     </div>
@@ -499,21 +487,8 @@ const renderPaginationButtons = () => {
       <small className="batchlist">
         <b>Courses:</b> {item?.coursenames || "N/A"}
       </small>
-      <br />
       <small className="batchlist">
-        <b>Trainers:</b> {item?.trainernames || "N/A"}
-      </small>
-      <br />
-      <small className="batchlist">
-        <b>Duration:</b> {item?.duration || "N/A"}
-        <div className="amt">
-        <i
-          className={
-            Currency === "INR" ? "fa-solid fa-indian-rupee-sign pr-1" : "fa-solid fa-dollar-sign pr-1"
-          }
-        ></i>
-        <span>{item?.amount }</span>
-      </div>
+    <b>Duration:</b> {item.durationinhours ? `${item.durationinhours} hrs` : "N/A"}
       </small>
 
      

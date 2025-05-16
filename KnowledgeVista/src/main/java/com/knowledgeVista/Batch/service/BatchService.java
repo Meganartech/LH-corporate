@@ -49,7 +49,7 @@ public class BatchService {
 
 	public List<CourseDetailDto> searchCourses(String courseName, String token) {
 		// Extract email from the JWT token
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 
 		// Retrieve the institution name associated with the email
 		String institutionName = muserRepo.findinstitutionByEmail(email);
@@ -63,7 +63,7 @@ public class BatchService {
 
 	public List<Map<String, Object>> searchbatch(String batchTitle, String token) {
 		// Extract email from the JWT token
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 
 		// Retrieve the institution name associated with the email
 		String institutionName = muserRepo.findinstitutionByEmail(email);
@@ -79,7 +79,7 @@ public class BatchService {
 
 	public List<Map<String, Object>> searchTrainers(String courseName, String token) {
 		// Extract email from the JWT token
-		String email = jwtUtil.getUsernameFromToken(token);
+		String email = jwtUtil.getEmailFromToken(token);
 
 		// Retrieve the institution name associated with the email
 		String institutionName = muserRepo.findinstitutionByEmail(email);
@@ -104,7 +104,7 @@ public class BatchService {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String addingEmail = jwtUtil.getUsernameFromToken(token);
+			String addingEmail = jwtUtil.getEmailFromToken(token);
 
 			Optional<Muser> opaddingMuser = muserRepo.findByEmail(addingEmail);
 			if (opaddingMuser.isEmpty()) {
@@ -169,7 +169,7 @@ public class BatchService {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(email);
 			if (institutionName == null || institutionName.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");
@@ -204,7 +204,7 @@ public class BatchService {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opmuser = muserRepo.findByEmail(email);
 			if (opmuser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -273,7 +273,7 @@ public class BatchService {
 	// ==========================Get Batch================
 	public ResponseEntity<?> GetBatch(Long id, String token) {
 		try {
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String role = jwtUtil.getRoleFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 
@@ -305,7 +305,7 @@ public class BatchService {
 	// ===================Get ALl Batch===========================
 	public ResponseEntity<?> GetAllBatch(String token) {
 		try {
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepo.findByEmail(email);
 			if (opuser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");
@@ -339,7 +339,7 @@ public class BatchService {
 //=============================Get all BatchBy CourseId=================================
 	public ResponseEntity<?> GetAllBatchByCourseID(String token, Long courseid) {
 		try {
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");
@@ -365,7 +365,7 @@ public class BatchService {
 	public ResponseEntity<?> deleteBatchById(Long id, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");
@@ -401,7 +401,7 @@ public class BatchService {
 	public ResponseEntity<?> getCoursesoFBatch(Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");
@@ -423,7 +423,7 @@ public class BatchService {
 	public ResponseEntity<?> getUsersoFBatch(Long batchId, String token, int pageNumber, int pageSize) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");
@@ -450,7 +450,7 @@ public class BatchService {
 				return ResponseEntity.ok(Page.empty());
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String emailad = jwtUtil.getUsernameFromToken(token);
+			String emailad = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(emailad);
 			if (institutionName == null) {
 				return ResponseEntity.ok(Page.empty());

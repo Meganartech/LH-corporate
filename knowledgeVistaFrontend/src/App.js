@@ -606,6 +606,19 @@ function App() {
               }
             />
             <Route
+              path="/assignCourse/:userId"
+              element={
+                <ErrorBoundary>
+                  <PrivateRoute
+                    authenticationRequired={true}
+                    authorizationRequired={true}
+                  >
+                    <AssignCourse />
+                  </PrivateRoute>
+                </ErrorBoundary>
+              }
+            />
+            <Route
               path="/assignCourse/Trainer/:userId"
               element={
                 <ErrorBoundary>
@@ -1546,8 +1559,7 @@ function App() {
               </ErrorBoundary>
             }
           />
-          <Route path="/register/:role" element={<RoleRegistration />} />
-          <Route path="/register" element={<RoleRegistration />} />
+          <Route path="/register" element={  <ErrorBoundary><RoleRegistration /></ErrorBoundary>} />
           <Route
             path="/LicenceExpired"
             element={

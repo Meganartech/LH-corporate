@@ -77,7 +77,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 
 				String institution = muserRepository.findinstitutionByEmail(email);
@@ -121,7 +121,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 
 				String institution = muserRepository.findinstitutionByEmail(email);
@@ -153,7 +153,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Quizz> opquizz = quizzRepo.findById(quizzId);
 			if (opquizz.isPresent()) {
 				Quizz quizz = opquizz.get();
@@ -194,7 +194,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Quizzquestion> opquest = quizQuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {
 				Quizzquestion quest = opquest.get();
@@ -227,7 +227,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 			Optional<Quizz> opquest = quizzRepo.findById(quizzId);
 			if (opquest.isPresent()) {
@@ -269,7 +269,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 			Optional<Quizzquestion> opquest = quizQuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {
@@ -307,7 +307,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 			Optional<Quizz> opquest = quizzRepo.findById(QuizzId);
 			if (opquest.isPresent()) {
@@ -340,7 +340,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 			Optional<Quizz> opquest = quizzRepo.findById(QuizzId);
 			if (opquest.isPresent()) {
@@ -370,7 +370,7 @@ public class QuizzService {
 	public ResponseEntity<?> getQuizzSheduleDetails(Long courseId, Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 
 			if ("ADMIN".equals(role)) {
@@ -393,7 +393,7 @@ public class QuizzService {
 	public ResponseEntity<?> SaveORUpdateSheduleQuizz(Long quizzId, Long batchId, LocalDate QuizzDate, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String insitution = muserRepository.findinstitutionByEmail(email);
 			if (insitution == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -445,7 +445,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 			if (opmuser.isEmpty()) {
@@ -529,7 +529,7 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Long id = muserRepository.findidByEmail(email);
 			Optional<QuizAttempt> opattempt = quizAttemptRepo.findbyquizzIdandUserId(id, quizzId);
 			if (opattempt.isEmpty()) {
@@ -624,7 +624,7 @@ public class QuizzService {
 			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepository.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");

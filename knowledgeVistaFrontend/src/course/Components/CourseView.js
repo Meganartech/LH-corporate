@@ -14,11 +14,9 @@ const CourseView = ({ filteredCourses }) => {
   const navigate =useNavigate();
   const Currency=sessionStorage.getItem("Currency");
  
-  const handleClick = async (event, id, amount, url) => {
+  const handleClick = async (event, id, url) => {
     event.preventDefault();
-    if (amount === 0) {
-      navigate(url)
-    } else {
+   
       try {
         const formdata = JSON.stringify({ courseId: id });
         const response = await axios.post(
@@ -61,7 +59,7 @@ const CourseView = ({ filteredCourses }) => {
           throw error
         }
       }
-    }
+    
   };
 
   return (
@@ -88,7 +86,6 @@ const CourseView = ({ filteredCourses }) => {
                      handleClick(
                        e,
                        item.courseId,
-                       item.amount,
                        item.courseUrl
                      );
                    }}
@@ -109,7 +106,6 @@ const CourseView = ({ filteredCourses }) => {
                         handleClick(
                           e,
                           item.courseId,
-                          item.amount,
                           item.courseUrl
                         );
                       }}
@@ -119,72 +115,7 @@ const CourseView = ({ filteredCourses }) => {
                    <p title={item.courseDescription} className="courseDescription">
                     {item.courseDescription}
                     </p>
-                   {role ==="USER" &&  <div>
-                      {item.amount === 0 ? (
-                        <a
-                          title="Enroll For Free"
-                          onClick={(e) => {
-                            handleClick(
-                              e,
-                              item.courseId,
-                              item.amount,
-                              item.courseUrl
-                            );
-                          }}
-                          className="btn btn-sm btn-outline-success w-100"
-                        >
-                          Enroll for Free
-                        </a>
-                      ) : (
-                        <div
-                          className="amountGrid"
-                        >
-                          <div className="amt">
-                             <i className={Currency === "INR" ? "fa-solid fa-indian-rupee-sign pr-1" : "fa-solid fa-dollar-sign pr-1"}></i>
-                              <span title={item.amount} >
-                              {item.amount}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>}
-                    {(role ==="ADMIN"||role==="TRAINER") &&  <div>
-                      
-                      <div className="card-text">
-                      {item.amount === 0 ? (
-                        <a
-                        href="#"
-                          className=" btn btn-sm btn-outline-success w-100"
-                          onClick={(e) => {
-                            handleClick(
-                              e,
-                              item.courseId,
-                              item.amount,
-                              item.courseUrl
-                            );
-                          }}
-                        >
-                          <label>
-                          Free
-                          </label>
-                        </a>
-                      ) : (
-                        <a className="btn btn-sm  btn-outline-primary w-100"     onClick={(e) => {
-                          handleClick(
-                            e,
-                            item.courseId,
-                            item.amount,
-                            item.courseUrl
-                          );
-                        }}>
-                       <i className={Currency === "INR" ? "fa-solid fa-indian-rupee-sign mr-1 " : "fa-solid fa-dollar-sign mr-1"}></i>
-                          <label>{item.amount}</label>
-                        </a>
-                      )}
-                    </div>
-                         
-                       
-                    </div>}
+                  
                   </div>
                 </div>
               </div>

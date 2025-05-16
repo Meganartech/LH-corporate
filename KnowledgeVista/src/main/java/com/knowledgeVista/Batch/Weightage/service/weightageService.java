@@ -35,7 +35,7 @@ public class weightageService {
 	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 	          }
 			  String role=jwtUtil.getRoleFromToken(token);
-			  String email=jwtUtil.getUsernameFromToken(token);
+			  String email=jwtUtil.getEmailFromToken(token);
 			  if("ADMIN".equals(role)||"TRAINER".equals(role)) {
 					
 				  String institution=muserRepository.findinstitutionByEmail(email);
@@ -84,7 +84,7 @@ public class weightageService {
 	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 	          }
 			  String role=jwtUtil.getRoleFromToken(token);
-			  String email=jwtUtil.getUsernameFromToken(token);
+			  String email=jwtUtil.getEmailFromToken(token);
 			  if("ADMIN".equals(role)||"TRAINER".equals(role)) {
 					
 				  String institution=muserRepository.findinstitutionByEmail(email);

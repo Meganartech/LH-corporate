@@ -512,7 +512,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	    	if (!jwtUtil.validateToken(token)) {
 	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	   	     }
-	    	 String emailofreq=jwtUtil.getUsernameFromToken(token);
+	    	 String emailofreq=jwtUtil.getEmailFromToken(token);
 	         String institution="";
 		     Optional<Muser> opuser =muserrepositories.findByEmail(emailofreq);
 		     if(opuser.isPresent()) {
@@ -557,7 +557,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	                // If the token is not valid, return unauthorized status
 	                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	            }
-		    	 String emailofreq=jwtUtil.getUsernameFromToken(token);
+		    	 String emailofreq=jwtUtil.getEmailFromToken(token);
 	            String role = jwtUtil.getRoleFromToken(token);
 	            String institution="";
 			     Optional<Muser> opuser =muserrepositories.findByEmail(emailofreq);
@@ -605,7 +605,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	            }
  
 	            String role = jwtUtil.getRoleFromToken(token);
-	            String emailofreq=jwtUtil.getUsernameFromToken(token);
+	            String emailofreq=jwtUtil.getEmailFromToken(token);
 	          
 	            String institution="";
 			     Optional<Muser> opuser =muserrepositories.findByEmail(emailofreq);
@@ -649,7 +649,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	            }
 
-	            String emailofreq=jwtUtil.getUsernameFromToken(token);
+	            String emailofreq=jwtUtil.getEmailFromToken(token);
 	          
 	            String institution="";
 			     Optional<Muser> opuser =muserrepositories.findByEmail(emailofreq);
@@ -761,11 +761,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	        if (optRoleUser.isPresent()) {
 	            roleUser = optRoleUser.get();
 	        } else {
-	            // If role doesn't exist, create it
-	            MuserRoles newRole = addUser.addRole(role, null); // or link with parent role if needed
-	            roleUser = new MuserRoles();
-	            roleUser.setRoleName(newRole.getRoleName());
-	            muserrolerepository.save(roleUser); // Save the new role in the `muser_roles` table
+	        	  return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Role Not Found");
 	        }
 
 	        // Username extraction if not provided

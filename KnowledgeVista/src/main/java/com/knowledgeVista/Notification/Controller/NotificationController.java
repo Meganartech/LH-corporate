@@ -49,7 +49,7 @@ public class NotificationController {
 		            
 		            
 		            // Extract email from token and get the user
-		            String email = jwtUtil.getUsernameFromToken(token);
+		            String email = jwtUtil.getEmailFromToken(token);
 		            Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 		            if (opmuser.isPresent()) {
@@ -79,7 +79,7 @@ public class NotificationController {
 		            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		        }
 
-		        String email = jwtUtil.getUsernameFromToken(token);
+		        String email = jwtUtil.getEmailFromToken(token);
 		        Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 		        if (opmuser.isPresent()) {
@@ -125,7 +125,7 @@ public class NotificationController {
 			if (!jwtUtil.validateToken(token)) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	        }
-			String email= jwtUtil.getUsernameFromToken(token);
+			String email= jwtUtil.getEmailFromToken(token);
 		    Optional<Muser> opuser=muserRepository.findByEmail(email);
 		    if(opuser.isPresent()) {
 		    	Muser user=opuser.get();
@@ -157,7 +157,7 @@ public class NotificationController {
 	         if (!jwtUtil.validateToken(token)) {
 	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	         }
-	         String email=jwtUtil.getUsernameFromToken(token);
+	         String email=jwtUtil.getEmailFromToken(token);
 	         Optional<Muser> opmuser= muserRepository.findByEmail(email);
 	         if(opmuser.isPresent()) {
 	        	 Muser user=opmuser.get();
@@ -186,7 +186,7 @@ public class NotificationController {
 			if (!jwtUtil.validateToken(token)) {
              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
          }
-         String email=jwtUtil.getUsernameFromToken(token);
+         String email=jwtUtil.getEmailFromToken(token);
          Optional<Muser> opmuser= muserRepository.findByEmail(email);
          if(opmuser.isPresent()) {
         	 Muser user=opmuser.get();

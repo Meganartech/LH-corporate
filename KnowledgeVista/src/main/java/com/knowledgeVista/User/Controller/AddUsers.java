@@ -80,7 +80,7 @@ public class AddUsers {
 	          }
 
 	          String role = jwtUtil.getRoleFromToken(token);
-              String adminemail=jwtUtil.getUsernameFromToken(token);
+              String adminemail=jwtUtil.getEmailFromToken(token);
              
 	          // Perform authentication based on role
 	          if ("ADMIN".equals(role)) {
@@ -226,7 +226,7 @@ public class AddUsers {
 	          }
 
 	          String role = jwtUtil.getRoleFromToken(token);
-	          String emailofadd=jwtUtil.getUsernameFromToken(token);
+	          String emailofadd=jwtUtil.getEmailFromToken(token);
 	          String usernameofadding="";
 	          String emailofadding="";
 	          String instituiton="";
@@ -546,7 +546,7 @@ public class AddUsers {
 	        }
 
 	        String roleFromToken = jwtUtil.getRoleFromToken(token);
-	        String adminEmail = jwtUtil.getUsernameFromToken(token);
+	        String adminEmail = jwtUtil.getEmailFromToken(token);
 
 	        // Only allow ADMINs to add users
 	        if (!"ADMIN".equals(roleFromToken)) {

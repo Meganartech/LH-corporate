@@ -267,7 +267,7 @@ public class Edituser {
 	         }
 
 	         jwtUtil.getRoleFromToken(token);
-	         String originalEmail=jwtUtil.getUsernameFromToken(token);
+	         String originalEmail=jwtUtil.getEmailFromToken(token);
 	         Optional<Muser> opStudent = muserrepositories.findByEmail(originalEmail);
 	         if (!opStudent.isPresent()) {
 	             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"message\": \"user not found\"}");
@@ -320,7 +320,7 @@ public class Edituser {
 	 
 	 public ResponseEntity<?> NameandProfile( String token) {
 		 
-		 String email= jwtUtil.getUsernameFromToken(token);
+		 String email= jwtUtil.getEmailFromToken(token);
 		 
 		Optional<Muser> opuser= muserrepositories.findByEmail(email);
 		if(opuser.isPresent()) {

@@ -27,7 +27,7 @@ public class EventController {
 	    		if (!jwtUtil.validateToken(token)) {
 		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		         }
-		         String email = jwtUtil.getUsernameFromToken(token);
+		         String email = jwtUtil.getEmailFromToken(token);
 		         Long userId=muserRepo.findidByEmail(email);
 		         if(userId==null) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Id Not Found");
