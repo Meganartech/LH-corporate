@@ -127,8 +127,10 @@ import ValidateAssignment from "./Assignment/ValidateAssignment.js";
 import LicenceFileCreation from "./AuthenticationPages/LicenceFileCreation.js";
 import NewRole from "./Registration/NewRole.js";
 import ViewDynamicRole from "./DynamicRole/ViewDynamicRole";
-import EditDynamicRole from "./DynamicRole/ViewDynamicRole.js";
+import EditDynamicRole from "./DynamicRole/EditDynamicRole.js";
 import RoleRegistration from "./Registration/RoleRegisteration.js";
+import AddDynamicRole from "./DynamicRole/AddDynamicRole.js";
+
 function App() {
   useEffect(() => {
     pcoded();
@@ -408,6 +410,16 @@ function App() {
                 </ErrorBoundary>
               }
             />
+          <Route
+            path="/add/:roleName"
+            element={
+              <ErrorBoundary>
+                <PrivateRoute authenticationRequired={true} onlyadmin={true}>
+                    <AddDynamicRole />
+                </PrivateRoute>
+              </ErrorBoundary>
+            }
+          />
             <Route
               path="/mycourses"
               element={
