@@ -363,7 +363,6 @@ public class ModuleTestService {
 			if (insitution == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
-			boolean isalloted = false;
 			Optional<ModuleTest> opmtest = moduletestRepo.findById(mtestId);
 			Optional<Batch> opbatch = batchRepo.findBatchByIdAndInstitutionName(batchId, insitution);
 			if (!opmtest.isPresent()) {
@@ -374,13 +373,7 @@ public class ModuleTestService {
 			}
 			ModuleTest mtest = opmtest.get();
 			Batch batch = opbatch.get();
-			Long courseId = mtest.getCourseDetail().getCourseId();
 			if ("ADMIN".equals(role)) {
-				isalloted = true;
-			} else if ("TRAINER".equals(role)) {
-				isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseId);
-			}
-			if (isalloted) {
 				Optional<SheduleModuleTest> opQuizzschedule = sheduleTestRepo.findByModuleTestIdAndBatchId(mtestId,
 						batchId);
 				if (opQuizzschedule.isPresent()) {
@@ -408,15 +401,8 @@ public class ModuleTestService {
 	public ResponseEntity<?> getModuleTestSheduleDetails(Long courseId, Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			boolean isalloted = false;
-
 			if ("ADMIN".equals(role)) {
-				isalloted = true;
-			} else if ("TRAINER".equals(role)) {
-				isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseId);
-			}
-			if (isalloted) {
+				
 				List<MTSheduleListDto> shedule = moduletestRepo.getQuizzShedulesByCourseIdAndBatchId(courseId, batchId);
 				return ResponseEntity.ok(shedule);
 			}

@@ -49,13 +49,21 @@ const CourseView = ({ filteredCourses }) => {
           }).then(()=>{
             navigate("/unauthorized")
           })
-        }else if(error.response.status === 403){
-          MySwal.fire({
-            icon: "error",
-            title: "You Cannot Access This Course",
-            text: "This Course was not  Assigned to You  ",
-          });
-        } else {
+        }else if (error.response.status === 400) {
+  MySwal.fire({
+    icon: "warning",
+    title: "Access Denied",
+    text: "This course is not assigned to you. Do you want to send an access request?",
+    showCancelButton: true,
+    confirmButtonText: "Send Request",
+    cancelButtonText: "Cancel",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      navigate(`/batch/viewall/${id}`)
+    }
+  });
+}
+ else {
           throw error
         }
       }

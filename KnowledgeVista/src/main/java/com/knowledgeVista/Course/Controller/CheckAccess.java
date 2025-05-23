@@ -27,17 +27,15 @@ public class CheckAccess {
 	private MuserRepositories muserRepository;
 	@Autowired
 	private BatchEnrollmentRepo batchEnrollRepo;
-	 @Autowired
-	 private JwtUtil jwtUtil;
+	@Autowired
+	private JwtUtil jwtUtil;
 
 
   	 private static final Logger logger = LoggerFactory.getLogger(CheckAccess.class);
 
 	 public ResponseEntity<?> checkAccess( Map<String, Long> requestData,  String token) {
 	     try {
-	         if (!jwtUtil.validateToken(token)) {
-	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	         }
+	       
 
 	         String email = jwtUtil.getEmailFromToken(token);
 
@@ -52,23 +50,25 @@ public class CheckAccess {
 	         }
 	        	 CourseDetail course = courseOptional.get();
 	        	 Muser user = optionalUser.get();
+	        	 
 	        	 String role=user.getRole().getRoleName();
+	        	 
 	        	   String courseUrl = course.getCourseUrl();
-	        	   String url="/batch/viewall/"+ course.getCourseId();
 	        	
 	         if ("ADMIN".equals(role)) {
 	                 return ResponseEntity.ok().body(courseUrl);
 	             
-	         } else if ("TRAINER".equals(role)) {
-	                 if (user.getAllotedCourses().contains(course)) {
-	                     return ResponseEntity.ok().body(courseUrl);
-	                 }
-	             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You Cannot Access This Course");
-	         }else {
+	         } else {
+	        	 if(course.isApprovalNeeded()) {
 	        	 if(batchEnrollRepo.existsActiveCourseForUser(user.getUserId(), courseId)) {
 	        		  return ResponseEntity.ok().body(courseUrl);
+	        	 }else{
+	        		 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("you cannot Access This Course Approval Needed");
+	        		 //need to send Approval Request
 	        	 }
-	        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Role Not Found");
+	        	 }else {
+	        		  return ResponseEntity.ok().body(courseUrl);
+	        	 }
 	         }
 	         
 	       

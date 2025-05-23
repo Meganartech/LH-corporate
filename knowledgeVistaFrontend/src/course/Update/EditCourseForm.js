@@ -17,6 +17,7 @@ const EditCourseForm = ({}) => {
     courseDescription: "",
     courseCategory: "",
     duration: "",
+    isApprovalNeeded:false,
     courseImage: null,
   });
   const [img, setimg] = useState();
@@ -162,6 +163,9 @@ const EditCourseForm = ({}) => {
     }
     if (courseEdit.duration) {
       formData.append("Duration", courseEdit.duration);
+    }
+    if(courseEdit.isApprovalNeeded){
+      formData.append("isApprovalNeeded",courseEdit.isApprovalNeeded)
     }
    
 
@@ -349,7 +353,31 @@ const EditCourseForm = ({}) => {
                       onChange={handleChange}
                     />
                     <div className="invalid-feedback">{errors.duration}</div>
-                   
+                           <div className="form-group row mt-3">
+  <div className="col-sm-9">
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="isApprovalNeeded"
+        name="isApprovalNeeded"
+        checked={courseEdit.isApprovalNeeded}
+        onChange={() => {
+          setCourseEdit((prev) => ({
+            ...prev,
+            isApprovalNeeded: !prev.isApprovalNeeded
+          }));
+        }}
+      />
+      <label className="form-check-label" htmlFor="isApprovalNeeded">
+        Requires Approval
+      </label>
+      <small className="form-text text-muted">
+        Enabling this means users must request access before viewing this course.
+      </small>
+    </div>
+  </div>
+</div>
                 </div>
                 
             

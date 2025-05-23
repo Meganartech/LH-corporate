@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.knowledgeVista.Batch.Enrollment.repo.BatchEnrollmentRepo;
 import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Course.DocsDetails;
 import com.knowledgeVista.Course.MiniatureDetail;
@@ -76,6 +77,8 @@ public class videolessonController {
 	
 	@Autowired
 	private PPTReader pptreader;
+	@Autowired
+	private BatchEnrollmentRepo batchEnrollRepo;
 
 	private Boolean checkFileSize(String institution, Long totalFileSize) {
 		 if(environment=="VPS") {
@@ -94,28 +97,11 @@ public class videolessonController {
 	public ResponseEntity<String> savenote(MultipartFile file, String Lessontitle, String LessonDescription,
 			MultipartFile videoFile, String fileUrl, List<MultipartFile> documentFiles, Long courseId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
 			String role = jwtUtil.getRoleFromToken(token);
 			String email = jwtUtil.getEmailFromToken(token);
-			String username = "";
-			String institution = "";
-
-			Optional<Muser> opuser = muserRepository.findByEmail(email);
-			if (opuser.isPresent()) {
-				Muser user = opuser.get();
-				username = user.getUsername();
-				institution = user.getInstitutionName();
-				boolean adminIsActive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-				if (!adminIsActive) {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-				}
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
+			String username = jwtUtil.getUsernameFromToken(token);
+			String institution = jwtUtil.getInstitutionFromToken(token);
+			
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				Optional<CourseDetail> courseDetailOptional = coursedetailrepostory
 						.findByCourseIdAndInstitutionName(courseId, institution);
@@ -718,9 +704,6 @@ public ResponseEntity<?>UserAccessCheck(String fileName, int slideNumber,Muser u
 
 public ResponseEntity<?>getDocsName(Long lessonId , String token){
 	try {
-		if (!jwtUtil.validateToken(token)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
         String role=jwtUtil.getRoleFromToken(token);
         if("ADMIN".equals(role)) {
         	return ResponseEntity.ok(docsDetailsRepository.findByLessonId(lessonId));
@@ -733,28 +716,20 @@ public ResponseEntity<?>getDocsName(Long lessonId , String token){
 			Optional<CourseDetail> opcourse= lessonrepo.FindbyCourseByLessonId(lessonId);
 			if(opcourse.isPresent()) {
 				CourseDetail course=opcourse.get();
-				
-				if(course.getAmount()==0 ||user.getCourses().contains(course)) {
+				 if(course.isApprovalNeeded()) {
+		        	 if(batchEnrollRepo.existsActiveCourseForUser(user.getUserId(), course.getCourseId())) {
+			
 					return ResponseEntity.ok(docsDetailsRepository.findByLessonId(lessonId));
-				}else {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user Not allowed to Access this course");
-				}
+		        	 }else{
+		        		 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("you cannot Access This Course Approval Needed");
+		        		 //need to send Approval Request
+		        	 }
+				 }else {
+						return ResponseEntity.ok(docsDetailsRepository.findByLessonId(lessonId));
+				 }
 			}else {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course Not Found");
 			}
-			}else if(user.getRole().getRoleName().equals("TRAINER")) {
-				Optional<CourseDetail> opcourse= lessonrepo.FindbyCourseByLessonId(lessonId);
-				if(opcourse.isPresent()) {
-					CourseDetail course=opcourse.get();
-					
-					if(course.getAmount()==0 ||user.getAllotedCourses().contains(course)) {
-						return ResponseEntity.ok(docsDetailsRepository.findByLessonId(lessonId));
-					}else {
-						return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user Not allowed to Access this course");
-					}
-				}else {
-					return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course Not Found");
-				}
 			}else {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Cannot Find the User Role");
 			}

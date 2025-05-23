@@ -8,7 +8,7 @@ import Header from "../../Common Components/Header";
 import pcoded from "../../assets/js/pcoded.js"
 import Sidebar from "../../Common Components/Sidebar.js";
 import { useNavigate } from "react-router-dom";
-const ViewCourseVps = (filter,handleFilterChange) => {
+const ViewCourseVps = () => {
   useEffect(() => {
       pcoded();  
       },[]);
@@ -62,18 +62,9 @@ const ViewCourseVps = (filter,handleFilterChange) => {
 
   const userId = sessionStorage.getItem("userid");
   const token = sessionStorage.getItem("token");
-
-  
- 
-  
- 
-
-
-
 return (
   <>
-    {islogedin && <Sidebar  filter={filter}
-    handleFilterChange={handleFilterChange}/>}
+    {islogedin && <Sidebar />}
     <Header searchQuery={searchQuery}
         handleSearchChange={handleSearchChange}
         setSearchQuery={setSearchQuery} />

@@ -534,18 +534,10 @@ public class AssignmentService2 {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			boolean isalloted = false;
 			Optional<Assignment> opassignment = assignmentRepo.findById(AssignmentId);
 			if (opassignment.isPresent()) {
 				Assignment assignment = opassignment.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = assignment.getCourseDetail().getCourseId();
-					isalloted = muserRepo.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
 					List<AssignmentQuestion> questions = assignmentQuesstionRepo.findAllById(questionIds);
 					assignmentQuesstionRepo.deleteAll(questions);
 					Integer remainingQuestions = assignmentQuesstionRepo.countByAssignmentId(AssignmentId);
@@ -575,20 +567,11 @@ public class AssignmentService2 {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
-				boolean isalloted = false;
 				Optional<Assignment> opAssignment = assignmentRepo.findById(assignmentId);
 				if (opAssignment.isPresent()) {
 					Assignment assignment = opAssignment.get();
-
 					if ("ADMIN".equals(role)) {
-						isalloted = true;
-					} else if ("TRAINER".equals(role)) {
-						Long courseID = assignment.getCourseDetail().getCourseId();
-						isalloted = muserRepo.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-					}
-					if (isalloted) {
 						question.setAssignment(assignment);
 						assignment.setType(AssignmentType.QUIZ);
 						assignment.getQuestions().add(question);

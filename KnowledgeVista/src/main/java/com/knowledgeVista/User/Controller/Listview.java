@@ -918,26 +918,7 @@ public List<SearchDto> getBatchesOfUser(String token, String email) {
 
 public ResponseEntity<?> getRoleList(String token) {
     try {
-        if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         String role = jwtUtil.getRoleFromToken(token);
-        String email = jwtUtil.getEmailFromToken(token);
-        Optional<Muser> opreq = muserrepositories.findByEmail(email);
-        String institution = "";
-
-        if (opreq.isPresent()) {
-            Muser requser = opreq.get();
-            institution = requser.getInstitutionName();
-            boolean adminIsactive = muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-            if (!adminIsactive) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
            List<Map<String,Object>> roles= roleRepo.fetchAllRoles();
            

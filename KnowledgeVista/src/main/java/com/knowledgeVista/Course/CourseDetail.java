@@ -2,6 +2,7 @@ package com.knowledgeVista.Course;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.knowledgeVista.Batch.Batch;
 import com.knowledgeVista.Batch.Assignment.Assignment;
 import com.knowledgeVista.User.Muser;
@@ -62,7 +63,10 @@ public class CourseDetail {
 
 	@Column(name = "Noofseats")
 	private Long Noofseats;
-
+    @Column
+    @JsonProperty("isApprovalNeeded")
+    private boolean isApprovalNeeded;
+    
 	@OneToMany(mappedBy = "courseDetail")
 	private List<videoLessons> videoLessons;
 
@@ -85,7 +89,7 @@ public class CourseDetail {
 
 	public CourseDetail(Long courseId, String courseName, String courseUrl, String courseDescription,
 			String courseCategory, Long amount, byte[] courseImage,  Long Duration,
-			String institutionName, Long Noofseats) {
+			String institutionName, Long Noofseats,boolean isApprovalNeeded) {
 		this.courseId = courseId;
 		this.courseName = courseName;
 		this.courseUrl = courseUrl;
@@ -96,6 +100,7 @@ public class CourseDetail {
 		this.Duration = Duration;
 		this.institutionName = institutionName;
 		this.Noofseats = Noofseats;
+		this.isApprovalNeeded=isApprovalNeeded;
 	}
 
 }

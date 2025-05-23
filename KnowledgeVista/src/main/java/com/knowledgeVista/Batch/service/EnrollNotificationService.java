@@ -28,6 +28,18 @@ public class EnrollNotificationService {
 	
 		public void sendEnrollmentMail(HttpServletRequest request,List<CourseDetail> courses,Batch batch,Muser student ,String adding) {
 		try {
+			 List<Long> userList = new ArrayList<>();
+		        userList.add(student.getUserId());
+
+		        // Notification for the user (Trainer or Student)
+		        String heading = "New Batch Assigned!";
+		        String link = "/mycourses"; // Trainer and Student have different links
+		        String notiDescription = "A batch " + batch.getBatchTitle() + " was assigned to you";
+
+		        Long notifyId = notiservice.createNotification("CourseAssigned", student.getUsername(), notiDescription, adding, heading, link, batch.getBatchImage());
+		        if (notifyId != null) {
+		            notiservice.SpecificCreateNotification(notifyId, userList);
+		        }
 			List<String> bcc = null;
 			List<String> cc = null;
 			String institutionname = student.getInstitutionName();
@@ -85,18 +97,7 @@ public class EnrollNotificationService {
 			    } catch (Exception e) {
 			        logger.error("Error sending mail: " + e.getMessage());
 			    }
-			    List<Long> userList = new ArrayList<>();
-		        userList.add(student.getUserId());
-
-		        // Notification for the user (Trainer or Student)
-		        String heading = "New Batch Assigned!";
-		        String link = "/mycourses"; // Trainer and Student have different links
-		        String notiDescription = "A batch " + batch.getBatchTitle() + " was assigned to you";
-
-		        Long notifyId = notiservice.createNotification("CourseAssigned", student.getUsername(), notiDescription, adding, heading, link, batch.getBatchImage());
-		        if (notifyId != null) {
-		            notiservice.SpecificCreateNotification(notifyId, userList);
-		        }
+			   
 			}
 		}catch (Exception e) {
 			   logger.error("Error sending mail: " + e.getMessage());
@@ -115,14 +116,7 @@ public class EnrollNotificationService {
 		}
 		
 ////============================Assign Batch To Trainer====================================
-				 private void createAndSendNotification(Muser user, Batch batch, String addingEmail, String institution) {
-			    try {
-			       
-
-			    } catch (Exception e) {
-			        logger.error("Error in notification", e);
-			    }
-			}
+				
 		 
 
 }

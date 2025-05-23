@@ -137,7 +137,7 @@ const Login = () => {
           },
         }).then((result) => {
           if (result.isConfirmed && result.value) {
-            navigate(`/register/${result.value}`);
+           navigate(`/register?role=${result.value}`);
           }
         });
       } else if (activeProfile === "SAS") {

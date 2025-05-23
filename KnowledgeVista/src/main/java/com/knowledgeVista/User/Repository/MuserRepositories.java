@@ -246,13 +246,13 @@ public interface MuserRepositories extends JpaRepository<Muser, Long> {
 			""")
 	boolean FindEnrolledOrNotByUserIdAndCourseId(@Param("email") String email, @Param("courseId") Long courseId);
 
-	@Query("""
-			    SELECT COUNT(c) > 0
-			    FROM Muser u
-			    JOIN u.allotedCourses c
-			    WHERE u.email = :email AND c.courseId = :courseId
-			""")
-	boolean FindAllotedOrNotByUserIdAndCourseId(@Param("email") String email, @Param("courseId") Long courseId);
+//	@Query("""
+//			    SELECT COUNT(c) > 0
+//			    FROM Muser u
+//			    JOIN u.allotedCourses c
+//			    WHERE u.email = :email AND c.courseId = :courseId
+//			""")
+//	boolean FindAllotedOrNotByUserIdAndCourseId(@Param("email") String email, @Param("courseId") Long courseId);
 
 	@Query("""
 			    SELECT new com.knowledgeVista.Batch.SearchDto(b.id, b.batchTitle, 'BATCH')

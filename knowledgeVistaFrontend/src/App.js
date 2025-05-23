@@ -123,6 +123,7 @@ import EditDynamicRole from "./DynamicRole/ViewDynamicRole.js";
 import RoleRegistration from "./Registration/RoleRegisteration.js";
 import RoleList from "./DynamicRole/RoleList.js";
 import ManageRole from "./DynamicRole/ManageRole.js";
+import AccessRequest from "./course/Components/AccessRequest.js";
 function App() {
   useEffect(() => {
     pcoded();
@@ -143,44 +144,18 @@ function App() {
       Noofseats: "",
     },
   ]);
-  const [filter, setFilter] = useState({ paid: true, unpaid: true }); // Filter state
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
-  const handleFilterChange = (name) => {
-    setFilter((prev) => {
-      const updatedFilter = {
-        ...prev,
-        [name]: !prev[name], // Toggle the selected filter state
-      };
-      return updatedFilter;
-    });
-  };
+ 
+
+
 
   const filteredCourses = course.filter((item) => {
     const name = item.courseName ? item.courseName.toLowerCase() : "";
-    const matchesSearchQuery = name.includes(searchQuery.toLowerCase());
-
-    // If both paid and unpaid filters are selected, show all courses that match the search query
-    if (filter.paid && filter.unpaid) {
-      return matchesSearchQuery; // No amount filtering, just search query match
-    }
-
-    // Condition for Paid courses (if filter.paid is selected)
-    const matchesPaidCondition = filter.paid ? item.amount > 0 : true;
-
-    // Condition for Unpaid courses (if filter.unpaid is selected)
-    const matchesUnpaidCondition = filter.unpaid ? item.amount == 0 : true;
-
-    // Return courses that match the search query and the appropriate paid/unpaid condition
-    return matchesSearchQuery && matchesPaidCondition && matchesUnpaidCondition;
+    return name.includes(searchQuery.toLowerCase());
   });
-
-  // const filteredCourses = course.filter((item) => {
-  //   const name = item.courseName ? item.courseName.toLowerCase() : "";
-  //   return name.includes(searchQuery.toLowerCase());
-  // });
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -218,8 +193,7 @@ function App() {
                 searchQuery={searchQuery}
                 handleSearchChange={handleSearchChange}
                 setSearchQuery={setSearchQuery}
-                filter={filter}
-                handleFilterChange={handleFilterChange}
+              
               />
             }
           >
@@ -963,7 +937,20 @@ function App() {
               }
             />
           
-           
+            <Route
+              path="/view/AccessRequest"
+              element={
+                <ErrorBoundary>
+                  <PrivateRoute
+                    onlyadmin={true}
+                    authenticationRequired={true}
+                    authorizationRequired={true}
+                  >
+                    <AccessRequest />
+                  </PrivateRoute>
+                </ErrorBoundary>
+              }
+            />
 
             <Route
               path="/licenceDetails"
@@ -1478,8 +1465,6 @@ function App() {
                 <RedirectComponent vpsonly={true} checkvisible={true}>
                   {" "}
                   <ViewCourseVps
-                    filter={filter}
-                    handleFilterChange={handleFilterChange}
                   />
                 </RedirectComponent>
               </ErrorBoundary>

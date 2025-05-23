@@ -575,18 +575,10 @@ public class AssignmentService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			boolean isalloted = false;
 			Optional<AssignmentQuestion> opquest = QuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {
 				AssignmentQuestion quest = opquest.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quest.getAssignment().getCourseDetail().getCourseId();
-					isalloted = muserRepo.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
 					quest.setAnswer(quizzquestion.getAnswer());
 					quest.setOption1(quizzquestion.getOption1());
 					quest.setOption2(quizzquestion.getOption2());

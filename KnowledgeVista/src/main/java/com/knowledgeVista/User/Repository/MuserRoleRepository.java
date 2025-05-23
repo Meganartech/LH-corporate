@@ -17,21 +17,29 @@ public interface MuserRoleRepository extends JpaRepository<MuserRoles,Long> {
 	Optional<MuserRoles> findByRoleName(String roleName);
 	
 	Optional<MuserRoles> findByRoleNameIgnoreCase(String roleName);
-	
 	@Query(value = """
 		    SELECT 
 		        r.role_id AS roleId,
 		        r.role_name AS roleName,
 		        r.is_active AS isActive,
 		        pr.role_id AS parentRoleId,
-		        pr.role_name AS parentRoleName
+		        pr.role_name AS parentRoleName,
+		        STRING_AGG(DISTINCT b.batch_title, ', ') AS batchNames
 		    FROM 
 		        muser_roles r
 		    LEFT JOIN 
 		        muser_roles pr ON r.parent_role_id = pr.role_id
-		        WHERE 
+		    LEFT JOIN 
+		        batch_role_mapping brm ON brm.role_id = r.role_id
+		    LEFT JOIN 
+		        batch b ON brm.batch_id = b.id
+		    WHERE 
 		        r.role_name <> 'SYSADMIN'
+		    GROUP BY 
+		        r.role_id, r.role_name, r.is_active, pr.role_id, pr.role_name
 		    """, nativeQuery = true)
 		List<Map<String, Object>> fetchAllRoles();
+
+
 
 }

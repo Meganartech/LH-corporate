@@ -75,7 +75,7 @@ fetchDataForRole();
               </div>
                 </div>
                 <div className='card-body' style={{minHeight:"60vh"}}>
-                  
+                  <div className='table-container'>
                  <table className="table table-hover table-bordered table-sm " >
                     <thead className="thead-dark">
                       <tr>
@@ -83,7 +83,7 @@ fetchDataForRole();
                         <th scope="col">RoleName</th>
                         <th scope="col">Parent Role </th>
                         <th scope="col">status</th>
-                        <th scope='col'>Action</th>
+                        <th scope='col'>Assigned batches</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -100,7 +100,7 @@ fetchDataForRole();
                   <tr key={index}>
 <th>{index+1}</th>
 <th  className='py-2'>{role.rolename}</th>
-<th  className='py-2'>{role.parentrolename}</th>
+<th  className='py-2' >{role.parentrolename}</th>
  <td className="py-2">
                               {role.isactive ? (
                                 <div className="Activeuser">
@@ -112,15 +112,16 @@ fetchDataForRole();
                                 </div>
                               )}
                             </td>
-                            <td  className='py-2'>
-                              <button className='hidebtn'
-                                  onClick={() => navigate(`/manage/role?roleId=${role.roleid}&roleName=${encodeURIComponent(role.rolename)}`)}
-       >Manage</button></td>
+                            <td  className='py-2 text-truncate' title={role.batchnames}
+                                  onClick={() => navigate(`/manage/role?roleId=${role.roleid}&roleName=${encodeURIComponent(role.rolename)}`)}>
+                              {role.batchnames} 
+                              <i className='pl-2 fa-solid fa-plus hidebtn' title='Assign More batch'
+       ></i></td>
                   </tr>
                 ))
              )}</tbody>
                         </table>
-              
+              </div>
                   </div>
              
                 </div>

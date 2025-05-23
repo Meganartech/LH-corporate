@@ -35,7 +35,7 @@ public interface CourseDetailRepository  extends JpaRepository<CourseDetail,Long
 	 
 	 @Query("SELECT new com.knowledgeVista.Course.CourseDetail(cd.courseId, cd.courseName, cd.courseUrl, cd.courseDescription, " +
 		       "cd.courseCategory, cd.amount, cd.courseImage,  cd.Duration, " +
-		       "cd.institutionName, cd.Noofseats) " +
+		       "cd.institutionName, cd.Noofseats,cd.isApprovalNeeded) " +
 		       "FROM CourseDetail cd WHERE cd.courseId = :courseId AND cd.institutionName = :institutionName")
 		Optional<CourseDetail> findMinimalCourseDetailbyCourseIdandInstitutionName(@Param("courseId") Long courseId, 
 		                                               @Param("institutionName") String institutionName);

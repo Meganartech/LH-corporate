@@ -33,7 +33,11 @@ public class AccessCheckAspect {
         if (token == null || !jwtUtil.validateToken(token)) {
             throw new UnauthorizedAccessException("Invalid Token");
         }
-
+        String role=jwtUtil.getRoleFromToken(token);
+        if("SYSADMIN".equals(role)) {
+        	   return joinPoint.proceed();
+        }
+      
         String institution = jwtUtil.getInstitutionFromToken(token);
         if (institution == null) {
             throw new UnauthorizedAccessException("Invalid Token");

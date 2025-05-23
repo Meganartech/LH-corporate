@@ -22,6 +22,7 @@ const CourseCreation = () => {
     courseDescription: "",
     courseCategory: "",
     Duration: "",
+    isApprovalNeeded:false,
     courseImage: "",
   });
   const courseName = useRef(null);
@@ -36,6 +37,7 @@ const CourseCreation = () => {
     courseCategory: "",
     Duration: "",
     courseImage: null,
+     isApprovalNeeded:false,
     base64Image: null,
     batches:selectedBatches
   });
@@ -162,7 +164,6 @@ const CourseCreation = () => {
       case "Duration":
         error = numericValue < 1 ? "Duration must be greater than 0" : "";
         break;
-     
       default:
         break;
     }
@@ -328,6 +329,7 @@ const CourseCreation = () => {
       formDataToSend.append("courseImage", formData.courseImage);
       formDataToSend.append("Trainer", formData.Trainer);
       formDataToSend.append("Duration", formData.Duration);
+      formDataToSend.append("isApprovalNeeded",formData.isApprovalNeeded);
       formDataToSend.append("batches",JSON.stringify(selectedBatches))
      
 
@@ -524,6 +526,7 @@ const CourseCreation = () => {
 
                
               </div>
+
               <div className="form-group row">
                   <label className="col-sm-3 col-form-label">
                     Select Batch
@@ -571,6 +574,33 @@ const CourseCreation = () => {
           ))}
         </div>
       )}
+      {/* Approval Required Checkbox */}
+<div className="form-group row mt-3">
+  <div className="col-sm-9">
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="isApprovalNeeded"
+        name="isApprovalNeeded"
+        checked={formData.isApprovalNeeded}
+        onChange={() => {
+          setFormData((prev) => ({
+            ...prev,
+            isApprovalNeeded: !prev.isApprovalNeeded
+          }));
+        }}
+      />
+      <label className="form-check-label" htmlFor="isApprovalNeeded">
+        Requires Approval
+      </label>
+      <small className="form-text text-muted">
+        Enabling this means users must request access before viewing this course.
+      </small>
+    </div>
+  </div>
+</div>
+
                   </div>
                   <div className="col-sm-2 pt-1">
                   <button

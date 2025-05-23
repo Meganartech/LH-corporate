@@ -153,7 +153,6 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Quizz> opquizz = quizzRepo.findById(quizzId);
 			if (opquizz.isPresent()) {
 				Quizz quizz = opquizz.get();
@@ -165,18 +164,8 @@ public class QuizzService {
 					quizz.setQuizzquestions(questions);
 					return ResponseEntity.ok(quizz);
 				} else {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					boolean isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-					if (isalloted) {
-						quizz.setLessons(null);
-						quizz.setSchedules(null);
-						quizz.setQuizAttempts(null);
-						List<Quizzquestion> questions = quizQuestionRepo.findByQuizzId(quizzId);
-						quizz.setQuizzquestions(questions);
-						return ResponseEntity.ok(quizz);
-					} else {
 						return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You Cannot Access This Page");
-					}
+					
 				}
 			} else {
 				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No Quizz Found ");
@@ -194,23 +183,16 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Quizzquestion> opquest = quizQuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {
 				Quizzquestion quest = opquest.get();
 				if ("ADMIN".equals(role)) {
 					quest.setQuizz(null);
 					return ResponseEntity.ok(quest);
-				} else {
-					Long courseID = quest.getQuizz().getLessons().getCourseDetail().getCourseId();
-					boolean isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-					if (isalloted) {
-						quest.setQuizz(null);
-						return ResponseEntity.ok(quest);
-					} else {
+				} 
 						return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You Cannot Access This Page");
-					}
-				}
+					
+				
 			} else {
 				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No Quizz Found ");
 			}
@@ -226,33 +208,23 @@ public class QuizzService {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
-			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			boolean isalloted = false;
+			String role = jwtUtil.getRoleFromToken(token);		
 			Optional<Quizz> opquest = quizzRepo.findById(quizzId);
 			if (opquest.isPresent()) {
-				Quizz quizz = opquest.get();
-				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
+				if ("ADMIN".equals(role)) {	
 					List<Quizzquestion> questions = quizQuestionRepo.findByQuestionIdInAndQuizzQuizzId(questionIds,
 							quizzId);
 					quizQuestionRepo.deleteAll(questions);
-					Long remainingQuestions = quizQuestionRepo.countByQuizzId(quizzId);
-					System.out.println(remainingQuestions);
+					Long remainingQuestions = quizQuestionRepo.countByQuizzId(quizzId);				
 					if (remainingQuestions == 0) {
 						quizzSheuleRepo.deleteByquizzID(quizzId);
 						quizAttemptRepo.deleteByQuizzId(quizzId);
 						quizzRepo.deleteQuizzById(quizzId);
-
 					}
 					return ResponseEntity.ok("Delted Successfully");
-				}
+				}else {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("you Are Not allowed to access This Page");
+				}
 			} else {
 				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No Quizz Found ");
 			}
@@ -265,22 +237,12 @@ public class QuizzService {
 
 	public ResponseEntity<?> UpdateQuizzQuestion(Long questionId, Quizzquestion quizzquestion, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			boolean isalloted = false;
 			Optional<Quizzquestion> opquest = quizQuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {
 				Quizzquestion quest = opquest.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quest.getQuizz().getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
+					
 					quest.setAnswer(quizzquestion.getAnswer());
 					quest.setOption1(quizzquestion.getOption1());
 					quest.setOption2(quizzquestion.getOption2());
@@ -307,18 +269,10 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			boolean isalloted = false;
 			Optional<Quizz> opquest = quizzRepo.findById(QuizzId);
 			if (opquest.isPresent()) {
 				Quizz quizz = opquest.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
 					quizz.setQuizzName(QuizzName);
 					quizzRepo.save(quizz);
 					return ResponseEntity.ok("updated Successfully");
@@ -340,18 +294,12 @@ public class QuizzService {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
 			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			boolean isalloted = false;
+			
 			Optional<Quizz> opquest = quizzRepo.findById(QuizzId);
 			if (opquest.isPresent()) {
 				Quizz quizz = opquest.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
+					
 					quizz.setDurationInMinutes(durationInMinutes);
 					quizzRepo.save(quizz);
 					return ResponseEntity.ok("updated Successfully");

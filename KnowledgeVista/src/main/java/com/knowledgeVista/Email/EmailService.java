@@ -81,7 +81,12 @@ public class EmailService {
 	            mailSender.setPort(defaultPort);
 	            mailSender.setUsername(defaultUsername);
 	            mailSender.setPassword(defaultPassword);
+	            
 	        }
+	        System.out.println("Host: " + mailSender.getHost());
+	        System.out.println("Port: " + mailSender.getPort());
+	        System.out.println("Username: " + mailSender.getUsername());
+
 
 	        // ✅ Common mail properties (TLS, SMTP authentication)
 	        Properties props = mailSender.getJavaMailProperties();
@@ -89,6 +94,10 @@ public class EmailService {
 	        props.put("mail.smtp.auth", "true");
 	        props.put("mail.smtp.starttls.enable", "true");
 	        props.put("mail.debug", "true"); // Optional, set to true for debugging
+	        props.put("mail.smtp.connectiontimeout", "10000"); // 10s
+	        props.put("mail.smtp.timeout", "10000");           // 10s
+	        props.put("mail.smtp.writetimeout", "10000");      // 10s
+
 
 	        return mailSender;
 	    }

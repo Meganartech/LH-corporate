@@ -253,7 +253,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	// --------------------------working------------------------------------
 
 	public ResponseEntity<?> addCourse(MultipartFile file, String courseName, String description, String category,
-			Long Duration,  String batches,  String token) {
+			Long Duration,  String batches, boolean approvalneeded, String token) {
 		try {
 
 			if (!jwtUtil.validateToken(token)) {
@@ -289,6 +289,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 				courseDetail.setDuration(Duration);
 				courseDetail.setInstitutionName(institution);
 				courseDetail.setCourseImage(file.getBytes());
+				courseDetail.setApprovalNeeded(approvalneeded);
 
 				CourseDetail savedCourse = coursedetailrepository.save(courseDetail);
 				ObjectMapper objectMapper = new ObjectMapper();
@@ -338,7 +339,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	// --------------------------working------------------------------------
 
 	public ResponseEntity<?> updateCourse(String token, Long courseId, MultipartFile file, String courseName,
-			String description, String category,  Long Duration) {
+			String description, String category,Boolean ApprovalNeeded,  Long Duration) {
 		try {
 			if (!jwtUtil.validateToken(token)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -390,6 +391,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 					}
 					
 					existingCourseDetail.setUsers(null);
+					existingCourseDetail.setApprovalNeeded(ApprovalNeeded);
 					existingCourseDetail.setVideoLessons(null);
 					if (file != null) {
 						existingCourseDetail.setCourseImage(file.getBytes());
@@ -624,10 +626,6 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	// ---------------------WORKING--------------)
 	public ResponseEntity<?> getLessons(Long courseId, String token) {
 	    try {
-	        if (!jwtUtil.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
-
 	        String role = jwtUtil.getRoleFromToken(token);
 	        String email = jwtUtil.getEmailFromToken(token);
 
@@ -644,16 +642,20 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	        if (courseOpt.isEmpty()) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found in your institution");
 	        }
-
+          CourseDetail  course=courseOpt.get();
 	        if ("ADMIN".equals(role)) {
 	            return getVideoLessonsResponse(courseId);
 	        } else {
-	            boolean hasAccess = batchEnrollRepo.existsActiveCourseForUser(user.getUserId(), courseId);
-	            if (hasAccess) {
+	       	 if(course.isApprovalNeeded()) {
+	        	 if(batchEnrollRepo.existsActiveCourseForUser(user.getUserId(), courseId)) {
 	                return getVideoLessonsResponse(courseId);
-	            } else {
-	                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Access denied: course not enrolled or expired");
-	            }
+	        	 }else{
+	        		 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("you cannot Access This Course Approval Needed");
+	        		 //need to send Approval Request
+	        	 }
+	        	 }else {
+	        		 return getVideoLessonsResponse(courseId);
+	        	 }
 	        }
 
 	    } catch (Exception e) {
@@ -680,26 +682,13 @@ private BatchEnrollmentRepo batchEnrollRepo;
 
 	public ResponseEntity<?> getLessonList(Long courseId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-			String institution = muserRepository.findinstitutionByEmail(email);
-			boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-			if (!adminIsactive) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
 			if ("ADMIN".equals(role)) {
 				List<LessonQuizDTO> res = lessonRepo.findLessonsWithQuizByCourseId(courseId);
 				return ResponseEntity.ok(res);
 			} else {
-				if (checkAllowedOrNotForTrainer(courseId, email)) {
-					List<LessonQuizDTO> res = lessonRepo.findLessonsWithQuizByCourseId(courseId);
-					return ResponseEntity.ok(res);
-				}
+				
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
 
@@ -712,11 +701,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 		}
 	}
 
-	private boolean checkAllowedOrNotForTrainer(Long courseId, String email) {
-
-		boolean trainer = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseId);
-		return trainer;
-	}
+	
 
 	
 

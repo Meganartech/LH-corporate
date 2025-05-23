@@ -8895,6 +8895,12 @@ button.bg-dark:focus {
 .vh-80{
 height: 80vh !important;
 }
+.vh-50{
+height: 50vh !important;
+}
+.vh-55{
+height: 55vh !important;
+}
 .stretched-link::after {
   position: absolute;
   top: 0;
@@ -25519,6 +25525,8 @@ div.dtk-focus-alt table.dataTable tbody th.focus {
 }
 .selectedBatch{
   border: 3px solid var(--primary);
+  border-radius: 7px;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
 }
 .batch{
   border-radius: 8px;

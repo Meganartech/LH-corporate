@@ -15,11 +15,4 @@ public class CacheConfig {
 
 
 
-//@Autowired
-//private CacheManager cacheManager;
-//
-//public void updateAdminStatus(String institutionName, boolean isActive) {
-//    // ... update DB status
-//    cacheManager.getCache("institutionBlocked").evict("institutionBlocked::" + institutionName);
-//}
 
