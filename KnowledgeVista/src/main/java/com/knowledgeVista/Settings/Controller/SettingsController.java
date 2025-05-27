@@ -42,9 +42,6 @@ public class SettingsController {
 	
 	 public Boolean updateViewCourseInLandingPage(Boolean isEnabled,String token) {
 		 try {
-			 if (!jwtUtil.validateToken(token)) {
-	             return false;
-	         }
 	         String role = jwtUtil.getRoleFromToken(token);
 	         if("ADMIN".equals(role)) {
 	        	
@@ -88,9 +85,6 @@ public class SettingsController {
 		    }
 	 public Boolean updateSocialLogin(Boolean isEnabled,String token) {
 		 try {
-			 if (!jwtUtil.validateToken(token)) {
-	             return false;
-	         }
 	         String role = jwtUtil.getRoleFromToken(token);
 	         if("ADMIN".equals(role)) {
 	        	

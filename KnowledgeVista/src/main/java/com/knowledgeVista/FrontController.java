@@ -51,6 +51,7 @@ import com.knowledgeVista.Course.Quizz.Quizz;
 import com.knowledgeVista.Course.Quizz.Quizzquestion;
 import com.knowledgeVista.Course.Quizz.DTO.AnswerDto;
 import com.knowledgeVista.Course.Quizz.Service.QuizzService;
+import com.knowledgeVista.Course.Service.ProgressService;
 import com.knowledgeVista.Course.Test.CourseTest;
 import com.knowledgeVista.Course.Test.controller.QuestionController;
 import com.knowledgeVista.Course.Test.controller.Testcontroller;
@@ -203,6 +204,10 @@ public class FrontController {
 	
 	@Autowired 
 	private BatchEnrollmentService batchEnrollmentService;
+	
+	@Autowired
+	private ProgressService progressService;
+
 
 //-------------------ACTIVE PROFILE------------------
 	@GetMapping("/Active/Environment")
@@ -244,9 +249,10 @@ public class FrontController {
 			@RequestParam("courseCategory") String category, @RequestParam("Duration") Long Duration,
 			 @RequestParam("batches") String batches,
 			 @RequestParam("isApprovalNeeded") boolean isApprovalNeeded,
+			 @RequestParam("testMandatory") boolean testMandatory,
 			 @RequestHeader("Authorization") String token) {
 		return courseController.addCourse(file, courseName, description, category, Duration,  batches,isApprovalNeeded,
-				token);
+				testMandatory,token);
 	}
 
 	@Transactional
@@ -257,12 +263,13 @@ public class FrontController {
 			@RequestParam(value = "courseName", required = false) String courseName,
 			@RequestParam(value = "courseDescription", required = false) String description,
 			@RequestParam(value="isApprovalNeeded",required = false) boolean isApprovalNeeded,
+			@RequestParam(value = "testMandatory",required = false)boolean testMandatory,
 			@RequestParam(value = "courseCategory", required = false) String category,
 			@RequestParam(value = "Duration", required = false) Long Duration,
 			@RequestHeader("Authorization") String token) {
 
 		return courseController.updateCourse(token, courseId, file, courseName, description, category, isApprovalNeeded,
-				Duration);
+				testMandatory,Duration);
 
 	}
 
@@ -383,7 +390,6 @@ public class FrontController {
 	}
 
 	@GetMapping("/lessons/getvideoByid/{lessId}/{courseId}/{token}")
-	@CheckAccessAnnotation
 	public ResponseEntity<?> getVideoFile(@PathVariable Long lessId, @PathVariable Long courseId,
 			@PathVariable String token, HttpServletRequest request) {
 
@@ -2099,5 +2105,11 @@ public class FrontController {
                                                        @RequestBody List<Long> ids) {
         return batchEnrollmentService.approveEnrollmentApproval(request, token, ids);
     }
-
+    @GetMapping("lesson-progress/completed-lesson-ids")
+    public ResponseEntity<List<Long>> getCompletedLessonIds(
+            @RequestParam Long userId,
+            @RequestParam Long courseId) {
+    	  List<Long> completedLessonIds = progressService.getCompletedLessonIds(userId, courseId);
+          return ResponseEntity.ok(completedLessonIds);
+    }
 }

@@ -25,9 +25,6 @@ public class FooterDetailsController {
 
 	 public ResponseEntity<?>SaveFooterDetails(String token, FooterDetails footerdetails){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -67,9 +64,7 @@ public class FooterDetailsController {
 }
 	 public ResponseEntity<?>Getfooterdetails(String token){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
+	        	
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

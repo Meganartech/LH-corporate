@@ -44,10 +44,6 @@ public class GoogleAuthController {
 
 public ResponseEntity<?> getSocialLoginKeys(String Provider,String token) {
 	try {
-		   if (!jwtUtil.validateToken(token)) {
-	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	         }
-
 	         String email = jwtUtil.getEmailFromToken(token);
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
@@ -82,11 +78,7 @@ public ResponseEntity<?> getSocialLoginKeys(String Provider,String token) {
 }
 public ResponseEntity<?> saveOrUpdateSocialLoginKeys(SocialLoginKeys loginKeys,  String token) {
 	
-try {
-    if (!jwtUtil.validateToken(token)) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-   
+try { 
     String email = jwtUtil.getEmailFromToken(token);
 Optional<Muser>opuser=muserRepository.findByEmail(email);
     if(opuser.isPresent()) {

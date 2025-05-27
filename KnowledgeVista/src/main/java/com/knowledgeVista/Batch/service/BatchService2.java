@@ -33,11 +33,6 @@ public class BatchService2 {
 
 	public ResponseEntity<?> getEnrolledBatches(String token, Long userId, int page, int size) {
 		try {
-			// Validate JWT token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
 			// Check user role
 			String role = jwtUtil.getRoleFromToken(token);
 			String institution=jwtUtil.getInstitutionFromToken(token);
@@ -69,10 +64,6 @@ public class BatchService2 {
 
 	public ResponseEntity<?> getOtherBatches(String token, Long userId, int page, int size) {
 		try {
-			// Validate JWT token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
 
 			// Check user role
 			String role = jwtUtil.getRoleFromToken(token);
@@ -107,10 +98,7 @@ public class BatchService2 {
 //======================================For Trainer===============================================
 	public ResponseEntity<?> getbatchesForTrainer(String token, Long userId, int page, int size) {
 		try {
-			// Validate JWT token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 
 			// Check user role
 			String role = jwtUtil.getRoleFromToken(token);
@@ -143,10 +131,6 @@ public class BatchService2 {
 
 	public ResponseEntity<?> getOtherBatchesForTrainer(String token, Long userId, int page, int size) {
 		try {
-			// Validate JWT token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
 
 			// Check user role
 			String role = jwtUtil.getRoleFromToken(token);
@@ -179,12 +163,6 @@ public class BatchService2 {
 	
 	public ResponseEntity<?> getOtherBatchesforRole(String token, Long roleId, int page, int size) {
 	    try {
-	        // Validate JWT token
-	        if (!jwtUtil.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
-
-	        // Get user
 	        String email = jwtUtil.getEmailFromToken(token);
 	        Optional<Muser> opUser = muserRepo.findByEmail(email);
 
@@ -228,11 +206,6 @@ public class BatchService2 {
 	
 	public ResponseEntity<?> getBatchesforRole(String token, Long roleId, int page, int size) {
 	    try {
-	        // Validate JWT token
-	        if (!jwtUtil.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
-
 	        // Get user
 	        String email = jwtUtil.getEmailFromToken(token);
 	        Optional<Muser> opUser = muserRepo.findByEmail(email);

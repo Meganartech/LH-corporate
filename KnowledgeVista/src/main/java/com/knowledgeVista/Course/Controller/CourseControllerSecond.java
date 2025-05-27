@@ -33,9 +33,6 @@ public class CourseControllerSecond {
 	
 	public ResponseEntity<?> getstoragedetails(String token) {
 	    try {
-	        if (!jwtUtil.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
 	        String role = jwtUtil.getRoleFromToken(token);
 	        if (!"ADMIN".equals(role)) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -102,9 +99,6 @@ public class CourseControllerSecond {
 
 	public ResponseEntity<?>getAllStudentCourseDetails( String token){
 		  try {
-		         if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
 		         String role = jwtUtil.getRoleFromToken(token);
 		         if(!"ADMIN".equals(role)) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
@@ -129,9 +123,6 @@ public class CourseControllerSecond {
 	 
 	public ResponseEntity<?>getAllTrainerhandlingUsersAndCourses( String token){
 		  try {
-		         if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
 		         String role = jwtUtil.getRoleFromToken(token);
 		         if(!"ADMIN".equals(role)) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 

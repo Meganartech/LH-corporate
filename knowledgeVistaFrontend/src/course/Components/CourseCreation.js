@@ -22,6 +22,7 @@ const CourseCreation = () => {
     courseDescription: "",
     courseCategory: "",
     Duration: "",
+    testMandatory:false,
     isApprovalNeeded:false,
     courseImage: "",
   });
@@ -37,6 +38,7 @@ const CourseCreation = () => {
     courseCategory: "",
     Duration: "",
     courseImage: null,
+    testMandatory:false,
      isApprovalNeeded:false,
     base64Image: null,
     batches:selectedBatches
@@ -329,6 +331,7 @@ const CourseCreation = () => {
       formDataToSend.append("courseImage", formData.courseImage);
       formDataToSend.append("Trainer", formData.Trainer);
       formDataToSend.append("Duration", formData.Duration);
+      formDataToSend.append("testMandatory",formData.testMandatory);
       formDataToSend.append("isApprovalNeeded",formData.isApprovalNeeded);
       formDataToSend.append("batches",JSON.stringify(selectedBatches))
      
@@ -597,6 +600,33 @@ const CourseCreation = () => {
       <small className="form-text text-muted">
         Enabling this means users must request access before viewing this course.
       </small>
+    </div>
+  </div>
+</div>
+
+<div className="form-group row mt-3">
+  <div className="col-sm-9">
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="testMandatory"
+        name="testMandatory"
+        checked={formData.testMandatory}
+        onChange={() => {
+          setFormData((prev) => ({
+            ...prev,
+            testMandatory: !prev.testMandatory
+          }));
+        }}
+      />
+     <label className="form-check-label" htmlFor="testMandatory">
+  Test is Mandatory
+</label>
+<small className="form-text text-muted">
+  Enabling this means users must attend the test to complete the course.
+</small>
+
     </div>
   </div>
 </div>

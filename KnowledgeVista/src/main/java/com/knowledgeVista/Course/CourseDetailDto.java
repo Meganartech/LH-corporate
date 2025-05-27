@@ -17,7 +17,8 @@ public class CourseDetailDto {
     private Long duration;
     private String institutionName;
     private Long noOfSeats;
-    
+    private Double progressPercent;
+
     
 	public CourseDetailDto(Long courseId, String courseName, String courseUrl, String courseDescription,
 			String courseCategory, Long amount, byte[] courseImage,  Long duration,
@@ -53,6 +54,20 @@ public class CourseDetailDto {
 		this.duration = duration;
 		this.institutionName = institutionName;
 	}
+	public CourseDetailDto(Long courseId, String courseName, String courseUrl, String courseDescription,
+            String courseCategory, byte[] courseImage, Long duration,
+            String institutionName, Double progressPercent) {
+this.courseId = courseId;
+this.courseName = courseName;
+this.courseUrl = courseUrl;
+this.courseDescription = courseDescription;
+this.courseCategory = courseCategory;
+this.courseImage = courseImage;
+this.duration = duration;
+this.institutionName = institutionName;
+this.progressPercent = progressPercent;
+}
+
 	@Getter
 	@Setter
 	@NoArgsConstructor

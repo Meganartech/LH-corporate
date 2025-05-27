@@ -24,9 +24,6 @@ public class EventController {
 	    
 	    public ResponseEntity<?>getEvents(String token,int pageNumber,int pageSize){
 	    	try {
-	    		if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
 		         String email = jwtUtil.getEmailFromToken(token);
 		         Long userId=muserRepo.findidByEmail(email);
 		         if(userId==null) {

@@ -98,10 +98,7 @@ public class BatchService {
 	public ResponseEntity<?> saveBatch(String batchTitle,  Long durationInHours,
 			 String coursesJson, MultipartFile batchImage, String token) {
 		try {
-// Validate Token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+
 
 			String role = jwtUtil.getRoleFromToken(token);
 			String addingEmail = jwtUtil.getEmailFromToken(token);
@@ -164,9 +161,7 @@ public class BatchService {
 	public ResponseEntity<?> SaveBatchforCourseCreation(String batchTitle, Long durationInHours,
 			String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 
 			String role = jwtUtil.getRoleFromToken(token);
 			String email = jwtUtil.getEmailFromToken(token);
@@ -198,10 +193,7 @@ public class BatchService {
 			 String coursesJson, MultipartFile batchImage,
 			String token) {
 		try {
-// Validate the token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+
 
 			String role = jwtUtil.getRoleFromToken(token);
 			String email = jwtUtil.getEmailFromToken(token);
@@ -430,7 +422,7 @@ public class BatchService {
 			}
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				Pageable pageable = PageRequest.of(pageNumber, pageSize);
-				Page<MuserDto> users = batchrepo.GetMuserDetailsByBatchID(batchId, pageable);
+				Page<MuserDto> users = batchrepo.getMuserDetailsByBatchId(batchId, pageable);
 				return ResponseEntity.ok(users);
 			} else {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Students Cannot Access This page");
@@ -446,9 +438,7 @@ public class BatchService {
 	public ResponseEntity<Page<MuserDto>> searchBatchUserByAdminorTrainer(String username, String email, String phone,
 			LocalDate dob, String skills, int page, int size, String token, Long batchId) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.ok(Page.empty());
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			String emailad = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepo.findinstitutionByEmail(emailad);

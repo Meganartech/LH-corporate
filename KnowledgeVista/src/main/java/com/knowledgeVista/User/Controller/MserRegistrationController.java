@@ -509,22 +509,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 
 	public ResponseEntity<?> getUserByEmail( String email, String token) {
 	    try {
-	    	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
-	    	 String emailofreq=jwtUtil.getEmailFromToken(token);
-	         String institution="";
-		     Optional<Muser> opuser =muserrepositories.findByEmail(emailofreq);
-		     if(opuser.isPresent()) {
-		    	 Muser user=opuser.get();
-		    	 institution=user.getInstitutionName();
-		    	 boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-	       	    	if(!adminIsactive) {
-	       	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	       	    	}
-		     }else {
-	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		     }
+	         String institution=jwtUtil.getInstitutionFromToken(token);
 	        Optional<MuserRequiredDto> userOptional = muserrepositories.findDetailandProfileByEmailAndInstitution(email, institution);
 	        
 	        // If the user is found, process the user data
@@ -552,25 +537,8 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	    public ResponseEntity<?> getTrainerDetailsByEmail( String email, String token) {
 
 	        try {
-	            // Validate the token
-	            if (!jwtUtil.validateToken(token)) {
-	                // If the token is not valid, return unauthorized status
-	                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	            }
-		    	 String emailofreq=jwtUtil.getEmailFromToken(token);
 	            String role = jwtUtil.getRoleFromToken(token);
-	            String institution="";
-			     Optional<Muser> opuser =muserrepositories.findByEmail(emailofreq);
-			     if(opuser.isPresent()) {
-			    	 Muser user=opuser.get();
-			    	 institution=user.getInstitutionName();
-			    	 boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-		       	    	if(!adminIsactive) {
-		       	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		       	    	}
-			     }else {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			     }
+	            String institution=jwtUtil.getInstitutionFromToken(token);
 	            // Perform authentication based on role
 	            if ("ADMIN".equals(role)) {
 	            	 Optional<MuserProfileDTO> userOptional = muserrepositories.findProfileAndCountryCodeAndRoleByEmailAndInstitutionName(email, institution);
@@ -598,27 +566,8 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 	    public ResponseEntity<?> getStudentDetailsByEmail( String email, String token) {
 
 	        try {
-	            // Validate the token
-	            if (!jwtUtil.validateToken(token)) {
-	                // If the token is not valid, return unauthorized status
-	                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	            }
- 
 	            String role = jwtUtil.getRoleFromToken(token);
-	            String emailofreq=jwtUtil.getEmailFromToken(token);
-	          
-	            String institution="";
-			     Optional<Muser> opuser =muserrepositories.findByEmail(emailofreq);
-			     if(opuser.isPresent()) {
-			    	 Muser user=opuser.get();
-			    	 institution=user.getInstitutionName();
-			    	 boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-		       	    	if(!adminIsactive) {
-		       	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		       	    	}
-			     }else {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			     }
+	            String institution=jwtUtil.getInstitutionFromToken(token);
 	            // Perform authentication based on role
 	            if ("ADMIN".equals(role)||"TRAINER".equals(role)) {
 	                Optional<MuserProfileDTO> userOptional = muserrepositories.findProfileAndCountryCodeAndRoleByEmailAndInstitutionName(email, institution);
@@ -643,12 +592,6 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
 
     public ResponseEntity<?> getDetailsbyemail(String email, String token){
     	 try {
-	            // Validate the token
-	            if (!jwtUtil.validateToken(token)) {
-	                // If the token is not valid, return unauthorized status
-	                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	            }
-
 	            String emailofreq=jwtUtil.getEmailFromToken(token);
 	          
 	            String institution="";
@@ -691,13 +634,7 @@ private void sendApprovalEmail(HttpServletRequest request, String adminEmail, Mu
     public ResponseEntity<?> getAdminDetailsBYEmail( String email, String token) {
 
         try {
-            // Validate the token
-            if (!jwtUtil.validateToken(token)) {
-                // If the token is not valid, return unauthorized status
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
             String role = jwtUtil.getRoleFromToken(token);
-		    
             // Perform authentication based on role
             if ("SYSADMIN".equals(role)) {
             	Optional<Muser>opuser=muserrepositories.findByEmail(email);

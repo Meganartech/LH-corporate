@@ -31,9 +31,6 @@ public class RoleDisplayController {
 	
 	public ResponseEntity<?>getdisplayNames(String token){
 		try {
-			if (!jwtUtil.validateToken(token)) {return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Unauthorized access");
-         }
          String email=jwtUtil.getEmailFromToken(token); 
           String institution=muserRepository.findinstitutionByEmail(email);
           if(institution==null) {
@@ -60,9 +57,6 @@ public class RoleDisplayController {
 	 @Transactional
 	 public ResponseEntity<?> UpdateDisplayName(String token, Role_display_name displayName){
 		 try {
-				if (!jwtUtil.validateToken(token)) {return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                    .body("Unauthorized access");
-	         }
 				Roledisplayrepo.save(displayName);
 				
 				return ResponseEntity.ok("updated");

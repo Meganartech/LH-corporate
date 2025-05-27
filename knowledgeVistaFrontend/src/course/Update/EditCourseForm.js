@@ -17,6 +17,7 @@ const EditCourseForm = ({}) => {
     courseDescription: "",
     courseCategory: "",
     duration: "",
+    testMandatory:false,
     isApprovalNeeded:false,
     courseImage: null,
   });
@@ -166,6 +167,9 @@ const EditCourseForm = ({}) => {
     }
     if(courseEdit.isApprovalNeeded){
       formData.append("isApprovalNeeded",courseEdit.isApprovalNeeded)
+    }
+    if(courseEdit.testMandatory){
+      formData.append("testMandatory",courseEdit.testMandatory)
     }
    
 
@@ -375,6 +379,32 @@ const EditCourseForm = ({}) => {
       <small className="form-text text-muted">
         Enabling this means users must request access before viewing this course.
       </small>
+    </div>
+  </div>
+</div>
+
+    <div className="form-group row mt-3">
+  <div className="col-sm-9">
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="testMandatory"
+        name="testMandatory"
+        checked={courseEdit.testMandatory}
+        onChange={() => {
+          setCourseEdit((prev) => ({
+            ...prev,
+            testMandatory: !prev.testMandatory
+          }));
+        }}
+      />
+      <label className="form-check-label" htmlFor="testMandatory">
+  Test is Mandatory
+</label>
+<small className="form-text text-muted">
+  Enabling this means users must attend the test to complete the course.
+</small>
     </div>
   </div>
 </div>

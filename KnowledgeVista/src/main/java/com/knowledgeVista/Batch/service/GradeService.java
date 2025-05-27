@@ -180,10 +180,6 @@ public class GradeService {
 
 	public ResponseEntity<?> getGrades(String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
-			}
-
 			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserRepo.findByEmail(email);
 			if (opuser.isEmpty()) {
@@ -223,10 +219,6 @@ public class GradeService {
 	public ResponseEntity<?> getGradesofStudent(String token, String email, Long batchId) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
-			}
-
 			Optional<Muser> opuser = muserRepo.findByEmail(email);
 			if (opuser.isEmpty()) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User Not Found");

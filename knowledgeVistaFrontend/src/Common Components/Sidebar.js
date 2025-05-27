@@ -132,10 +132,8 @@ useEffect(() => {
   
   const handleClick = async (e, link) => {
     e.preventDefault();
-    const roleName = link.split("/").pop().toUpperCase();
+    const roleName = sessionStorage.getItem('role')
   
-    const isTrainerLike =
-      userRole === "TRAINER" || dynamicRoles.map(r => r.roleName.toUpperCase()).includes(userRole);
     const isAdmin = userRole === "ADMIN";
     const isSysadminOrUser = userRole === "SYSADMIN" || userRole === "USER";
     const isAccessibleLink = ["/about", "/admin/dashboard", "/licenceDetails"].includes(link);
@@ -149,7 +147,7 @@ useEffect(() => {
       (isAccessibleLink && !isEmpty && !isvalid) ||
       (!isEmpty && isvalid);
   
-    if (isAdmin || isTrainerLike) {
+    if (isAdmin) {
       if (validAccess) {
         setActiveLink(link);
         updateActiveMenu(link);

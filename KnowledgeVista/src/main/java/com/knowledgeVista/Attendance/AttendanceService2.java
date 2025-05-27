@@ -68,7 +68,7 @@ public class AttendanceService2 {
 	                
 	                List<Muser> allUsers = new ArrayList<>();
 	                for (Batch batch : meet.getBatches()) {
-	                    allUsers.addAll(batchrepo.findAllusersByBatchId(batch.getId()));
+	                    allUsers.addAll(batchrepo.findAllUsersByBatchId(batch.getId()));
 	                }
 
 	                for (Muser user : allUsers) {

@@ -104,10 +104,7 @@ public class AssignmentService2 {
 
 	public ResponseEntity<?> GetAssignmentByAssignmentIdForSubmission(String token, Long assignmentId, Long batchId) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-			}
-
+			
 			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
@@ -176,12 +173,6 @@ public class AssignmentService2 {
 	public ResponseEntity<?> SubmitAssignment(String token, Long assignmentId, Long batchId, MultipartFile file,
 			String answerjson) {
 		try {
-// Step 1: Validate Token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-			}
-
-// Step 2: Get user from token
 			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
@@ -394,10 +385,6 @@ public class AssignmentService2 {
 
 	public ResponseEntity<?> getAssignmentForValidation(String token, Long assignmentId, Long batchId, Long userId) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-			}
-
 			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
@@ -469,9 +456,6 @@ public class AssignmentService2 {
 	public ResponseEntity<?> ValidateAssignment(String token, Long assignmentId, Long batchId, Long userId,
 			String feedback, Integer Marks) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-			}
 			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserRepo.findByEmail(email);
 			if (optionalUser.isEmpty()) {
@@ -530,9 +514,6 @@ public class AssignmentService2 {
 
 	public ResponseEntity<?> DeleteAssignmentQuizzQuestion(List<Long> questionIds, Long AssignmentId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
 			Optional<Assignment> opassignment = assignmentRepo.findById(AssignmentId);
 			if (opassignment.isPresent()) {
@@ -563,9 +544,7 @@ public class AssignmentService2 {
 	public ResponseEntity<?> AddMoreQuestionForQuizzInAssignment(Long assignmentId, AssignmentQuestion question,
 			String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				Optional<Assignment> opAssignment = assignmentRepo.findById(assignmentId);

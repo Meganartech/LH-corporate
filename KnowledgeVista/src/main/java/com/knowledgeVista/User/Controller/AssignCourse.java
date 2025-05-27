@@ -27,25 +27,17 @@ public class AssignCourse {
 	 private static final Logger logger = LoggerFactory.getLogger(AssignCourse.class);
 public ResponseEntity<List<CourseDetailDto>> getCoursesForUser( String token) {
 	try {
-		
-		if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
         String email = jwtUtil.getEmailFromToken(token);
-			 List<CourseDetailDto> courses=batchEnrollRepo.findActiveCoursesByUserEmail(email);		  
+			 List<CourseDetailDto> courses=batchEnrollRepo.findActiveCoursesWithProgressByUserEmail(email);		  
 		        return ResponseEntity.ok(courses);   
 	}catch (Exception e) {
 		logger.error("Error Getting courses  for user "+e.getMessage());
 		return ResponseEntity.ok(Collections.emptyList()); 
 	}
 	    }
-	
+	 
 
 public ResponseEntity<List<CourseDetailDto>> getCoursesForTrainer(String token) {
-	if (!jwtUtil.validateToken(token)) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
     String role = jwtUtil.getRoleFromToken(token);
     String email = jwtUtil.getEmailFromToken(token);
 	if("TRAINER".equals(role)) {

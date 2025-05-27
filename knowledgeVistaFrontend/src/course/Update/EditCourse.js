@@ -61,6 +61,7 @@ const EditCourse = ({ filteredCourses }) => {
       }
     });
   };
+  
   return (
     <>
       <div className="page-header"></div>

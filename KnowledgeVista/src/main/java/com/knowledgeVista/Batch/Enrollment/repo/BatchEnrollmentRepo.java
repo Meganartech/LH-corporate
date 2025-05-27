@@ -14,19 +14,23 @@ import com.knowledgeVista.Course.CourseDetailDto;
 @Repository
 public interface BatchEnrollmentRepo extends JpaRepository<BatchEnrollment, Long>{
 	//For MyCourses........................
+	
 	@Query("""
 		    SELECT DISTINCT new com.knowledgeVista.Course.CourseDetailDto(
 		        c.id, c.courseName, c.courseUrl, c.courseDescription,
-		        c.courseCategory, c.amount, c.courseImage,
-		        c.Duration, c.institutionName
+		        c.courseCategory, c.courseImage,
+		        c.Duration, c.institutionName,
+		        COALESCE(cc.progressPercent, 0.0)
 		    )
 		    FROM BatchEnrollment be
 		    JOIN be.batch b
 		    JOIN b.courses c
+		    LEFT JOIN CourseCompletion cc ON cc.course = c AND cc.user.email = :email
 		    WHERE be.user.email = :email
-		    AND be.expiryDate > CURRENT_TIMESTAMP
+		      AND be.expiryDate > CURRENT_TIMESTAMP
 		""")
-		List<CourseDetailDto> findActiveCoursesByUserEmail(@Param("email") String email);
+		List<CourseDetailDto> findActiveCoursesWithProgressByUserEmail(@Param("email") String email);
+
 	
 	//for finding the user has Access To course
 	@Query("""

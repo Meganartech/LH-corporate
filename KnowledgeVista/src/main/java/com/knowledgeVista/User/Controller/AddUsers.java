@@ -72,12 +72,6 @@ public class AddUsers {
 	 public ResponseEntity<?> addTrainer(HttpServletRequest request, String username, String psw,String email,
 	          LocalDate dob, String phone, String skills, MultipartFile profile, Boolean isActive, String countryCode,String token) {
 	      try {
-	          // Validate the token
-	          if (!jwtUtil.validateToken(token)) {
-	              System.out.println("Invalid Token");
-	             
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	          }
 
 	          String role = jwtUtil.getRoleFromToken(token);
               String adminemail=jwtUtil.getEmailFromToken(token);
@@ -93,10 +87,7 @@ public class AddUsers {
 	                  Muser trainer = new Muser();
 	                  Optional<Muser>addingadmin=muserrepositories.findByEmail(adminemail);
 	                  if(addingadmin.isPresent()) {
-	                	  boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", addingadmin.get().getInstitutionName());
-	      	   	    	if(!adminIsactive) {
-	      	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	      	   	    	}
+	                	 
 	      	   	    	Muser adding=addingadmin.get();
 	      	   	    	
 	                    trainer.setInstitutionName(adding.getInstitutionName());
@@ -218,12 +209,7 @@ public class AddUsers {
 	          LocalDate dob,String phone, String skills,
 	           MultipartFile profile, Boolean isActive,String countryCode, String token) {
 	      try {
-	          // Validate the token
-	          if (!jwtUtil.validateToken(token)) {
-	              System.out.println("Invalid Token");
-	              // If the token is not valid, return unauthorized status
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	          }
+	         
 
 	          String role = jwtUtil.getRoleFromToken(token);
 	          String emailofadd=jwtUtil.getEmailFromToken(token);
@@ -236,11 +222,6 @@ public class AddUsers {
             	  usernameofadding=addinguser.getUsername();
             	  emailofadding=addinguser.getEmail();
             	   instituiton=addinguser.getInstitutionName();
-            	   
-            	   boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", instituiton);
-     	   	    	if(!adminIsactive) {
-     	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-     	   	    	}
               }else {
 	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
               }
@@ -373,12 +354,6 @@ public class AddUsers {
 	  
 	  public ResponseEntity<?> DeactivateTrainer(String reason,String email,String token) {
 	      try {
-	          // Validate the token
-	          if (!jwtUtil.validateToken(token)) {
-	              // If the token is not valid, return unauthorized status
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	          }
-
 	          String role = jwtUtil.getRoleFromToken(token);
 
 	          // Perform authentication based on role
@@ -411,11 +386,6 @@ public class AddUsers {
 	  }
 	  public ResponseEntity<?> activateTrainer( String email,String token) {
 	      try {
-	          // Validate the token
-	          if (!jwtUtil.validateToken(token)) {
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	          }
-
 	          String role = jwtUtil.getRoleFromToken(token);
 
 	          // Perform authentication based on role
@@ -451,12 +421,7 @@ public class AddUsers {
 	   
 	  public ResponseEntity<?> DeactivateStudent(String reason,String email, String token) {
 	      try {
-	          // Validate the token
-	          if (!jwtUtil.validateToken(token)) {
-	              // If the token is not valid, return unauthorized status
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	          }
-
+	    
 	          String role = jwtUtil.getRoleFromToken(token);
 
 	          // Perform authentication based on role
@@ -494,12 +459,6 @@ public class AddUsers {
 
 	  public ResponseEntity<?> activateStudent(String email, String token) {
 	      try {
-	          // Validate the token
-	          if (!jwtUtil.validateToken(token)) {
-	              // If the token is not valid, return unauthorized status
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	          }
-
 	          String role = jwtUtil.getRoleFromToken(token);
 
 	          // Perform authentication based on role
@@ -539,11 +498,6 @@ public class AddUsers {
 	          LocalDate dob, String phone, String skills, MultipartFile profile, Boolean isActive,
 	          String countryCode, String token, String roleName) {
 	    try {
-	        // Validate the token
-	        if (!jwtUtil.validateToken(token)) {
-	            System.out.println("Invalid Token");
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
 
 	        String roleFromToken = jwtUtil.getRoleFromToken(token);
 	        String adminEmail = jwtUtil.getEmailFromToken(token);
@@ -567,12 +521,6 @@ public class AddUsers {
 	        if (!addingAdmin.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	        }
-
-	        boolean adminIsActive = muserrepositories.getactiveResultByInstitutionName("ADMIN", addingAdmin.get().getInstitutionName());
-	        if (!adminIsActive) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
-
 	        Muser adding = addingAdmin.get();
 	        Muser user = new Muser();
 
@@ -641,11 +589,6 @@ public class AddUsers {
 	  
 	  public ResponseEntity<?> deactivateUserByRole(String reason, String email, String token, String targetRole) {
 		    try {
-		        // Step 1: Validate JWT Token
-		        if (!jwtUtil.validateToken(token)) {
-		            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		        }
-
 		        // Step 2: Get the role of the user trying to deactivate
 		        String requesterRole = jwtUtil.getRoleFromToken(token);
 
@@ -684,11 +627,6 @@ public class AddUsers {
 	  //****************************************Activate Dynamic Roles******************************************************
 	  public ResponseEntity<?> activateUserByRole(String email, String token, String targetRole) {
 		    try {
-		        // Step 1: Validate JWT token
-		        if (!jwtUtil.validateToken(token)) {
-		            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		        }
-
 		        // Step 2: Extract role of requester from token
 		        String requesterRole = jwtUtil.getRoleFromToken(token);
 

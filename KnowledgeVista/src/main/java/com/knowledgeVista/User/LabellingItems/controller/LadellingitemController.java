@@ -39,9 +39,6 @@ public class LadellingitemController {
    }
 	 public ResponseEntity<?>SaveLabellingitems(String token,  String siteUrl,String title, MultipartFile sitelogo,  MultipartFile siteicon,  MultipartFile titleicon){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -106,9 +103,6 @@ public class LadellingitemController {
 	 
 	 public ResponseEntity<?>getLabelingitems(String token){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

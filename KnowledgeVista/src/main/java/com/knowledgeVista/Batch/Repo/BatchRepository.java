@@ -77,18 +77,25 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	@Query("SELECT t.email FROM Batch b " + "JOIN b.trainers t " + "WHERE b.id = :id")
 	List<String> findtrainersByBatchId(@Param("id") Long id);
 
-	@Query("SELECT u.email FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	List<String> findusersByBatchId(@Param("id") Long id);
+	@Query("SELECT e.user.email FROM BatchEnrollment e WHERE e.batch.id = :batchId")
+	List<String> findUserEmailsByBatchId(@Param("batchId") Long batchId);
 
-	@Query("SELECT u FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	List<Muser> findAllusersByBatchId(@Param("id") Long id);
 
-	@Query("SELECT COUNT(u) FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	Long countAllUsersByBatchId(@Param("id") Long id);
+	@Query("SELECT e.user FROM BatchEnrollment e WHERE e.batch.id = :batchId")
+	List<Muser> findAllUsersByBatchId(@Param("batchId") Long batchId);
 
-	@Query("SELECT new com.knowledgeVista.User.MuserDto(u.userId, u.username, u.email, u.phone, u.isActive, u.dob, u.skills,u.institutionName) "
-			+ "FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	Page<MuserDto> GetMuserDetailsByBatchID(@Param("id") Long id, Pageable pageable);
+
+	@Query("SELECT COUNT(e.user) FROM BatchEnrollment e WHERE e.batch.id = :batchId")
+	Long countAllUsersByBatchId(@Param("batchId") Long batchId);
+
+
+	@Query("SELECT new com.knowledgeVista.User.MuserDto(" +
+		       "e.user.userId, e.user.username, e.user.email, e.user.phone, " +
+		       "e.user.isActive, e.user.dob, e.user.skills, e.user.institutionName) " +
+		       "FROM BatchEnrollment e " +
+		       "WHERE e.batch.id = :batchId")
+		Page<MuserDto> getMuserDetailsByBatchId(@Param("batchId") Long batchId, Pageable pageable);
+
 
 	@Query("SELECT new com.knowledgeVista.User.MuserDto(" + "m.userId, " + "m.username, " + "m.email, " + "m.phone, "
 			+ "m.isActive, " + "m.dob, " + "m.skills," + "m.institutionName) " + "FROM Muser m "

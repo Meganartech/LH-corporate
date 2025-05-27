@@ -31,9 +31,7 @@ public class weightageService {
 
 	public ResponseEntity<?>saveOrUpdateWeightageDetails(Weightage weightage,String token){
 		try {
-			if (!jwtUtil.validateToken(token)) {
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-	          }
+		
 			  String role=jwtUtil.getRoleFromToken(token);
 			  String email=jwtUtil.getEmailFromToken(token);
 			  if("ADMIN".equals(role)||"TRAINER".equals(role)) {
@@ -80,9 +78,7 @@ public class weightageService {
 	}
 	public ResponseEntity<?>GetWeightageDetails(String token){
 		try {
-			if (!jwtUtil.validateToken(token)) {
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-	          }
+			
 			  String role=jwtUtil.getRoleFromToken(token);
 			  String email=jwtUtil.getEmailFromToken(token);
 			  if("ADMIN".equals(role)||"TRAINER".equals(role)) {

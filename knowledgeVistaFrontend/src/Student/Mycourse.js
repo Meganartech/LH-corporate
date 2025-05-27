@@ -75,7 +75,22 @@ const Mycourse = () => {
                         </a>
                       </h5>
                       <p title={item.courseDescription} className="courseDescription"> {item.courseDescription}</p>
-                     
+                      <div className="mt-3">
+        <div className="d-flex justify-content-between align-items-center mb-1">
+          <small className="text-muted">Course Completed</small>
+          <small className="text-muted">{item.progressPercent?.toFixed(1)}%</small>
+        </div>
+        <div className="progress" style={{ height: '8px', borderRadius: '4px' }}>
+          <div
+            className={`progress-bar ${item.progressPercent >= 95 ? 'bg-success' : 'bg-info'}`}
+            role="progressbar"
+            style={{ width: `${item.progressPercent || 0}%` }}
+            aria-valuenow={item.progressPercent || 0}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          />
+        </div>
+      </div>
                     </div>
                   </div>
                 </div>

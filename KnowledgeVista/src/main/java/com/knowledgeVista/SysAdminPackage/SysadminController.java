@@ -74,11 +74,6 @@ public class SysadminController {
               @RequestParam(defaultValue = "0") int pageNumber, 
             @RequestParam(defaultValue = "10") int pageSize  ){
 		  try {
-			
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
-
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(role.equals("SYSADMIN")) {
 	   	    	Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -108,10 +103,6 @@ public class SysadminController {
     		   @RequestParam(defaultValue = "0") int pageNumber, 
                @RequestParam(defaultValue = "10") int pageSize){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
-
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(role.equals("SYSADMIN")) {
 	   	    	Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -134,10 +125,6 @@ public class SysadminController {
     		   @RequestParam(defaultValue = "0") int pageNumber, 
                @RequestParam(defaultValue = "10") int pageSize){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
-
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(role.equals("SYSADMIN")) {
 	   	    	Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -159,11 +146,6 @@ public class SysadminController {
        public ResponseEntity<?>DeActiveteAdmin(@RequestParam("email") String email,
     		   @RequestParam("reason") String reason, @RequestHeader("Authorization") String token){
 	      try {
-	          // Validate the token
-	          if (!jwtUtil.validateToken(token)) {
-	              // If the token is not valid, return unauthorized status
-	              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	          }
 
 	          String role = jwtUtil.getRoleFromToken(token);
 

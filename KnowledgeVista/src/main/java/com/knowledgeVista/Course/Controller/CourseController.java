@@ -69,24 +69,8 @@ private BatchEnrollmentRepo batchEnrollRepo;
 
 	public ResponseEntity<?> countCourse(String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getEmailFromToken(token);
-
-			Optional<Muser> opreq = muserRepository.findByEmail(email);
-			String institution = "";
-			if (opreq.isPresent()) {
-				Muser requser = opreq.get();
-				institution = requser.getInstitutionName();
-				boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-				if (!adminIsactive) {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-				}
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			String institution = jwtUtil.getInstitutionFromToken(token);
 			if (!"ADMIN".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
@@ -120,10 +104,6 @@ private BatchEnrollmentRepo batchEnrollRepo;
 
 	public ResponseEntity<?> sysAdminDashboardByInstitytaion(String token, String institutationName) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
 			String role = jwtUtil.getRoleFromToken(token);
 			if (!"SYSADMIN".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -142,9 +122,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 
 	public ResponseEntity<?> sysAdminDashboard(String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			Long roleId = 1L;
 
@@ -253,40 +231,28 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	// --------------------------working------------------------------------
 
 	public ResponseEntity<?> addCourse(MultipartFile file, String courseName, String description, String category,
-			Long Duration,  String batches, boolean approvalneeded, String token) {
+			Long Duration,  String batches, boolean approvalneeded, boolean testMandatory,String token) {
 		try {
 
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			String email = jwtUtil.getEmailFromToken(token);
-			String username = "";
-			String institution = "";
-			Optional<Muser> opuser = muserRepository.findByEmail(email);
-			if (opuser.isPresent()) {
-				Muser user = opuser.get();
-				username = user.getUsername();
-				institution = user.getInstitutionName();
+			String username =jwtUtil.getUsernameFromToken(token);
+			String institution = jwtUtil.getInstitutionFromToken(token);
 				Long coursecount = coursedetailrepository.countCourseByInstitutionName(institution);
 				Long MaxCount = licencerepo.FindCourseCountByinstitution(institution);
 				if (coursecount + 1 > MaxCount) {
 					return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 							.body("Course Limit Reached Add More Course By Upgrading Your Licence");
 				}
-				boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-				if (!adminIsactive) {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-				}
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+	
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				CourseDetail courseDetail = new CourseDetail();
 				courseDetail.setCourseName(courseName);
 				courseDetail.setCourseDescription(description);
 				courseDetail.setCourseCategory(category);
 				courseDetail.setDuration(Duration);
+				courseDetail.setTestMandatory(testMandatory);
 				courseDetail.setInstitutionName(institution);
 				courseDetail.setCourseImage(file.getBytes());
 				courseDetail.setApprovalNeeded(approvalneeded);
@@ -339,30 +305,16 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	// --------------------------working------------------------------------
 
 	public ResponseEntity<?> updateCourse(String token, Long courseId, MultipartFile file, String courseName,
-			String description, String category,Boolean ApprovalNeeded,  Long Duration) {
+			String description, String category,Boolean ApprovalNeeded,boolean testMandatory, Long Duration) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 
 			String role = jwtUtil.getRoleFromToken(token);
 			String email = jwtUtil.getEmailFromToken(token);
-			String username = "";
-			String institution = "";
-			Optional<Muser> opuser = muserRepository.findByEmail(email);
-			if (opuser.isPresent()) {
-				Muser user = opuser.get();
-				username = user.getUsername();
-				institution = user.getInstitutionName();
-				boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-				if (!adminIsactive) {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-				}
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			String username = jwtUtil.getUsernameFromToken(token);
+			String institution = jwtUtil.getInstitutionFromToken(token);
+		
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
-
 				Optional<CourseDetail> courseDetailOptional = coursedetailrepository.findById(courseId);
 				if (courseDetailOptional.isPresent()) {
 					CourseDetail existingCourseDetail = courseDetailOptional.get();
@@ -391,6 +343,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 					}
 					
 					existingCourseDetail.setUsers(null);
+					existingCourseDetail.setTestMandatory(testMandatory);
 					existingCourseDetail.setApprovalNeeded(ApprovalNeeded);
 					existingCourseDetail.setVideoLessons(null);
 					if (file != null) {
@@ -428,23 +381,10 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	// --------------------------working-----------------------------------
 
 	public ResponseEntity<CourseDetail> getCourse(Long courseId, String token) {
-		if (!jwtUtil.validateToken(token)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
+	
 		String role = jwtUtil.getRoleFromToken(token);
-		String email = jwtUtil.getEmailFromToken(token);
-		String institution = "";
-		Optional<Muser> opuser = muserRepository.findByEmail(email);
-		if (opuser.isPresent()) {
-			Muser user = opuser.get();
-			institution = user.getInstitutionName();
-			boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-			if (!adminIsactive) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-		} else {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
+		String institution = jwtUtil.getInstitutionFromToken(token);
+		
 		if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 			Optional<CourseDetail> courseOptional = coursedetailrepository
 					.findMinimalCourseDetailbyCourseIdandInstitutionName(courseId, institution);
@@ -464,27 +404,10 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	// --------------------------working------------------------------------
 
 	public ResponseEntity<List<CourseDetailDto>> viewCourse(String token) {
-		if (!jwtUtil.validateToken(token)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-		String email = jwtUtil.getEmailFromToken(token);
-		String institution = "";
-		Optional<Muser> opuser = muserRepository.findByEmail(email);
-		if (opuser.isPresent()) {
-			Muser user = opuser.get();
-			institution = user.getInstitutionName();
-
-			boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-			if (!adminIsactive) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+		
+		String institution = jwtUtil.getInstitutionFromToken(token);
 			List<CourseDetailDto> courses = coursedetailrepository.findAllByInstitutionNameDto(institution);
-
 			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(courses);
-		} else {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-
 	}
 
 	public ResponseEntity<List<CourseDetailDto>> viewCourseVps() {
@@ -500,24 +423,16 @@ private BatchEnrollmentRepo batchEnrollRepo;
 
 	public ResponseEntity<?> getAllCourseInfo(String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 
 			String adding = jwtUtil.getEmailFromToken(token);
-			String institution = "";
+			String institution = jwtUtil.getInstitutionFromToken(token);
 			Optional<Muser> opaddinguser = muserRepository.findByEmail(adding);
 			// adding Admin or trainer is present or not
 			if (opaddinguser.isPresent()) {
 				Muser addinguser = opaddinguser.get();
 				String role = addinguser.getRole().getRoleName();
 				institution = addinguser.getInstitutionName();
-				boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-				if (!adminIsactive) {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-				}
-				// user is present or not
-
 				if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 					List<Map<String, Object>> courseInfoList = coursedetailrepository
 							.findAllCourseDetailsByInstitutionName(institution);
@@ -543,27 +458,11 @@ private BatchEnrollmentRepo batchEnrollRepo;
 	public ResponseEntity<String> deleteCourse(Long courseId, String token) {
 		try {
 			// Find the course by ID
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 
 			String role = jwtUtil.getRoleFromToken(token);
 			String email = jwtUtil.getEmailFromToken(token);
-
-			String adding = jwtUtil.getEmailFromToken(token);
-			String institution = "";
-			Optional<Muser> opaddinguser = muserRepository.findByEmail(adding);
-			if (opaddinguser.isPresent()) {
-				Muser addinguser = opaddinguser.get();
-				institution = addinguser.getInstitutionName();
-				boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-				if (!adminIsactive) {
-					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-				}
-			} else {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
+			String institution = jwtUtil.getInstitutionFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				Optional<CourseDetail> optionalCourse = coursedetailrepository
 						.findByCourseIdAndInstitutionName(courseId, institution);
@@ -597,7 +496,7 @@ private BatchEnrollmentRepo batchEnrollRepo;
 						user.getAllotedCourses().remove(course);
 					}
 
-					coursedetailrepository.delete(course);
+					coursedetailrepository.deleteById(course.getCourseId());
 
 					return ResponseEntity.ok("Course deleted successfully");
 				} else {

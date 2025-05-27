@@ -79,10 +79,10 @@ return (
       <div>
        
         <h4 style={{color:"white"}}>Courses For You</h4>
-        < div className="course-grid ">
+        < div className="row ">
         { filteredCourses
   .map((item, index) => (
-    <div className="course" key={index}>
+    <div className="course " key={index}>
       <div className="card mb-3">
         <img
           className="img-fluid card-img-top"

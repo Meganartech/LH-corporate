@@ -60,6 +60,8 @@ public class CourseDetail {
 
 	@Column(name = "institution")
 	private String institutionName;
+	
+	private boolean testMandatory = false;
 
 	@Column(name = "Noofseats")
 	private Long Noofseats;
@@ -89,7 +91,7 @@ public class CourseDetail {
 
 	public CourseDetail(Long courseId, String courseName, String courseUrl, String courseDescription,
 			String courseCategory, Long amount, byte[] courseImage,  Long Duration,
-			String institutionName, Long Noofseats,boolean isApprovalNeeded) {
+			String institutionName, Long Noofseats,boolean isApprovalNeeded,boolean testMandatory) {
 		this.courseId = courseId;
 		this.courseName = courseName;
 		this.courseUrl = courseUrl;
@@ -101,6 +103,7 @@ public class CourseDetail {
 		this.institutionName = institutionName;
 		this.Noofseats = Noofseats;
 		this.isApprovalNeeded=isApprovalNeeded;
+		this.testMandatory=testMandatory;
 	}
 
 }
