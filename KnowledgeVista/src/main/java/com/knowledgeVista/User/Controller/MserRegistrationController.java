@@ -107,8 +107,8 @@ private EmailService emailservice;
 	            Muser user = new Muser();
 	            user.setUsername(username);
 	            user.setEmail(email);
+	            user.setPassword(psw, passwordEncoder);
 	            user.setIsActive(isActive);
-	            user.setPsw(psw);
 	            user.setPhone(phone);
 	            user.setDob(dob);
 	            user.setSkills(skills);
@@ -289,7 +289,7 @@ public ResponseEntity<?>RegisterStudent(HttpServletRequest request,String userna
 	            Muser user = new Muser();
 	            user.setUsername(username);
 	            user.setEmail(email);
-	           user.setPsw(psw);
+	           user.setPassword(psw, passwordEncoder);
 	            user.setPhone(phone);
 	            user.setDob(dob);
 	            user.setSkills(skills);

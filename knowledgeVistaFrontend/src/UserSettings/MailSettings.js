@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { resolvePath, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import baseUrl from "../api/utils";
@@ -11,23 +11,27 @@ const MailSettings = () => {
   const MySwal = withReactContent(Swal);
   const token = sessionStorage.getItem("token");
   const [isnotFound, setisnotFound] = useState(false);
+  
   const [settings, setsettings] = useState({
-    hostname: "",
-    port: "587",
-    emailid: "",
-    password: "",
-  });
-  const [defaultsettings, setdefaultsettings] = useState({
     hostname: "",
     port: "",
     emailid: "",
     password: "",
   });
+
+  const [defaultsettings, setdefaultsettings] = useState({
+    hostname: "••••••••",
+    port: "••••••••",
+    emailid: "••••••••",
+    password: "••••••••",
+  });
+
   const [errors, seterrors] = useState({
     hostname: "",
     emailid: "",
     password: "",
   });
+
   useEffect(() => {
     if (token) {
       const fetchMailAccountSettings = async () => {
@@ -40,8 +44,12 @@ const MailSettings = () => {
 
           if (response.status === 200) {
             const data = response.data;
-
-            setdefaultsettings(data);
+            setdefaultsettings({
+              hostname: data.hostname ? `${data.hostname.split('.')[0]}...` : "••••••••",
+              port: "••••••••",
+              emailid: data.emailid ? `${data.emailid.split('@')[0]}...` : "••••••••",
+              password: "••••••••"
+            });
             setsettings(data);
           } else if (response.status === 204) {
             setisnotFound(true);
@@ -52,7 +60,12 @@ const MailSettings = () => {
             if (error.response.status === 401) {
               navigate("/unauthorized");
             } else {
-              throw error;
+              MySwal.fire({
+                title: "Error",
+                text: "Failed to fetch mail settings",
+                icon: "error",
+                confirmButtonText: "OK",
+              });
             }
           }
         }
@@ -61,88 +74,86 @@ const MailSettings = () => {
       fetchMailAccountSettings();
     }
   }, []);
-  const save = async (e) => {
-    e.preventDefault();
-    if (initialsave) {
-      try {
-        const response = await axios.post(
-          `${baseUrl}/save/mailkeys`,
-          settings,
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          MySwal.fire({
-            title: "Saved !",
-            text: "Email Details Saved Sucessfully",
-            icon: "success",
-            confirmButtonText: "OK",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.location.reload();
-            }
-          });
-          setisnotFound(false);
-        }
-      } catch (error) {
-        console.log(error);
-        // MySwal.fire({
-        //   icon: "error",
-        //   title: "Some Error Occurred",
-        //   text: "error occured",
-        // });
-        throw error;
-      }
-    } else {
-      if (defaultsettings.id) {
-        axios
-          .patch(`${baseUrl}/Edit/mailkeys`, settings, {
-            headers: {
-              Authorization: token,
-            },
-          })
-          .then((response) => {
-            if (response.status === 200) {
-              MySwal.fire({
-                title: "Updated",
-                text: "Email Details Saved Sucessfully",
-                icon: "success",
-                confirmButtonText: "OK",
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  window.location.reload();
-                }
-              });
-              setisnotFound(false);
-            }
-          })
-          .catch((error) => {
-            if (error.response.status === 401) {
-              navigate("/unauthorized");
-            } else {
-              // MySwal.fire({
-              //   icon: "error",
-              //   title: "Some Error Occurred",
-              //   text: error.data,
-              // });
-              throw error;
-            }
-          });
-      }
-    }
-  };
 
   const handleInputsChange = (e) => {
     const { name, value } = e.target;
-    setsettings((prev) => ({
+    let error = "";
+    
+    switch (name) {
+      case 'hostname':
+        error = !value ? 'Host name is required' : '';
+        break;
+      case 'emailid':
+        error = !value ? 'Email is required' : 
+                !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) ? 'Invalid email format' : '';
+        break;
+      case 'password':
+        error = !value ? 'Password is required' : 
+                value.length < 8 ? 'Password must be at least 8 characters' : '';
+        break;
+    }
+
+    seterrors(prev => ({
       ...prev,
-      [name]: value,
+      [name]: error
+    }));
+
+    setsettings(prev => ({
+      ...prev,
+      [name]: value
     }));
   };
+
+  const save = async (e) => {
+    e.preventDefault();
+    const requiredFields = ['hostname', 'port', 'emailid', 'password'];
+    let hasErrors = false;
+
+    requiredFields.forEach(field => {
+      if (!settings[field]) {
+        hasErrors = true;
+        seterrors(prev => ({
+          ...prev,
+          [field]: 'This field is required'
+        }));
+      }
+    });
+
+    if (hasErrors) return;
+
+    try {
+      const endpoint = initialsave ? 'save/mailkeys' : 'Edit/mailkeys';
+      const response = await axios({
+        method: initialsave ? 'post' : 'patch',
+        url: `${baseUrl}/${endpoint}`,
+        data: settings,
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      if (response.status === 200) {
+        MySwal.fire({
+          title: initialsave ? "Saved" : "Updated",
+          text: "Mail settings updated successfully",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.reload();
+          }
+        });
+      }
+    } catch (error) {
+      MySwal.fire({
+        title: "Error",
+        text: "Failed to save mail settings. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+
   const Edit = (e) => {
     e.preventDefault();
     setisnotFound(true);

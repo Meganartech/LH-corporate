@@ -35,28 +35,6 @@ build/
 ### VS Code ###
 .vscode/
 
-HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-.metadata
-.mvn
-.bin
-
-# Eclipse specific files
-.project
-.classpath
-.settings/
-
 # Binary and generated files
 bin/
 target/
@@ -68,30 +46,6 @@ build/
 *.tmp
 *.bak
 
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-
-##logs
-*.log
-*.tmp
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode
-
 # Ignore video files
 *.mp4
 *.avi
@@ -122,63 +76,47 @@ build/
 *.alac
 *.opus
 
+# Ignore application-secret.properties
+src/main/resources/application-secret.properties
 
-#logs
+# Compiled class files
+*.class
+
+# Log files
 *.log
-*.gz
-*.tmp
-*.bak
+*.log.*
 
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
 
-### IntelliJ IDEA ###
-.idea
+# IDE specific files
+.idea/
 *.iws
 *.iml
 *.ipr
+.vscode/
+*.swp
+*.swo
 
-##logs
-*.log
-*.tmp
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+# Build directories
+target/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+out/
 
-### VS Code ###
-.vscode
+# Environment files
+.env
+*.env
+.env.local
+.env.development
+.env.test
+.env.production
 
-# Ignore video files
-*.mp4
-*.avi
-*.mkv
-*.mov
-*.wmv
-*.flv
-*.webm
-*.m4v
-*.mpg
-*.mpeg
-*.3gp
-*.3g2
-*.f4v
-*.f4p
-*.f4a
-*.f4b
-
-# Ignore audio files
-*.mp3
-*.wav
-*.flac
-*.aac
-*.ogg
-*.m4a
-*.wma
-*.aiff
-*.alac
-*.opus
+# OS specific files
+.DS_Store
+Thumbs.db

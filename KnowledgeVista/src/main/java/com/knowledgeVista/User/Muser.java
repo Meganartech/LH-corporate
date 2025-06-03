@@ -19,6 +19,8 @@ import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 @Entity
 @Getter@Setter@NoArgsConstructor
 public class Muser {
@@ -26,6 +28,7 @@ public class Muser {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long userId;
 	    private String username;
+	    @Column(name = "password", nullable = false)
 	    private String psw;
 	    @Column(unique = true)
 	    private String email;
@@ -67,4 +70,12 @@ public class Muser {
 	    private Boolean isActive=true;
 	    private LocalDateTime lastactive;
 	    private String inactiveDescription;
+
+	    public void setPassword(String password, BCryptPasswordEncoder passwordEncoder) {
+	        this.psw = passwordEncoder.encode(password);
+	    }
+
+	    public boolean checkPassword(String rawPassword, BCryptPasswordEncoder passwordEncoder) {
+	        return passwordEncoder.matches(rawPassword, this.psw);
+	    }
 }

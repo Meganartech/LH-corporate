@@ -33,6 +33,18 @@ public class TestHistoryDto {
 			this.nthAttempt = nthAttempt;
 			this.percentage = percentage;
 			this.status = status;
-			this.type=type;
+			this.type = type;
+		}
+		
+		public TestHistoryDto(String courseName, Long courseId, String testName, Long testId, LocalDate testDate,
+				Long nthAttempt, Double percentage, String status) {
+			this.courseName = courseName;
+			this.courseId = courseId;
+			this.testName = testName;
+			this.testId = testId;
+			this.testDate = testDate;
+			this.nthAttempt = nthAttempt;
+			this.percentage = percentage;
+			this.status = status;
 		}
 }

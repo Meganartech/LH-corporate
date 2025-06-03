@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.knowledgeVista.User.Muser;
@@ -30,6 +31,8 @@ public class AuthenticationController {
 	private JwtUtil jwtUtil;
 	@Autowired
 	private TokenBlacklist tokenBlacklist;
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
@@ -66,7 +69,16 @@ public class AuthenticationController {
 		if (userOptional.isPresent()) {
 			Muser user = userOptional.get();
 			String institution = user.getInstitutionName();
+			
+			// Check if password needs migration (if it matches plain text)
 			if (user.getPsw().equals(password)) {
+				// Migrate the password to hashed version
+				user.setPassword(password, passwordEncoder);
+				muserRepositories.save(user);
+			}
+			
+			// Now check with proper password verification
+			if (user.checkPassword(password, passwordEncoder) || user.getPsw().equals(password)) {
 				if (user.getIsActive().equals(true)) {
 					if (user.getRole().getRoleName().equals("USER") || user.getRole().getRoleName().equals("TRAINER")) {
 						Boolean isActiveAdmin = muserRepositories.getactiveResultByInstitutionName("ADMIN",
@@ -158,7 +170,7 @@ public class AuthenticationController {
 			return ResponseEntity.notFound().build();
 		} else {
 			Muser validUser = userOptional.get();
-			validUser.setPsw(newPassword);
+			validUser.setPassword(newPassword, passwordEncoder);
 			muserRepositories.save(validUser);
 			return ResponseEntity.ok().build();
 		}
