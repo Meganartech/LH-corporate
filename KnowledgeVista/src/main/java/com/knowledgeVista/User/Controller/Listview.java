@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +54,8 @@ public class Listview {
 	private BatchRepository batchrepo;
 	@Autowired
 	private EmailService emailservice;
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 
 	 private static final Logger logger = LoggerFactory.getLogger(Listview.class);
 
@@ -503,7 +505,7 @@ public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String to
 				muser.setDob(approval.getDob());
 				muser.setInstitutionName(approval.getInstitutionName());
 				muser.setProfile(approval.getProfile());
-				muser.setPsw(approval.getPsw());
+				muser.setPassword(approval.getPsw(),passwordEncoder);
 				muser.setRole(approval.getRole());
 				muser.setIsActive(true);
 				muser.setInactiveDescription("");

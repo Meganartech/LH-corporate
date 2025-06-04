@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,7 +43,8 @@ public class AddUsers {
 	private NotificationService notiservice;
 	 @Autowired
 	 private EmailService emailService;
-	 
+	 @Autowired
+		private BCryptPasswordEncoder passwordEncoder;
 
 	 private static final Logger logger = LoggerFactory.getLogger(AddUsers.class);
 	 
@@ -100,7 +102,7 @@ public class AddUsers {
 	                  trainer.setUsername(username);
 	                  trainer.setEmail(email);
 	                  trainer.setIsActive(isActive);
-	                  trainer.setPsw(psw);
+	                  trainer.setPassword(psw,passwordEncoder);
 	                  trainer.setPhone(phone);
 	                  trainer.setDob(dob);
 	                  trainer.setSkills(skills);
@@ -244,7 +246,7 @@ public class AddUsers {
 	                  user.setUsername(username);
 	                  user.setEmail(email);
 	                  user.setIsActive(isActive);
-	                  user.setPsw(psw);
+	                  user.setPassword(psw,passwordEncoder);
 	                  user.setPhone(phone);
 	                  user.setDob(dob);
 	                  user.setRole(roletrainer);
@@ -532,7 +534,7 @@ public class AddUsers {
 	        user.setUsername(username);
 	        user.setEmail(email);
 	        user.setIsActive(isActive);
-	        user.setPsw(psw);
+	        user.setPassword(psw,passwordEncoder);
 	        user.setPhone(phone);
 	        user.setDob(dob);
 	        user.setSkills(skills);

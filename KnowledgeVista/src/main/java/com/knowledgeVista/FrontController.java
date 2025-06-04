@@ -926,7 +926,6 @@ public class FrontController {
 	    }
 //------------------------MuserRegistrationController------------------------------
 	@PostMapping("/Student/register")
-	@CheckAccessAnnotation
 	public ResponseEntity<?> RegisterStudent(HttpServletRequest request,
 			@RequestParam(required = false) String username, @RequestParam String psw, @RequestParam String email,
 			@RequestParam(required = false) LocalDate dob, @RequestParam String role, @RequestParam String phone,

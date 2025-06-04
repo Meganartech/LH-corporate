@@ -1,7 +1,7 @@
 package com.knowledgeVista;
 import java.io.InputStream;
 import java.time.LocalDate;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import javax.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,6 +32,8 @@ public class DataLoaderService {
     private MuserRepositories muserrepositories;
    @Autowired
    private SocialKeyRepo SocialKeysRepo;
+   @Autowired
+	private BCryptPasswordEncoder passwordEncoder;
     @PostConstruct
     @Transactional
     public void init() {
@@ -107,7 +109,7 @@ public class DataLoaderService {
                     // Create new user instance
                     Muser newUser = new Muser();
                     newUser.setUsername(username);
-                    newUser.setPsw(password);
+                    newUser.setPassword(password,passwordEncoder);
                     newUser.setEmail(email);
                     newUser.setDob(dob);
                     newUser.setPhone(phone);

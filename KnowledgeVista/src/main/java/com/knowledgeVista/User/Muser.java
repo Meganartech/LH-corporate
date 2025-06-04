@@ -28,7 +28,7 @@ public class Muser {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long userId;
 	    private String username;
-	    @Column(name = "password", nullable = false)
+	    @Column(name = "psw", nullable = false)
 	    private String psw;
 	    @Column(unique = true)
 	    private String email;
