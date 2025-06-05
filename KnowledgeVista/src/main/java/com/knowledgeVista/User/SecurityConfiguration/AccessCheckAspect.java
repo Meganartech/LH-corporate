@@ -33,25 +33,48 @@ public class AccessCheckAspect {
         if (token == null || !jwtUtil.validateToken(token)) {
             throw new UnauthorizedAccessException("Invalid Token");
         }
-        String role=jwtUtil.getRoleFromToken(token);
+        String role = jwtUtil.getRoleFromToken(token);
         if("SYSADMIN".equals(role)) {
-        	   return joinPoint.proceed();
+            return joinPoint.proceed();
         }
       
         String institution = jwtUtil.getInstitutionFromToken(token);
-        if (institution == null) {
+        String email = jwtUtil.getEmailFromToken(token);
+        
+        if (institution == null || email == null) {
             throw new UnauthorizedAccessException("Invalid Token");
         }
 
-        String cacheKey = "institutionBlocked::" + institution;
+        // Check user active status
+        String userCacheKey = "userActive::" + email;
+        Boolean isUserActive = cacheManager.getCache("userActive") != null
+                ? cacheManager.getCache("userActive").get(userCacheKey, Boolean.class)
+                : null;
+
+        if (isUserActive == null) {
+            Boolean userActiveStatus = muserRepository.findByEmail(email)
+                    .map(user -> user.getIsActive())
+                    .orElse(false);
+            if (cacheManager.getCache("userActive") != null) {
+                cacheManager.getCache("userActive").put(userCacheKey, userActiveStatus);
+            }
+            if (!userActiveStatus) {
+                throw new UnauthorizedAccessException("User Account Inactive");
+            }
+        } else if (!isUserActive) {
+            throw new UnauthorizedAccessException("User Account Inactive");
+        }
+
+        // Check institution blocked status
+        String institutionCacheKey = "institutionBlocked::" + institution;
         Boolean isBlocked = cacheManager.getCache("institutionBlocked") != null
-                ? cacheManager.getCache("institutionBlocked").get(cacheKey, Boolean.class)
+                ? cacheManager.getCache("institutionBlocked").get(institutionCacheKey, Boolean.class)
                 : null;
 
         if (isBlocked == null) {
             boolean adminActive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
             if (cacheManager.getCache("institutionBlocked") != null) {
-                cacheManager.getCache("institutionBlocked").put(cacheKey, !adminActive);
+                cacheManager.getCache("institutionBlocked").put(institutionCacheKey, !adminActive);
             }
             if (!adminActive) {
                 throw new UnauthorizedAccessException("Institution Blocked");

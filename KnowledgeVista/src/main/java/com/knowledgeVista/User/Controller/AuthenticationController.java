@@ -18,6 +18,7 @@ import com.knowledgeVista.User.Muser;
 import com.knowledgeVista.User.Approvals.MuserApprovalRepo;
 import com.knowledgeVista.User.Approvals.MuserApprovals;
 import com.knowledgeVista.User.Repository.MuserRepositories;
+import com.knowledgeVista.User.SecurityConfiguration.CacheService;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
 import com.knowledgeVista.User.SecurityConfiguration.TokenBlacklist;
 
@@ -33,6 +34,8 @@ public class AuthenticationController {
 	private TokenBlacklist tokenBlacklist;
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
+	@Autowired
+	private CacheService cacheService;
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
@@ -80,6 +83,18 @@ public class AuthenticationController {
 			Muser user = userOptional.get();
 			String institution = user.getInstitutionName();
 			
+			// Check if user is locked due to too many failed attempts
+			if (user.getLoginAttempts() != null && user.getLoginAttempts() >= 5) {
+				user.setIsActive(false);
+				user.setInactiveDescription("Account locked due to multiple failed login attempts.Contact your Adminstrator");
+				muserRepositories.save(user);
+				cacheService.setUserActiveStatus(user.getEmail(), false);
+				Map<String, Object> responseBody = new HashMap<>();
+				responseBody.put("message", "In Active");
+				responseBody.put("Description", "Account locked due to multiple failed login attempts.Contact your Adminstrator");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
+			}
+			
 			// Check if password is stored in plain text (legacy) and needs migration
 			if (user.getPsw().equals(password)) {
 				// Migrate the password to hashed version
@@ -92,17 +107,21 @@ public class AuthenticationController {
 			if (passwordEncoder.matches(password, user.getPsw())) {
 				if (!user.getIsActive()) {
 					Map<String, Object> responseBody = new HashMap<>();
-					responseBody.put("message", "Inactive");
+					responseBody.put("message", "In Active");
 					responseBody.put("Description", user.getInactiveDescription());
 					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
 				}
+
+				// Reset login attempts on successful login
+				user.setLoginAttempts(0);
+				muserRepositories.save(user);
 
 				// Check if user is USER or TRAINER and verify admin status
 				if ((user.getRole().getRoleName().equals("USER") || user.getRole().getRoleName().equals("TRAINER"))) {
 					Boolean isActiveAdmin = muserRepositories.getactiveResultByInstitutionName("ADMIN", institution);
 					if (!isActiveAdmin) {
 						Map<String, Object> responseBody = new HashMap<>();
-						responseBody.put("message", "Inactive");
+						responseBody.put("message", "In Active");
 						responseBody.put("Description", "Your Institution is Inactive");
 						return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
 					}
@@ -126,8 +145,14 @@ public class AuthenticationController {
 
 				return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseBody);
 			} else {
+				// Increment login attempts on failed password, handle null case
+				int currentAttempts = user.getLoginAttempts() != null ? user.getLoginAttempts() : 0;
+				user.setLoginAttempts(currentAttempts + 1);
+				muserRepositories.save(user);
+
 				Map<String, Object> responseBody = new HashMap<>();
 				responseBody.put("message", "Incorrect password");
+				responseBody.put("attemptsLeft", 5 - (user.getLoginAttempts() != null ? user.getLoginAttempts() : 0));
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody);
 			}
 		} catch (Exception e) {

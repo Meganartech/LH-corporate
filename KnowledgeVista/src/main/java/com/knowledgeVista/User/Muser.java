@@ -70,6 +70,7 @@ public class Muser {
 	    private Boolean isActive=true;
 	    private LocalDateTime lastactive;
 	    private String inactiveDescription;
+	    private Integer loginAttempts = 0;
 
 	    public void setPassword(String password, BCryptPasswordEncoder passwordEncoder) {
 	        this.psw = passwordEncoder.encode(password);

@@ -195,10 +195,11 @@ public class SysadminController {
 	                  Muser user = existingUser.get();
 	                  if ("ADMIN".equals(user.getRole().getRoleName())) {
 	                     user.setIsActive(true);
+	                     user.setLoginAttempts(0);
 	                     user.setInactiveDescription("");
 	                     muserrepositories.save(user);
 	                     cacheService.updateAdminStatus(user.getInstitutionName());
-	                      return ResponseEntity.ok().body("{\"message\": \"Deactivated Successfully\"}");
+	                      return ResponseEntity.ok().body("{\"message\": \"Activated Successfully\"}");
 	                  } 
 		                  // Return not found if the user with the given email does not exist
 		                  return ResponseEntity.notFound().build();

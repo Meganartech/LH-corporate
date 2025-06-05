@@ -23,11 +23,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
-
+import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +39,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.knowledgeVista.Course.Repository.CourseDetailRepository;
 import com.knowledgeVista.DownloadManagement.CustomerLeads;
@@ -584,7 +582,7 @@ public class LicenseController {
 			}
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
-			logger.error("", e);
+			logger.error("Error parsing XML", e);
 			;
 			return ResponseEntity.badRequest().build();
 		}

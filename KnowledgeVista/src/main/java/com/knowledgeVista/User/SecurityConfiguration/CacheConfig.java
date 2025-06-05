@@ -9,7 +9,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("institutionBlocked");
+        return new ConcurrentMapCacheManager("institutionBlocked", "userActive");
     }
 }
 

@@ -24,6 +24,7 @@ import com.knowledgeVista.User.Muser;
 import com.knowledgeVista.User.MuserRoles;
 import com.knowledgeVista.User.Repository.MuserRepositories;
 import com.knowledgeVista.User.Repository.MuserRoleRepository;
+import com.knowledgeVista.User.SecurityConfiguration.CacheService;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
 
 import io.jsonwebtoken.io.DecodingException;
@@ -45,7 +46,8 @@ public class AddUsers {
 	 private EmailService emailService;
 	 @Autowired
 		private BCryptPasswordEncoder passwordEncoder;
-
+		@Autowired
+		private CacheService cacheService;
 	 private static final Logger logger = LoggerFactory.getLogger(AddUsers.class);
 	 
 	 public MuserRoles addRole(String roleName, Long parentRoleId) {
@@ -367,6 +369,7 @@ public class AddUsers {
 	                     user.setIsActive(false);
 	                     user.setInactiveDescription(reason);
 	                     muserrepositories.save(user);
+	                     cacheService.setUserActiveStatus(user.getEmail(), false);
 	                      return ResponseEntity.ok().body("{\"message\": \"DeActivated Successfully\"}");
 	                  } 
 	                  return ResponseEntity.notFound().build();
@@ -397,9 +400,11 @@ public class AddUsers {
 	                  Muser user = existingUser.get();
 	                  if ("TRAINER".equals(user.getRole().getRoleName())) {
 	                     user.setIsActive(true);
+						 user.setLoginAttempts(0);
 	                     user.setInactiveDescription("");
 	                     muserrepositories.save(user);
-	                      return ResponseEntity.ok().body("{\"message\": \"DeActivated Successfully\"}");
+	                     cacheService.setUserActiveStatus(user.getEmail(), true);
+	                      return ResponseEntity.ok().body("{\"message\": \"Activated Successfully\"}");
 	                  } 
 	                  return ResponseEntity.notFound().build();
 	              } else {
@@ -435,6 +440,7 @@ public class AddUsers {
 	                     user.setIsActive(false);
 	                     user.setInactiveDescription(reason);
 	                     muserrepositories.save(user);
+	                     cacheService.setUserActiveStatus(user.getEmail(), false);
 	                      return ResponseEntity.ok().body("{\"message\": \"Deactivated Successfully\"}");
 	                  } 
 
@@ -470,9 +476,11 @@ public class AddUsers {
 	                  Muser user = existingUser.get();
 	                  if ("USER".equals(user.getRole().getRoleName())) {
 	                     user.setIsActive(true);
+	                     user.setLoginAttempts(0);
 	                     user.setInactiveDescription("");
 	                     muserrepositories.save(user);
-	                      return ResponseEntity.ok().body("{\"message\": \"Deactivated Successfully\"}");
+	                     cacheService.setUserActiveStatus(user.getEmail(), true);
+	                      return ResponseEntity.ok().body("{\"message\": \"Activated Successfully\"}");
 	                  } 
 
 		                  // Return not found if the user with the given email does not exist
@@ -609,7 +617,7 @@ public class AddUsers {
 		                user.setIsActive(false);
 		                user.setInactiveDescription(reason);
 		                muserrepositories.save(user);
-
+		                cacheService.setUserActiveStatus(user.getEmail(), false);
 		                return ResponseEntity.ok().body("{\"message\": \"Deactivated Successfully\"}");
 		            } else {
 		                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -647,9 +655,10 @@ public class AddUsers {
 		            // Step 5: Check if the user's role matches the expected role
 		            if (user.getRole().getRoleName().equalsIgnoreCase(targetRole)) {
 		                user.setIsActive(true);
+						user.setLoginAttempts(0);
 		                user.setInactiveDescription(""); // Clear previous deactivation reason
 		                muserrepositories.save(user);
-
+		                cacheService.setUserActiveStatus(user.getEmail(), true);
 		                return ResponseEntity.ok().body("{\"message\": \"Activated Successfully\"}");
 		            } else {
 		                return ResponseEntity.status(HttpStatus.BAD_REQUEST)

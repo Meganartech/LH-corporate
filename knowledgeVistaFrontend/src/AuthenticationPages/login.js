@@ -241,7 +241,7 @@ const Login = () => {
         if (message === "Incorrect password") {
           setErrors((prevErrors) => ({
             ...prevErrors,
-            password: "Incorrect password",
+            password: `Incorrect password. ${data.attemptsLeft} attempts left before account lockout.`,
           }));
         } else if (message === "In Active") {
           MySwal.fire({
