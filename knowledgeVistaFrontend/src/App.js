@@ -119,11 +119,13 @@ import ValidateAssignment from "./Assignment/ValidateAssignment.js";
 import LicenceFileCreation from "./AuthenticationPages/LicenceFileCreation.js";
 import NewRole from "./Registration/NewRole.js";
 import ViewDynamicRole from "./DynamicRole/ViewDynamicRole";
-import EditDynamicRole from "./DynamicRole/ViewDynamicRole.js";
+import EditDynamicRole from "./DynamicRole/EditDynamicRole.js";
 import RoleRegistration from "./Registration/RoleRegisteration.js";
 import RoleList from "./DynamicRole/RoleList.js";
 import ManageRole from "./DynamicRole/ManageRole.js";
 import AccessRequest from "./course/Components/AccessRequest.js";
+import AddDynamicRole from "./DynamicRole/AddDynamicRole.js";
+
 function App() {
   useEffect(() => {
     pcoded();
@@ -376,6 +378,16 @@ function App() {
                 </ErrorBoundary>
               }
             />
+          <Route
+            path="/add/:roleName"
+            element={
+              <ErrorBoundary>
+                <PrivateRoute authenticationRequired={true} onlyadmin={true}>
+                    <AddDynamicRole />
+                </PrivateRoute>
+              </ErrorBoundary>
+            }
+          />
             <Route
               path="/mycourses"
               element={
@@ -386,17 +398,6 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/myGrades"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                    <Grades />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
-          
             <Route
               path="/view/Grades/:email/:batchTitle/:batchId"
               element={

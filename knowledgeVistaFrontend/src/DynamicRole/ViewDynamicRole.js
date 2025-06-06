@@ -59,7 +59,7 @@ const ViewDynamicRole = () => {
           params: { pageNumber: page, pageSize: itemsperpage },
         });
       }
-      console.log("payload", response.data);
+      //console.log("payload", response.data);
       setUsers(response.data.content);
       setTotalPages(response.data.totalPages);
       setdatacounts({
@@ -287,7 +287,7 @@ const ViewDynamicRole = () => {
                     className="btn btn-primary mybtn"
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(`/register?role=${roleName}`);
+                      navigate(`/add/${roleName}`);
                     }}
                   >
                     <i className="fa-solid fa-plus"></i> Add {roleDisplay}

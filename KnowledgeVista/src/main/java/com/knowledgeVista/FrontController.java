@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.knowledgeVista.Attendance.AttendanceService;
@@ -576,6 +578,50 @@ public class FrontController {
 				token);
 
 	}
+	
+//	@PostMapping("/admin/add/{role}")
+//	public ResponseEntity<?> addDynamicRole(HttpServletRequest request, @RequestParam(required = false) String username,
+//			@RequestParam String psw, @RequestParam String email, @RequestParam(required = false) LocalDate dob,
+//			@RequestParam String phone, @RequestParam(required = false) String skills,
+//			@RequestParam(required = false) MultipartFile profile, @RequestParam Boolean isActive,
+//			@RequestParam(defaultValue = "+91") String countryCode, @RequestHeader("Authorization") String token,@PathVariable("role") String roleName) {
+//		return adduser.addDynamicUser(request, username, psw, email, dob, phone, skills, profile, isActive, countryCode,
+//				token,roleName);
+//	}
+    @PostMapping(
+            value = "/admin/add/{role}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+        )
+        public ResponseEntity<?> addDynamicRole(
+            HttpServletRequest request,
+            @RequestPart(required = false) String username,
+            @RequestPart String psw,
+            @RequestPart String email,
+            @RequestPart(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dob,
+            @RequestPart String phone,
+            @RequestPart(required = false) String skills,
+            @RequestPart(required = false) MultipartFile profile,
+            @RequestPart Boolean isActive,
+            @RequestParam(defaultValue = "+91") String countryCode,
+            @RequestHeader("Authorization") String token,
+            @PathVariable("role") String roleName) {
+            
+            return adduser.addDynamicUser(
+                request, 
+                username, 
+                psw, 
+                email, 
+                dob, 
+                phone, 
+                skills, 
+                profile, 
+                isActive, 
+                countryCode,
+                token,
+                roleName
+            );
+        }
+
 
 	@DeleteMapping("/admin/deactivate/trainer")
 	@CheckAccessAnnotation
@@ -689,6 +735,20 @@ public class FrontController {
 			@RequestHeader("Authorization") String token) {
 		return edit.updateTrainer(originalEmail, username, newEmail, dob, phone, skills, profile, isActive, countryCode,
 				token);
+	}
+
+	@PatchMapping("/Edit/{roleName}/{email}")
+	public ResponseEntity<?> updateDynamicRole(@PathVariable("email") String originalEmail,
+			@RequestParam(name = "username", required = false) String username, @RequestParam("email") String newEmail,
+			@RequestParam(name = "dob", required = false) LocalDate dob, @RequestParam("phone") String phone,
+			@RequestParam(name = "skills", required = false) String skills,
+			@RequestParam(value = "profile", required = false) MultipartFile profile,
+			@RequestParam("isActive") Boolean isActive,
+			@RequestParam(name = "countryCode", defaultValue = "+91") String countryCode,
+			@RequestHeader("Authorization") String token,
+			@RequestParam("roleName") String roleName) {
+		return edit.updateDynamicRole(originalEmail, username, newEmail, dob, phone, skills, profile, isActive, countryCode,
+				token,roleName);
 	}
 
 	@PatchMapping("/Edit/self")
