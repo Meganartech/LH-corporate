@@ -346,14 +346,16 @@ useEffect(() => {
                     {dynamicRoles
                       .filter((role) => {
                         const r = role.roleName.toLowerCase();
-                        return r !== "trainer" && r !== "student" && r!=="sysadmin" && r!=="admin" &&r!=="user";
+                        return r !== "trainer" && r !== "student" && r!=="sysadmin" && r!=="admin" && r!=="user";
                       })
                       .map((role) => (
                         <li key={role.roleId}>
                           <a
                             href="#"
-                            data-path={`/view/${role.roleName.charAt(0).toUpperCase() + role.roleName.slice(1).toLowerCase()}`}
-                            onClick={(e) => handleClick(e, `/view/${role.roleName.charAt(0).toUpperCase() + role.roleName.slice(1).toLowerCase()}`)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(`/view/users?rolename=${role.roleName}&roleid=${role.roleId}`);
+                            }}
                             className="nav-link"
                           >
                             <span className="pcoded-micon">

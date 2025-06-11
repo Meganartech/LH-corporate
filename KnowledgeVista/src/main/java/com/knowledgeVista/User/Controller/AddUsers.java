@@ -506,7 +506,7 @@ public class AddUsers {
 	  //********************************************Dynamic User**************************************
 	  public ResponseEntity<?> addDynamicUser(HttpServletRequest request, String username, String psw, String email,
 	          LocalDate dob, String phone, String skills, MultipartFile profile, Boolean isActive,
-	          String countryCode, String token, String roleName) {
+	          String countryCode, String token, Long roleId) {
 	    try {
 
 	        String roleFromToken = jwtUtil.getRoleFromToken(token);
@@ -522,8 +522,8 @@ public class AddUsers {
 	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("EMAIL");
 	        }
 
-	        MuserRoles dynamicRole = muserrolerepository.findByroleName(roleName);
-	        if (dynamicRole == null) {
+	       Optional<MuserRoles> dynamicRole = muserrolerepository.findById(roleId);
+	        if (dynamicRole.isEmpty()) {
 	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid Role");
 	        }
 
@@ -531,9 +531,10 @@ public class AddUsers {
 	        if (!addingAdmin.isPresent()) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	        }
+	        MuserRoles role=dynamicRole.get();
 	        Muser adding = addingAdmin.get();
 	        Muser user = new Muser();
-
+             
 	        user.setInstitutionName(adding.getInstitutionName());
 	        if (username == null || username.trim().isEmpty() && email != null && email.contains("@")) {
 	            username = email.substring(0, email.indexOf("@"));
@@ -546,7 +547,7 @@ public class AddUsers {
 	        user.setPhone(phone);
 	        user.setDob(dob);
 	        user.setSkills(skills);
-	        user.setRole(dynamicRole);
+	        user.setRole(role);
 	        user.setCountryCode(countryCode);
 
 	        if (profile != null && !profile.isEmpty()) {
@@ -578,13 +579,13 @@ public class AddUsers {
 	            + "<p><a href='%s'>Click here to sign in</a></p>"
 	            + "<p>Regards, <br>LearnHub Team</p>"
 	            + "</body></html>",
-	            user.getUsername(), roleName, user.getEmail(), user.getPsw(), signInLink
+	            user.getUsername(), role.getRoleName(), user.getEmail(), psw, signInLink
 	        );
 
 	        List<String> to = Collections.singletonList(user.getEmail());
 	        emailService.sendHtmlEmailAsync(user.getInstitutionName(), to, null, null, "LearnHub Access Granted", body);
 
-	        return ResponseEntity.ok().body("{\"message\": \"User added successfully as " + roleName + "\"}");
+	        return ResponseEntity.ok().body("{\"message\": \"User added successfully as " + role.getRoleName() + "\"}");
 	    } catch (DecodingException ex) {
 	        logger.error("Token Decoding Error", ex);
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

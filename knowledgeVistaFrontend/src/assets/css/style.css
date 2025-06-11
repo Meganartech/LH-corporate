@@ -27096,3 +27096,41 @@ margin-right:2px ;
   border-radius: 4px;
 }
 
+.d-flex {
+  display: flex !important;
+  gap: 10px;
+  align-items: center;
+}
+
+.ml-2 {
+  margin-left: 0.5rem !important;
+}
+
+.otp-input {
+  width: 100%;
+  max-width: 200px;
+}
+
+.otp-button {
+  white-space: nowrap;
+}
+
+.otp-verified {
+  color: #28a745;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.otp-error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.email-field {
+  flex: 1;
+}
+
+.verify-button {
+  min-width: 100px;
+} 

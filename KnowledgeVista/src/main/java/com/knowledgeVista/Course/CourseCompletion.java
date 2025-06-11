@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Table(
-	    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "course_id"})
+	    uniqueConstraints = @UniqueConstraint(columnNames = {"user_user_id", "course_course_id"})
 	)
 public class CourseCompletion {
 

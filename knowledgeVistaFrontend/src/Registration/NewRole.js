@@ -25,27 +25,27 @@ const NewRole = () => {
     }
 
     try {
-      await axios.post(`${baseUrl}/roles/add`, {
+      const res =await axios.post(`${baseUrl}/roles/add`, {
         roleName: newRoleName,
         parentRoleId: parentRoleId || null,
       });
-
-      await new Promise(resolve => setTimeout(resolve, 500));
+ if(res.status===200){
       Swal.fire({
         title: "Success!",
-        text: "Role created successfully. Would you like to register someone with this role?",
+        text: "Role created successfully. Would you like to Add someone with this role?",
         icon: "success",
         showCancelButton: true,
-        confirmButtonText: "Yes, register now",
+        confirmButtonText: "Yes, Add now",
         cancelButtonText: "No, thanks"
       }).then((result) => {
         if (result.isConfirmed) {
-        navigate(`/register?role=${newRoleName.toLowerCase()}`);
-        } else {
-          setNewRoleName("");
+           setNewRoleName("");
           setParentRoleId("");
+        navigate(`/add/user?rolename=${res?.data?.roleName}&roleid=${res?.data?.roleId}`);
+         
         }
       });
+    }
     } catch (error) {
       Swal.fire("Error", "Failed to create role", "error");
     }
@@ -127,7 +127,7 @@ const NewRole = () => {
               </div>
             </div>
 
-            <div className="btngrp">
+            <div className="cornerbtn">
               <button
                 className="btn btn-secondary"
                 type="button"

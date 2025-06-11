@@ -531,28 +531,22 @@ public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String to
 				String body = String.format(
 				    "<html>"
 				        + "<body>"
-				        + "<h2>Welcome to LearnHub Trainer Portal!</h2>"
+				        + "<h2>Welcome to LearnHub  Portal!</h2>"
 				        + "<p>Dear %s,</p>"
-				        + "<p>We are thrilled to have you as a trainer at LearnHub. Your expertise will help shape the learning journey of many students.</p>"
+				        + "<p>We are thrilled to have you as a %s at LearnHub.</p>"
 				        + "<p>Here are your login credentials:</p>"
 				        + "<ul>"
 				        + "<li><strong>Username (Email):</strong> %s</li>"
 				        + "<li><strong>Password:</strong> %s</li>"
 				        + "</ul>"
-				        + "<p>As a trainer, you can:</p>"
-				        + "<ul>"
-				        + "<li>Create and manage courses.</li>"
-				        + "<li>Interact with students and address their queries.</li>"
-				        + "<li>Track student progress and provide valuable feedback.</li>"
-				        + "</ul>"
 				        + "<p>If you need any assistance, our support team is here to help.</p>"
-				        + "<p>We look forward to your contribution in making learning more impactful!</p>"
 	                  + "<p>Click the link below to sign in:</p>"
 	                  + "<p><a href='" + signInLink + "' style='font-size:16px; color:blue;'>Sign In</a></p>"
 				        + "<p>Best Regards,<br>LearnHub Team</p>"
 				        + "</body>"
 				        + "</html>",
 				        approval.getUsername(), // Trainer Name
+				        approval.getRole().getRoleName(),
 				    approval.getEmail(), // Trainer Username (email)
 				    approval.getPsw() // Trainer Password
 				);
@@ -566,7 +560,7 @@ public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String to
 				            emailList,
 				            cc, 
 				            bcc, 
-				            "Welcome to LearnHub - Trainer Access Granted!", 
+				            "Welcome to LearnHub -  Access Granted!", 
 				            body
 				        );
 				    } catch (Exception e) {

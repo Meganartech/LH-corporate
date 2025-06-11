@@ -255,9 +255,13 @@ public class LogManagement {
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.connectiontimeout", "10000");
-		props.put("mail.smtp.timeout", "10000");
-		props.put("mail.smtp.writetimeout", "10000");
+		props.put("mail.smtp.connectiontimeout", "30000");
+		props.put("mail.smtp.timeout", "30000");
+		props.put("mail.smtp.writetimeout", "30000");
+		props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		props.put("mail.debug", "true");
+		props.put("mail.smtp.socketFactory.fallback", "false");
+		props.put("mail.smtp.ssl.protocols", "TLSv1.2");
 
 		return mailSender;
 	}

@@ -379,7 +379,7 @@ function App() {
               }
             />
           <Route
-            path="/add/:roleName"
+            path="/add/user"
             element={
               <ErrorBoundary>
                 <PrivateRoute authenticationRequired={true} onlyadmin={true}>
@@ -780,7 +780,7 @@ function App() {
               }
             />
           <Route
-            path="/view/:roleName"
+            path="/view/users"
             element={
               <ErrorBoundary>
                 <PrivateRoute authenticationRequired={true} onlyadmin={true}>
@@ -1545,7 +1545,7 @@ function App() {
               </ErrorBoundary>
             }
           />
-          <Route path="/register" element={  <ErrorBoundary><RoleRegistration /></ErrorBoundary>} />
+          <Route path="/register/user" element={  <ErrorBoundary><RoleRegistration /></ErrorBoundary>} />
           <Route
             path="/LicenceExpired"
             element={

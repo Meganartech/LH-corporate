@@ -14,6 +14,11 @@ const AdminRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate=useNavigate();
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [formData, setFormData] = useState({
     username: "",
     psw: "",
@@ -39,6 +44,7 @@ const AdminRegister = () => {
     phone: "",
     fileInput: "",
     profile: "",
+    otp: "",
   });
 
   const nameRef = useRef(null);
@@ -247,8 +253,100 @@ setErrors((prevErrors) => ({
       });
   };
 
+  const handleSendOTP = async () => {
+    if (!formData.email || errors.email) {
+      setErrors(prev => ({
+        ...prev,
+        email: !formData.email ? "Email is required" : errors.email
+      }));
+      emailRef.current?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    setIsSendingOtp(true);
+    try {
+      // Clear OTP input and errors when resending
+      setOtp("");
+      setErrors(prev => ({ ...prev, otp: "" }));
+      setOtpVerified(false);
+      setOtpSent(true);
+      
+      const response = await axios.post(
+        `${baseUrl}/auth/send-otp`,
+        null,
+        { 
+          params: { 
+            email: formData.email
+          } 
+        }
+      );
+
+      if (response.status === 200) {
+        MySwal.fire({
+          icon: "success",
+          title: "OTP Sent!",
+          text: "Please check your email for the OTP.",
+        });
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        if (error.response.data === "EMAIL") {
+          setErrors(prev => ({
+            ...prev,
+            email: "This email is already registered"
+          }));
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          email: "Failed to send OTP. Please try again."
+        }));
+      }
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!otp) {
+      setErrors(prev => ({
+        ...prev,
+        otp: "OTP is required"
+      }));
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${baseUrl}/auth/verify-otp`,
+        null,
+        { params: { email: formData.email, otp } }
+      );
+
+      if (response.status === 200) {
+        setOtpVerified(true);
+        setErrors(prev => ({
+          ...prev,
+          otp: ""
+        }));
+        alert("Email verified successfully!");
+      }
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        otp: "Invalid or expired OTP"
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!otpVerified) {
+     alert( "Please verify your email first");
+      emailRef.current?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
 
     // Check if any required fields are empty or have errors
     let hasErrors = false;
@@ -269,12 +367,12 @@ setErrors((prevErrors) => ({
         }));
       }
     });
-   
 
     if (hasErrors) {
-      scrollToError(); // Scroll to the first error field
+      scrollToError();
       return;
     }
+
     const formDataToSend = new FormData();
     formDataToSend.append("username", formData.username);
     formDataToSend.append("psw", formData.psw);
@@ -287,6 +385,7 @@ setErrors((prevErrors) => ({
     formDataToSend.append("profile", formData.profile);
     formDataToSend.append("skills", formData.skills);
     formDataToSend.append("countryCode", formData.countryCode);
+    formDataToSend.append("otp", otp);
 
     try {
       const response = await axios.post(
@@ -295,7 +394,7 @@ setErrors((prevErrors) => ({
       );
 
       if (response.status === 200) {
-        MySwal.fire({
+         MySwal.fire({
           title: "Welcome to our Family!",
           text: "You have been registered successfully!",
           icon: "success",
@@ -306,25 +405,27 @@ setErrors((prevErrors) => ({
           if (result.isConfirmed) {
             navigate("/login");
           } else {
-            setFormData({
-              username: "",
-              psw: "",
-              confirm_password: "",
-              email: "",
-              institution: "",
-              dob: "",
-              phone: "",
-              skills: "",
-              profile: null,
-              isActive: true,
-              countryCode:"",
-              base64Image: null,
-            });
-            setPhoneNumber("")
-            fetchUserCountryCode()
-          }
-        });
-      }
+          setFormData({
+            username: "",
+            psw: "",
+            confirm_password: "",
+            email: "",
+            institution: "",
+            dob: "",
+            phone: "",
+            skills: "",
+            profile: null,
+            isActive: true,
+            countryCode: "",
+            base64Image: null,
+          })}});
+          setPhoneNumber("");
+          fetchUserCountryCode();
+          setOtpSent(false);
+          setOtpVerified(false);
+          setOtp("");
+        }
+      
     } catch (error) {
       if (error.response && error.response.status === 400) {
         const data = error.response.data;
@@ -333,27 +434,16 @@ setErrors((prevErrors) => ({
             ...prevErrors,
             email: "This email is already registered.",
           }));
-        }  else if (data === "INSTITUTE") {
+        } else if (data === "INSTITUTE") {
           setErrors((prevErrors) => ({
             ...prevErrors,
             institution: "This institution is already registered.",
           }));
         } else if (data === "ADMIN") {
-          MySwal.fire({
-            title: "Error!",
-            text: "Admin Already Registered.",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
+          alert("Admin Already Registered.");
         }
       } else {
-        // MySwal.fire({
-        //   title: "Error!",
-        //   text: "An error occurred while registering. Please try again later.",
-        //   icon: "error",
-        //   confirmButtonText: "OK",
-        // });
-        throw error
+        alert("An error occurred while registering. Please try again later.");
       }
     }
   };
@@ -468,27 +558,76 @@ setErrors((prevErrors) => ({
                 </div>
               </div>
               <div className="form-group row" ref={emailRef}>
-                <label htmlFor="email"  className="col-sm-3 col-form-label">
-                  {" "}
+                <label htmlFor="email" className="col-sm-3 col-form-label">
                   Email<span className="text-danger">*</span>
                 </label>
-                <div className=" col-sm-9">
-                  {" "}
-                  <input
-                    type="email"
-                    autoComplete="off"
-                    className={`form-control   ${
-                      errors.email && "is-invalid"
-                    }`}
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email Address"
-                    required
-                  />
-                  <div className="invalid-feedback">{errors.email}</div>
+                <div className="col-sm-9">
+                  <div className="d-flex">
+                    <input
+                      typen="email"
+                      autoComplete="off"
+                      className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="Email Address"
+                      required
+                      disabled={otpVerified}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-primary ms-2 col-sm-2"
+                      onClick={handleSendOTP}
+                      disabled={!formData.email || errors.email || otpVerified || isSendingOtp}
+                    >
+                      {isSendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
+                    </button>
+                  </div>
+                  {errors.email && <div className="text-danger mt-1">{errors.email}</div>}
                 </div>
               </div>
+
+              {otpSent && !otpVerified && (
+                <div className="form-group row">
+                  <label htmlFor="otp" className="col-sm-3 col-form-label">
+                    OTP<span className="text-danger">*</span>
+                  </label>
+                  <div className="col-sm-9">
+                    <div className="d-flex">
+                      <input
+                        type="text"
+                        className={`form-control ${errors.otp ? "is-invalid" : ""}`}
+                        name="otp"
+                        value={otp}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setOtp(value);
+                          if (errors.otp) {
+                            setErrors(prev => ({ ...prev, otp: "" }));
+                          }
+                        }}
+                        placeholder="Enter 6-digit OTP"
+                        maxLength="6"
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-primary ms-2 col-sm-2"
+                        onClick={handleVerifyOTP}
+                        disabled={otp.length !== 6}
+                      >
+                        Verify OTP
+                      </button>
+                    </div>
+                    {errors.otp && <div className="text-danger mt-1">{errors.otp}</div>}
+                    {otpSent && !errors.otp && (
+                      <small className="text-muted">
+                        Please enter the 6-digit OTP sent to your email
+                      </small>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div className="form-group row" ref={institutionRef}>
                 <label htmlFor="institution"  className="col-sm-3 col-form-label">

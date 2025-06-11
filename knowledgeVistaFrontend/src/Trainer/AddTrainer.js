@@ -12,12 +12,16 @@ import { GlobalStateContext } from "../Context/GlobalStateProvider";
 import { useNavigate } from "react-router-dom";
 
 const AddTrainer = () => {
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const token = sessionStorage.getItem("token");
   const MySwal = withReactContent(Swal);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { displayname } = useContext(GlobalStateContext);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [otp, setOtp] = useState("");
   const [formData, setFormData] = useState({
     username: "",
     psw: "",
@@ -31,85 +35,6 @@ const AddTrainer = () => {
   });
   const [defaultCountry, setDefaultCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const fetchUserCountryCode = async () => {
-    try {
-      const response = await fetch("https://ipapi.co/json/");
-      const data = await response.json();
-
-      const dialingCode = data.country_calling_code || "+1";
-
-      setFormData((prevState) => ({
-        ...prevState,
-        countryCode: dialingCode,
-      }));
-      const countryCode = data.country_code.toUpperCase(); // Get the country code (e.g., "IN" for India, "US" for USA)
-      setDefaultCountry(countryCode);
-    } catch (error) {
-      console.error("Error fetching country code: ", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserCountryCode(); // Fetch user's country code on component mount
-  }, []);
-
-  const handlePhoneChange = (value) => {
-    if (typeof value !== "string") {
-      return;
-    }
-
-    setPhoneNumber(value);
-    const phoneNumber = parsePhoneNumber(value);
-    if (phoneNumber) {
-      // Extract phone number without country code
-      const phoneNumberWithoutCountryCode = phoneNumber.nationalNumber;
-
-      setFormData((prevState) => ({
-        ...prevState,
-        phone: phoneNumberWithoutCountryCode,
-      }));
-    }
-    // Validate phone number
-    if (value && isValidPhoneNumber(value)) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        phone: "",
-      }));
-    } else {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        phone: "Enter a valid Phone number",
-      }));
-    }
-  };
-  const fetchCountryDialingCode = async (newCountryCode) => {
-    try {
-      if (!newCountryCode) {
-        return;
-      }
-
-      // Fetch country data based on the new country code (e.g., "IN", "US")
-      const response = await fetch(
-        `https://restcountries.com/v3.1/alpha/${newCountryCode}`
-      );
-      const data = await response.json();
-
-      // Extract the dialing code from the 'idd' object in the response
-      const dialingCode =
-        data[0]?.idd?.root + (data[0]?.idd?.suffixes?.[0] || "") || "+91";
-
-      // Set the country dialing code in the formData
-      setFormData((prevState) => ({
-        ...prevState,
-        countryCode: dialingCode,
-      }));
-
-      // const countryCode = data.country_code.toUpperCase(); // Get the country code (e.g., "IN" for India, "US" for USA)
-      setDefaultCountry(newCountryCode);
-    } catch (error) {
-      console.error("Error fetching country dialing code: ", error);
-    }
-  };
   const [errors, setErrors] = useState({
     username: "",
     email: "",
@@ -120,6 +45,7 @@ const AddTrainer = () => {
     phone: "",
     fileInput: "",
     profile: "",
+    otp: "",
   });
 
   const nameRef = useRef(null);
@@ -149,7 +75,6 @@ const AddTrainer = () => {
       //   error = value.length < 1 ? 'Please enter a skill' : '';
       // break;
       case "email":
-        // This is a basic email validation, you can add more advanced validation if needed
         error = /^[^\s@]+@[^\s@]+\.com$/.test(value)
           ? ""
           : "Please enter a valid email address";
@@ -161,37 +86,33 @@ const AddTrainer = () => {
           today.getFullYear() - 8,
           today.getMonth(),
           today.getDate()
-        ); // Min age 8 years
+        );
         const minDate = new Date(
           today.getFullYear() - 100,
           today.getMonth(),
           today.getDate()
-        ); // Max age 100 years
+        );
         error =
           dobDate <= maxDate && dobDate >= minDate
             ? ""
             : "Please enter a valid date of birth";
         break;
-        case "psw":
-          const passwordRegex =
-            /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-          if (!passwordRegex.test(value)) {
-            error =
-              "Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, one digit, and one special character.";
-          } else if (formData.confirm_password && formData.confirm_password !== value) {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              confirm_password: "Confirm password does not match the password.",
-            }));
-          }
-          break;
-    
-        case "confirm_password":
-          if (value !== formData.psw) {
-            error = "Passwords do not match.";
-          }
-          break;
-    
+      case "psw":
+        const passwordRegex =
+          /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(value)) {
+          error =
+            "Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, one digit, and one special character.";
+        } else if (formData.confirm_password && formData.confirm_password !== value) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            confirm_password: "Confirm password does not match the password.",
+          }));
+        }
+        break;
+      case "confirm_password":
+        error = value !== formData.psw ? "Passwords do not match" : "";
+        break;
       case "phone":
         error =
           value.length < 10
@@ -201,7 +122,6 @@ const AddTrainer = () => {
             : /^\d+$/.test(value)
             ? ""
             : "Please enter a valid phone number (digits only)";
-
         break;
       case "countryCode":
         error = value.startsWith("+")
@@ -305,10 +225,160 @@ const AddTrainer = () => {
 
   useEffect(() => {
     scrollToError();
-  }, [errors]);
+  }, [errors, scrollToError]);
+
+  const handlePhoneChange = (value) => {
+    if (typeof value !== "string") {
+      return;
+    }
+
+    setPhoneNumber(value);
+    const phoneNumber = parsePhoneNumber(value);
+    if (phoneNumber) {
+      // Extract phone number without country code
+      const phoneNumberWithoutCountryCode = phoneNumber.nationalNumber;
+
+      setFormData((prevState) => ({
+        ...prevState,
+        phone: phoneNumberWithoutCountryCode,
+      }));
+    }
+    // Validate phone number
+    if (value && isValidPhoneNumber(value)) {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        phone: "",
+      }));
+    } else {
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        phone: "Enter a valid Phone number",
+      }));
+    }
+  };
+  const fetchCountryDialingCode = async (newCountryCode) => {
+    try {
+      if (!newCountryCode) {
+        return;
+      }
+
+      // Fetch country data based on the new country code (e.g., "IN", "US")
+      const response = await fetch(
+        `https://restcountries.com/v3.1/alpha/${newCountryCode}`
+      );
+      const data = await response.json();
+
+      // Extract the dialing code from the 'idd' object in the response
+      const dialingCode =
+        data[0]?.idd?.root + (data[0]?.idd?.suffixes?.[0] || "") || "+91";
+
+      // Set the country dialing code in the formData
+      setFormData((prevState) => ({
+        ...prevState,
+        countryCode: dialingCode,
+      }));
+
+      // const countryCode = data.country_code.toUpperCase(); // Get the country code (e.g., "IN" for India, "US" for USA)
+      setDefaultCountry(newCountryCode);
+    } catch (error) {
+      console.error("Error fetching country dialing code: ", error);
+    }
+  };
+
+  const handleSendOTP = async () => {
+    if (!formData.email || errors.email) {
+      setErrors(prev => ({
+        ...prev,
+        email: !formData.email ? "Email is required" : errors.email
+      }));
+      emailRef.current?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    setIsSendingOtp(true);
+    try {
+      // Clear OTP input and errors when resending
+      setOtp("");
+      setOtpVerified(false);
+      setOtpSent(true);
+      
+      const response = await axios.post(
+        `${baseUrl}/auth/send-otp`,
+        null,
+        { 
+          params: { 
+            email: formData.email
+          } 
+        }
+      );
+
+      if (response.status === 200) {
+        MySwal.fire({
+          icon: "success",
+          title: "OTP Sent!",
+          text: "Please check your email for the OTP.",
+        });
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        if (error.response.data === "EMAIL") {
+          setErrors(prev => ({
+            ...prev,
+            email: "This email is already registered"
+          }));
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          email: "Failed to send OTP. Please try again."
+        }));
+      }
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!otp) {
+      setErrors(prev => ({
+        ...prev,
+        otp: "OTP is required"
+      }));
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${baseUrl}/auth/verify-otp`,
+        null,
+        { params: { email: formData.email, otp } }
+      );
+
+      if (response.status === 200) {
+        setOtpVerified(true);
+        setErrors(prev => ({
+          ...prev,
+          otp: ""
+        }));
+        alert("Email verified successfully!");
+      }
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        otp: "Invalid or expired OTP"
+      }));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!otpVerified) {
+      alert( "Please verify your email first");
+      emailRef.current?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
     let hasErrors = false;
     const requiredFields = [
       "email",
@@ -342,6 +412,7 @@ const AddTrainer = () => {
     formDataToSend.append("profile", formData.profile);
     formDataToSend.append("skills", formData.skills);
     formDataToSend.append("countryCode", formData.countryCode);
+    formDataToSend.append("otp", otp);
     try {
       const response = await axios.post(
         `${baseUrl}/admin/addTrainer`,
@@ -495,30 +566,76 @@ const AddTrainer = () => {
                       </div>
                     </div>
                     <div className="form-group row" ref={emailRef}>
-                      <label
-                        htmlFor="email"
-                        className="col-sm-3 col-form-label"
-                      >
-                        {" "}
+                      <label htmlFor="email" className="col-sm-3 col-form-label">
                         Email<span className="text-danger">*</span>
                       </label>
                       <div className="col-sm-9">
-                        {" "}
-                        <input
-                          type="email"
-                          autoComplete="off"
-                          className={`form-control   ${
-                            errors.email && "is-invalid"
-                          }`}
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          placeholder="Email Address"
-                          required
-                        />
-                        <div className="invalid-feedback">{errors.email}</div>
+                        <div className="d-flex">
+                          <input
+                            type="email"
+                            autoComplete="off"
+                            className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Email Address"
+                            required
+                            disabled={otpVerified}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-primary ms-2 col-sm-2"
+                            onClick={handleSendOTP}
+                            disabled={!formData.email || errors.email || otpVerified || isSendingOtp}
+                          >
+                            {isSendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
+                          </button>
+                        </div>
+                        {errors.email && <div className="text-danger mt-1">{errors.email}</div>}
                       </div>
                     </div>
+
+                    {otpSent && !otpVerified && (
+                      <div className="form-group row">
+                        <label htmlFor="otp" className="col-sm-3 col-form-label">
+                          OTP<span className="text-danger">*</span>
+                        </label>
+                        <div className="col-sm-9">
+                          <div className="d-flex">
+                            <input
+                              type="text"
+                              className={`form-control ${errors.otp ? "is-invalid" : ""}`}
+                              name="otp"
+                              value={otp}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                setOtp(value);
+                                if (errors.otp) {
+                                  setErrors(prev => ({ ...prev, otp: "" }));
+                                }
+                              }}
+                              placeholder="Enter 6-digit OTP"
+                              maxLength="6"
+                              required
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-primary ms-2 col-sm-2"
+                              onClick={handleVerifyOTP}
+                              disabled={otp.length !== 6}
+                            >
+                              Verify OTP
+                            </button>
+                          </div>
+                          {errors.otp && <div className="text-danger mt-1">{errors.otp}</div>}
+                          {otpSent && !errors.otp && (
+                            <small className="text-muted">
+                              Please enter the 6-digit OTP sent to your email
+                            </small>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="form-group row">
                       <label

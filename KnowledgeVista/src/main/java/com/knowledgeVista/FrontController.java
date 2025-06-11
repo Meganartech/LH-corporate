@@ -579,32 +579,21 @@ public class FrontController {
 
 	}
 	
-//	@PostMapping("/admin/add/{role}")
-//	public ResponseEntity<?> addDynamicRole(HttpServletRequest request, @RequestParam(required = false) String username,
-//			@RequestParam String psw, @RequestParam String email, @RequestParam(required = false) LocalDate dob,
-//			@RequestParam String phone, @RequestParam(required = false) String skills,
-//			@RequestParam(required = false) MultipartFile profile, @RequestParam Boolean isActive,
-//			@RequestParam(defaultValue = "+91") String countryCode, @RequestHeader("Authorization") String token,@PathVariable("role") String roleName) {
-//		return adduser.addDynamicUser(request, username, psw, email, dob, phone, skills, profile, isActive, countryCode,
-//				token,roleName);
-//	}
-    @PostMapping(
-            value = "/admin/add/{role}",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-        )
+    @PostMapping("/admin/adduser")
+    @CheckAccessAnnotation
         public ResponseEntity<?> addDynamicRole(
             HttpServletRequest request,
-            @RequestPart(required = false) String username,
-            @RequestPart String psw,
-            @RequestPart String email,
-            @RequestPart(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dob,
-            @RequestPart String phone,
-            @RequestPart(required = false) String skills,
-            @RequestPart(required = false) MultipartFile profile,
-            @RequestPart Boolean isActive,
+            @RequestParam(required = false) String username,
+            @RequestParam String psw,
+            @RequestParam String email,
+            @RequestParam(required = false) LocalDate dob,
+            @RequestParam String phone,
+            @RequestParam(required = false) String skills,
+            @RequestParam(required = false) MultipartFile profile,
+            @RequestParam Boolean isActive,
             @RequestParam(defaultValue = "+91") String countryCode,
             @RequestHeader("Authorization") String token,
-            @PathVariable("role") String roleName) {
+            @RequestParam("roleId") Long roleId) {
             
             return adduser.addDynamicUser(
                 request, 
@@ -618,7 +607,7 @@ public class FrontController {
                 isActive, 
                 countryCode,
                 token,
-                roleName
+                roleId
             );
         }
 
@@ -990,9 +979,10 @@ public class FrontController {
 			@RequestParam(required = false) String username, @RequestParam String psw, @RequestParam String email,
 			@RequestParam(required = false) LocalDate dob, @RequestParam String role, @RequestParam String phone,
 			@RequestParam(required = false) String skills, @RequestParam(required = false) MultipartFile profile,
-			@RequestParam Boolean isActive, @RequestParam(defaultValue = "+91") String countryCode) {
+			@RequestParam Boolean isActive, @RequestParam(defaultValue = "+91") String countryCode,
+			@RequestParam String otp) {
 		return muserreg.RegisterStudent(request, username, psw, email, dob, role, phone, skills, profile, isActive,
-				countryCode);
+				countryCode, otp);
 	}
 
 	@GetMapping("/count/admin")
@@ -1011,13 +1001,21 @@ public class FrontController {
 	}
 
 	@PostMapping("/admin/register")
-	public ResponseEntity<?> registerAdmin(HttpServletRequest request, @RequestParam(required = false) String username,
-			@RequestParam String psw, @RequestParam String email, @RequestParam String institutionName,
-			@RequestParam(required = false) LocalDate dob, @RequestParam String role, @RequestParam String phone,
-			@RequestParam(required = false) String skills, @RequestParam(required = false) MultipartFile profile,
-			@RequestParam Boolean isActive, @RequestParam(defaultValue = "+91") String countryCode) {
-		return muserreg.registerAdmin(request, username, psw, email, institutionName, dob, role, phone, skills, profile,
-				isActive, countryCode);
+	public ResponseEntity<?> registerAdmin(HttpServletRequest request, 
+	        @RequestParam(required = false) String username,
+	        @RequestParam String psw, 
+	        @RequestParam String email, 
+	        @RequestParam String institutionName,
+	        @RequestParam(required = false) LocalDate dob, 
+	        @RequestParam String role, 
+	        @RequestParam String phone,
+	        @RequestParam(required = false) String skills, 
+	        @RequestParam(required = false) MultipartFile profile,
+	        @RequestParam Boolean isActive, 
+	        @RequestParam(defaultValue = "+91") String countryCode,
+	        @RequestParam String otp) {
+	    return muserreg.registerAdmin(request, username, psw, email, institutionName, dob, role, phone, skills, profile,
+	            isActive, countryCode, otp);
 	}
 	
 	@PostMapping("/register")
@@ -1026,14 +1024,15 @@ public class FrontController {
 	        @RequestParam String psw,
 	        @RequestParam String email,
 	        @RequestParam(required = false) LocalDate dob,
-	        @RequestParam String role,
+	        @RequestParam Long roleId,
 	        @RequestParam String phone,
 	        @RequestParam(required = false) String skills,
 	        @RequestParam(required = false) MultipartFile profile,
 	        @RequestParam Boolean isActive,
-	        @RequestParam(defaultValue = "+91") String countryCode) {
+	        @RequestParam(defaultValue = "+91") String countryCode,
+	        @RequestParam String otp) {
 
-	    return muserreg.registerUserByRole(request, username, psw, email, dob, role, phone, skills, profile, isActive, countryCode);
+	    return muserreg.registerUserByRole(request, username, psw, email, dob, phone, skills, profile, isActive, countryCode, otp,roleId);
 	}
 
 	@GetMapping("/student/users/{email}")
@@ -2171,4 +2170,18 @@ public class FrontController {
     	  List<Long> completedLessonIds = progressService.getCompletedLessonIds(userId, courseId);
           return ResponseEntity.ok(completedLessonIds);
     }
+
+	// --------------------------OTP Verification----------------------
+	@PostMapping("/auth/send-otp")
+	public ResponseEntity<?> sendOTP(@RequestParam String email) {
+		return muserreg.sendOTP(email);
+	}
+
+	@PostMapping("/auth/verify-otp")
+	public ResponseEntity<?> verifyOTP(@RequestParam String email, @RequestParam String otp) {
+		return muserreg.verifyOTP(email, otp);
+	}
+
+	
+
 }
