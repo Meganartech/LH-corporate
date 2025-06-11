@@ -4,7 +4,7 @@ import axios from "axios";
 import { GlobalStateContext } from "../Context/GlobalStateProvider.js";
 import { Link, useNavigate } from "react-router-dom";
 import $ from "jquery";
-const Sidebar = ({ filter, handleFilterChange }) => {
+const Sidebar = () => {
   const [isvalid, setIsvalid] = useState();
   const [isEmpty, setIsEmpty] = useState();
   const [ActiveLink, setActiveLink] = useState();
@@ -132,10 +132,8 @@ useEffect(() => {
   
   const handleClick = async (e, link) => {
     e.preventDefault();
-    const roleName = link.split("/").pop().toUpperCase();
+    const roleName = sessionStorage.getItem('role')
   
-    const isTrainerLike =
-      userRole === "TRAINER" || dynamicRoles.map(r => r.roleName.toUpperCase()).includes(userRole);
     const isAdmin = userRole === "ADMIN";
     const isSysadminOrUser = userRole === "SYSADMIN" || userRole === "USER";
     const isAccessibleLink = ["/about", "/admin/dashboard", "/licenceDetails"].includes(link);
@@ -149,7 +147,7 @@ useEffect(() => {
       (isAccessibleLink && !isEmpty && !isvalid) ||
       (!isEmpty && isvalid);
   
-    if (isAdmin || isTrainerLike) {
+    if (isAdmin) {
       if (validAccess) {
         setActiveLink(link);
         updateActiveMenu(link);
@@ -226,38 +224,7 @@ useEffect(() => {
                         <i className="fa-regular fa-eye pr-2"></i>
                         View Course
                       </a>
-                      <ul className="toggle-list">
-                        <li>
-                          <label className="checkbox-label">
-                            <input
-                              type="checkbox"
-                              checked={filter?.paid}
-                              name="paid"
-                              onChange={() => {
-                                handleFilterChange("paid"); // Trigger filter change for 'paid'
-                              }}
-                              className="mr-1"
-                            />
-                            <span className="checkbox-custom"></span>
-                            Paid
-                          </label>
-                        </li>
-                        <li>
-                          <label className="checkbox-label">
-                            <input
-                              type="checkbox"
-                              checked={filter?.unpaid}
-                              name="unpaid"
-                              onChange={() => {
-                                handleFilterChange("unpaid"); // Trigger filter change for 'unpaid'
-                              }}
-                              className="mr-1"
-                            />
-                            <span className="checkbox-custom"></span>
-                            Free
-                          </label>
-                        </li>
-                      </ul>
+                      
                     </li>
                     <li className="view-course">
                       <a
@@ -270,38 +237,7 @@ useEffect(() => {
                         <i className="fa-solid fa-edit pr-2"></i>
                         Edit Courses
                       </a>
-                      <ul className="toggle-list ">
-                        <li>
-                          <label className="checkbox-label">
-                            <input
-                              type="checkbox"
-                              checked={filter?.paid}
-                              name="paid"
-                              onChange={() => {
-                                handleFilterChange("paid"); // Trigger filter change for 'paid'
-                              }}
-                              className="mr-1"
-                            />
-                            <span className="checkbox-custom"></span>
-                            Paid
-                          </label>
-                        </li>
-                        <li>
-                          <label className="checkbox-label ">
-                            <input
-                              type="checkbox"
-                              checked={filter?.unpaid}
-                              name="unpaid"
-                              onChange={() => {
-                                handleFilterChange("unpaid"); // Trigger filter change for 'unpaid'
-                              }}
-                              className="mr-1"
-                            />
-                            <span className="checkbox-custom"></span>
-                            Free
-                          </label>
-                        </li>
-                      </ul>
+                   
                     </li>
                   </ul>
                 </li>
@@ -351,6 +287,23 @@ useEffect(() => {
                     <span className="pcoded-mtext">People</span>
                   </a>
                   <ul className="pcoded-submenu">
+                       <li>
+                      <a
+                        href="#"
+                        data-path="/role/ViewAll"
+                        onClick={(e) => {
+                          handleClick(e, "/role/ViewAll");
+                        }}
+                        className="nav-link "
+                      >
+                        <span className="pcoded-micon">
+                          <i className="fa-solid fa-gear"></i>
+                        </span>
+                        <span className="pcoded-mtext">
+                         Role Management
+                        </span>
+                      </a>
+                    </li>
                     <li>
                       <a
                         href="#"
@@ -393,14 +346,16 @@ useEffect(() => {
                     {dynamicRoles
                       .filter((role) => {
                         const r = role.roleName.toLowerCase();
-                        return r !== "trainer" && r !== "student" && r!=="sysadmin" && r!=="admin" &&r!=="user";
+                        return r !== "trainer" && r !== "student" && r!=="sysadmin" && r!=="admin" && r!=="user";
                       })
                       .map((role) => (
                         <li key={role.roleId}>
                           <a
                             href="#"
-                            data-path={`/view/${role.roleName.charAt(0).toUpperCase() + role.roleName.slice(1).toLowerCase()}`}
-                            onClick={(e) => handleClick(e, `/view/${role.roleName.charAt(0).toUpperCase() + role.roleName.slice(1).toLowerCase()}`)}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(`/view/users?rolename=${role.roleName}&roleid=${role.roleId}`);
+                            }}
                             className="nav-link"
                           >
                             <span className="pcoded-micon">
@@ -422,12 +377,27 @@ useEffect(() => {
                         className="nav-link "
                       >
                         <span className="pcoded-micon">
-                          <i className="fa-solid fa-person-circle-check"></i>
+                       <i className="fa-solid fa-user-plus"></i>
+
                         </span>
                         <span className="pcoded-mtext">Approvals</span>
                       </a>
                     </li>
-
+                          <li>
+                      <a
+                        href="#"
+                        data-path="/view/AccessRequest"
+                        onClick={(e) => {
+                          handleClick(e, "/view/AccessRequest");
+                        }}
+                        className="nav-link "
+                      >
+                        <span className="pcoded-micon">
+<i className="fa-solid fa-user-check"></i>
+                        </span>
+                        <span className="pcoded-mtext">Access Requests</span>
+                      </a>
+                    </li>
                    {/* Add New Role */}
                     <li>
                       <a
@@ -611,38 +581,7 @@ useEffect(() => {
                     </span>
                     <span className="pcoded-mtext">payments</span>
                   </a>
-                  <ul className="pcoded-submenu">
-                    <li>
-                      <a
-                        href="#"
-                        data-path="/payment/keys"
-                        onClick={(e) => {
-                          handleClick(e, "/payment/keys");
-                        }}
-                        className="nav-link "
-                      >
-                        <span className="pcoded-micon">
-                          <i className="fa-solid fa-gear"></i>
-                        </span>
-                        <span className="pcoded-mtext">payment Keys</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        data-path="/payment/transactionHitory"
-                        onClick={(e) => {
-                          handleClick(e, "/payment/transactionHitory");
-                        }}
-                        className="nav-link "
-                      >
-                        <span className="pcoded-micon">
-                          <i className="fa-solid fa-clock-rotate-left"></i>
-                        </span>
-                        <span className="pcoded-mtext">Transactions</span>
-                      </a>
-                    </li>
-                  </ul>
+            
                 </li>
 
                 <li className="nav-item no-hasmenu">
@@ -816,38 +755,7 @@ useEffect(() => {
                   </span>
                   <span className="pcoded-mtext ">Courses</span>
                 </a>
-                <ul className="toggle-list pl-4">
-                  <li>
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={filter.paid}
-                        name="paid"
-                        onChange={() => {
-                          handleFilterChange("paid"); // Trigger filter change for 'paid'
-                        }}
-                        className="mr-1"
-                      />
-                      <span className="checkbox-custom"></span>
-                      Paid
-                    </label>
-                  </li>
-                  <li>
-                    <label className="checkbox-label ">
-                      <input
-                        type="checkbox"
-                        checked={filter.unpaid}
-                        name="unpaid"
-                        onChange={() => {
-                          handleFilterChange("unpaid"); // Trigger filter change for 'unpaid'
-                        }}
-                        className="mr-1"
-                      />
-                      <span className="checkbox-custom"></span>
-                      Free
-                    </label>
-                  </li>
-                </ul>
+               
               </li>
               <li className="nav-item pcoded-hasmenu">
                   <a href="#!" className="nav-link">
@@ -1000,38 +908,7 @@ useEffect(() => {
                   </span>
                   <span className="pcoded-mtext ">Courses</span>
                 </a>
-                <ul className="toggle-list pl-4">
-                  <li>
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={filter.paid}
-                        name="paid"
-                        onChange={() => {
-                          handleFilterChange("paid"); // Trigger filter change for 'paid'
-                        }}
-                        className="mr-1"
-                      />
-                      <span className="checkbox-custom"></span>
-                      Paid
-                    </label>
-                  </li>
-                  <li>
-                    <label className="checkbox-label ">
-                      <input
-                        type="checkbox"
-                        checked={filter.unpaid}
-                        name="unpaid"
-                        onChange={() => {
-                          handleFilterChange("unpaid"); // Trigger filter change for 'unpaid'
-                        }}
-                        className="mr-1"
-                      />
-                      <span className="checkbox-custom"></span>
-                      Free
-                    </label>
-                  </li>
-                </ul>
+            
               </li>
              
               <li className="nav-item no-hasmenu ">
@@ -1166,20 +1043,7 @@ useEffect(() => {
                   <span className="pcoded-mtext">History</span>
                       </a>
                     </li>
-                    <li>
-                      <a
-                        href="#"
-                        data-path="/pendingInstallments"
-                        onClick={(e) => {
-                          handleClick(e, "/pendingInstallments");
-                        }}
-                        className="nav-link "
-                      >
-                       <span className="pcoded-micon">
-                       <i className="fa-solid fa-list"></i> </span>
-                  <span className="pcoded-mtext">Pendings</span>
-                      </a>
-                    </li>
+                
                   
                   </ul>
                 </li>

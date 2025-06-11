@@ -20,9 +20,42 @@ const ViewVideo = () => {
   const [currentLesson, setCurrentLesson] = useState();
   const role = sessionStorage.getItem("role");
   const token = sessionStorage.getItem("token");
-  const [found, notfound] = useState(true);
   const [currentDocs, setcurrentDocs] = useState([]);
   const navigate = useNavigate();
+  const[CompletedLessons,setCompletedLessons]=useState([])
+
+    const fetchcompletiedLessons = async () => {
+      try {
+        const role=sessionStorage.getItem('role')
+        if(role==="ADMIN"){
+          return
+        }
+        const userId=sessionStorage.getItem('userid')
+        const response = await axios.get(
+          `${baseUrl}/lesson-progress/completed-lesson-ids`,
+          {
+            headers: {
+              Authorization: token,
+            },
+            params:{
+              userId,
+              courseId
+            }
+          }
+        );
+        if (response.status == 200) {
+          const lessonList = response.data;
+          setCompletedLessons(lessonList);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+
+    }
+    useEffect(()=>{
+       fetchcompletiedLessons();
+    },[currentLessonIndex])
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -72,6 +105,7 @@ const ViewVideo = () => {
   useEffect(() => {
     if (lessonId !== null) {
       fetchVideo(lessonId);
+      
     }
   }, [lessonId]);
 
@@ -150,7 +184,7 @@ const ViewVideo = () => {
         });
       }
     }
-  }, [currentLessonIndex]);
+  }, [setCurrentLessonIndex]);
 
   // Handler for onSeek event
 
@@ -317,20 +351,19 @@ const ViewVideo = () => {
                   </label>
                   <div className="content" ref={lessonListRef}>
                     {AllLessons.map((lesson, index) => (
-                      <div
-                        key={index}
-                        data-index={index}
-                        className={`notes ${
-                          lesson.lessonId === lessonId ? "current-lesson" : ""
-                        }`}
-                        onClick={() => handleNoteClick(lesson.lessonId)}
-                        style={{
-                          border:
-                            lesson.lessonId === lessonId
-                              ? "3px solid #4680FE"
-                              : "none",
-                        }}
-                      >
+                     <div
+  key={index}
+  data-index={index}
+  className={`notes 
+    ${lesson.lessonId === lessonId ? "current-lesson" : ""} 
+    ${CompletedLessons.includes(lesson.lessonId) ? "completed-lesson" : ""}`}
+  onClick={() => handleNoteClick(lesson.lessonId)}
+  style={{
+    border:
+      lesson.lessonId === lessonId ? "3px solid #4680FE" : "none",
+  }}
+>
+
                         <div className="child">
                           <img
                             src={

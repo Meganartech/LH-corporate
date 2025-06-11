@@ -107,7 +107,7 @@ const Login = () => {
           const dropdownOptions = [
             `<option disabled selected value="">-- Select Role --</option>`,
             ...filteredRoles.map(
-              role => `<option value="${role.roleName.toLowerCase()}">${role.roleName.charAt(0).toUpperCase() + role.roleName.slice(1).toLowerCase()}</option>`
+              role => `<option value="${role.roleId}">${role.roleName.charAt(0).toUpperCase() + role.roleName.slice(1).toLowerCase()}</option>`
             ),
           ].join("");
           
@@ -120,7 +120,6 @@ const Login = () => {
             </div>
           `;
           
-  
         MySwal.fire({
           title: "Select Your Role",
           html: htmlContent,
@@ -128,16 +127,18 @@ const Login = () => {
           confirmButtonText: "Continue",
           cancelButtonText: "Cancel",
           preConfirm: () => {
-            const selectedRole = document.getElementById("roleSelect")?.value;
-            if (!selectedRole) {
+            const selectedRoleId = document.getElementById("roleSelect")?.value;
+            if (!selectedRoleId) {
               Swal.showValidationMessage("Please select a role");
               return false;
             }
+            const selectedRole = filteredRoles.find(role => role.roleId === parseInt(selectedRoleId));
             return selectedRole;
           },
         }).then((result) => {
           if (result.isConfirmed && result.value) {
-            navigate(`/register/${result.value}`);
+            const selectedRole = result.value;
+            navigate(`/register/user?rolename=${selectedRole.roleName.toLowerCase()}&roleid=${selectedRole.roleId}`);
           }
         });
       } else if (activeProfile === "SAS") {
@@ -211,6 +212,7 @@ const Login = () => {
       });
 
       if (response.status === 200) {
+        sessionStorage.clear();
         const data = response.data;
         const jwtToken = data.token;
         const role = data.role;
@@ -241,7 +243,7 @@ const Login = () => {
         if (message === "Incorrect password") {
           setErrors((prevErrors) => ({
             ...prevErrors,
-            password: "Incorrect password",
+            password: `Incorrect password. ${data.attemptsLeft} attempts left before account lockout.`,
           }));
         } else if (message === "In Active") {
           MySwal.fire({

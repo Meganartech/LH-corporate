@@ -30,11 +30,7 @@ public class ZoomMeetAccountController {
 	
 	public ResponseEntity<?>SaveAccountDetails( ZoomAccountKeys accountdetails , String token){
 		 try {
-		    	
-	    	 if (!jwtUtil.validateToken(token)) {
-	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	    	 }
-	         String email=jwtUtil.getUsernameFromToken(token); 
+	         String email=jwtUtil.getEmailFromToken(token); 
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
 	        	 Muser user=opuser.get();
@@ -60,11 +56,8 @@ public class ZoomMeetAccountController {
 	
 	public ResponseEntity<?>EditAccountDetails( ZoomAccountKeys accountdetails , String token){
 		 try {
-		    	
-	    	 if (!jwtUtil.validateToken(token)) {
-	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	    	 }
-	         String email=jwtUtil.getUsernameFromToken(token); 
+		    
+	         String email=jwtUtil.getEmailFromToken(token); 
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
 	        	 Muser user=opuser.get();
@@ -88,11 +81,8 @@ public class ZoomMeetAccountController {
    
     public ResponseEntity<?> getMethodName(String token) {
     	 try {
-		    	
-	    	 if (!jwtUtil.validateToken(token)) {
-	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	    	 }
-	         String email=jwtUtil.getUsernameFromToken(token); 
+		  
+	         String email=jwtUtil.getEmailFromToken(token); 
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
 	        	 Muser user=opuser.get();
@@ -126,10 +116,7 @@ public class ZoomMeetAccountController {
     
 	public ResponseEntity<?>SaveAccountDetailsSYS( ZoomAccountKeys accountdetails ,String token){
 		 try {
-		    	
-	    	 if (!jwtUtil.validateToken(token)) {
-	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	    	 }
+		   
 	         String role=jwtUtil.getRoleFromToken(token);
 	       
 	        	 if("SYSADMIN".equals(role)) {
@@ -151,10 +138,7 @@ public class ZoomMeetAccountController {
 
 	public ResponseEntity<?>EditAccountDetailsSYS( ZoomAccountKeys accountdetails , String token){
 		 try {
-		    	
-	    	 if (!jwtUtil.validateToken(token)) {
-	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	    	 }
+		    
 	         String role=jwtUtil.getRoleFromToken(token); 
 	        
 	        	 if("SYSADMIN".equals(role)) {
@@ -176,10 +160,7 @@ public class ZoomMeetAccountController {
     
     public ResponseEntity<?> getMethodNameSYS( String token) {
     	 try {
-		    	
-	    	 if (!jwtUtil.validateToken(token)) {
-	    		 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
-	    	 }
+		    
 	         String role=jwtUtil.getRoleFromToken(token); 
 	        
 	        	 if("SYSADMIN".equals(role)) {

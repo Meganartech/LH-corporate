@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.knowledgeVista.User.Muser;
@@ -41,14 +39,11 @@ public class LadellingitemController {
    }
 	 public ResponseEntity<?>SaveLabellingitems(String token,  String siteUrl,String title, MultipartFile sitelogo,  MultipartFile siteicon,  MultipartFile titleicon){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	   	     }
-	   	     String email=jwtUtil.getUsernameFromToken(token);
+	   	     String email=jwtUtil.getEmailFromToken(token);
 	   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
 	   	     String institution="";
 	   	     if(opreq.isPresent()) {
@@ -108,14 +103,11 @@ public class LadellingitemController {
 	 
 	 public ResponseEntity<?>getLabelingitems(String token){
 		  try {
-	        	if (!jwtUtil.validateToken(token)) {
-	   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	     }
 	   	     String role = jwtUtil.getRoleFromToken(token);
 	   	     if(!"ADMIN".equals(role)) {
 	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	   	     }
-	   	     String email=jwtUtil.getUsernameFromToken(token);
+	   	     String email=jwtUtil.getEmailFromToken(token);
 	   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
 	   	     String institution="";
 	   	     if(opreq.isPresent()) {

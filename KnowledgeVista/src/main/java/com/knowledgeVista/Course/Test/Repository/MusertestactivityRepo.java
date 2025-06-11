@@ -2,6 +2,7 @@ package com.knowledgeVista.Course.Test.Repository;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Course.Test.CourseTest;
 import com.knowledgeVista.Course.Test.MuserTestActivity;
 import com.knowledgeVista.Course.Test.TestHistoryDto;
@@ -23,7 +25,12 @@ public interface MusertestactivityRepo extends JpaRepository<MuserTestActivity, 
 	
 	@Query("SELECT COUNT(a) FROM MuserTestActivity a WHERE a.user.userId = :userId AND a.test.testId=:testId")
 	long countByUserAndTestId(@Param("userId") Long userId,@Param("testId") Long testId);
-	
+	@Query(value = "SELECT * FROM muser_test_activity m WHERE m.user_id = :userId AND m.course_id = :courseId AND m.percentage IS NOT NULL ORDER BY m.activity_id DESC LIMIT 1", nativeQuery = true)
+	Optional<MuserTestActivity> findLatestByUserAndCourseNative(
+	        @Param("userId") Long userId,
+	        @Param("courseId") Long courseId
+	);
+
 
 	  @Transactional
 	    void deleteByUser(Muser user);

@@ -1,10 +1,8 @@
 package com.knowledgeVista.Batch;
 
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
-import com.knowledgeVista.Batch.Assignment.Assignment;
+import com.knowledgeVista.Batch.Enrollment.BatchEnrollment;
 import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Meeting.zoomclass.Meeting;
 import com.knowledgeVista.User.Muser;
@@ -41,11 +39,12 @@ public class Batch {
     @Column(name = "batchTitle")
     private String batchTitle;
 
-    @Column(name = "startDate")
-    private LocalDate startDate;
+    @OneToMany(mappedBy = "batch", cascade = CascadeType.ALL)
+    private List<BatchEnrollment> enrollments;
 
-    @Column(name = "endDate")
-    private LocalDate endDate;
+    @Column(name = "durationInHours")
+    private Long durationInHours=100L;
+
     
     @Lob
     @Column(name="BatchImage" ,length=1000000)
@@ -74,19 +73,12 @@ public class Batch {
     )
     private List<Muser> users;
     
-    @Column(name = "paytype")
-	private PaymentType paytype;
     
     @ManyToMany(mappedBy = "batches", fetch = FetchType.LAZY)
     private List<Meeting> meetings;
     
     private String BatchUrl="/MyBatches";
-    @Column(name = "noOfSeats")
-    private Long noOfSeats;
-
-    @Column(name = "amount")
-    private Long amount;
-   
+  
     @PostLoad
     @PostPersist
     public void generateBatchId() {
@@ -104,19 +96,5 @@ public class Batch {
 			return 0L;
 		}
 	}
-    public void setPaytype(PaymentType paytype) {
-        this.paytype = paytype;
-    }
-    public enum PaymentType {
-        FULL, PART;
-    }
-	@Override
-	public String toString() {
-		return "Batch [id=" + id + ", batchId=" + batchId + ", batchTitle=" + batchTitle + ", startDate=" + startDate
-				+ ", endDate=" + endDate + ", BatchImage=" + Arrays.toString(BatchImage) + ", courses=" + courses
-				+ ", institutionName=" + institutionName + ", trainers=" + trainers + ", users=" + users + ", paytype="
-				+ paytype + ", meetings=" + meetings + ", BatchUrl=" + BatchUrl + ", noOfSeats=" + noOfSeats
-				+ ", amount=" + amount + "]";
-	}
-
+   
 }

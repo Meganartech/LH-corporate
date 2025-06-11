@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.knowledgeVista.Batch.SearchDto;
 import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Course.CourseDetailDto;
 
@@ -36,7 +35,7 @@ public interface CourseDetailRepository  extends JpaRepository<CourseDetail,Long
 	 
 	 @Query("SELECT new com.knowledgeVista.Course.CourseDetail(cd.courseId, cd.courseName, cd.courseUrl, cd.courseDescription, " +
 		       "cd.courseCategory, cd.amount, cd.courseImage,  cd.Duration, " +
-		       "cd.institutionName, cd.Noofseats) " +
+		       "cd.institutionName, cd.Noofseats,cd.isApprovalNeeded,cd.testMandatory) " +
 		       "FROM CourseDetail cd WHERE cd.courseId = :courseId AND cd.institutionName = :institutionName")
 		Optional<CourseDetail> findMinimalCourseDetailbyCourseIdandInstitutionName(@Param("courseId") Long courseId, 
 		                                               @Param("institutionName") String institutionName);
@@ -45,14 +44,15 @@ public interface CourseDetailRepository  extends JpaRepository<CourseDetail,Long
 	 @Query("SELECT COALESCE(SUM(cd.Noofseats - SIZE(cd.users)), 0) FROM CourseDetail cd WHERE cd.institutionName = :institutionName")
 	 Long countTotalAvailableSeats(@Param("institutionName") String institutionName);
 
-	
-	 @Query("SELECT c.courseId, c.courseName, c.amount " +
+	 @Query("SELECT new com.knowledgeVista.Course.CourseDetailDto(c.courseId, c.courseName, c.Duration) " +
 		       "FROM CourseDetail c " +
-		       "WHERE (:courseName IS NOT NULL AND :courseName <> '' AND LOWER(c.courseName) LIKE LOWER(CONCAT('%', :courseName, '%'))) " +
-		       "AND (:institutionName IS NOT NULL AND :institutionName <> '' AND LOWER(c.institutionName) LIKE LOWER(CONCAT('%', :institutionName, '%')))")
-		List<Object[]> searchCourseIdAndNameByCourseNameByInstitution(
-		    @Param("courseName") String courseName,
-		    @Param("institutionName") String institutionName);
+		       "WHERE (:courseName IS NULL OR LOWER(c.courseName) LIKE LOWER(CONCAT('%', :courseName, '%'))) " +
+		       "AND (:institutionName IS NULL OR LOWER(c.institutionName) = LOWER(:institutionName))")
+		List<CourseDetailDto> searchCourses(@Param("courseName") String courseName,
+		                                    @Param("institutionName") String institutionName);
+
+
+
 
 
 		@Query("SELECT u.email  " +

@@ -4,14 +4,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.knowledgeVista.Batch.Batch;
 import com.knowledgeVista.Batch.BatchDto;
 import com.knowledgeVista.Batch.BatchImageDTO;
@@ -42,25 +40,21 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	List<Batch> findByCoursesCourseIdAndInstitutionName(@Param("courseId") Long courseId,
 			@Param("institutionName") String institutionName);
 
-	@Query("SELECT new com.knowledgeVista.Batch.BatchDto( "
-			+ "b.id, b.batchId, b.batchTitle, b.startDate, b.endDate, b.institutionName, b.noOfSeats, b.amount,"
-			+ "COALESCE(CAST(STRING_AGG(c.courseName, ',') AS string), ''), "
-			+ "COALESCE(CAST(STRING_AGG(t.username, ',') AS string), ''), " + "b.BatchImage,b.paytype) "
-			+ "FROM Batch b " + "LEFT JOIN b.courses c " + "LEFT JOIN b.trainers t "
-			+ "WHERE b.id = :id AND b.institutionName = :institutionName "
-			+ "GROUP BY b.id, b.batchId, b.batchTitle, b.startDate, b.endDate, b.institutionName, b.noOfSeats, b.amount,b.paytype")
-	Optional<BatchDto> findBatchDtoByIdAndInstitutionName(@Param("id") Long id,
-			@Param("institutionName") String institutionName);
+	@Query("SELECT new com.knowledgeVista.Batch.BatchDto(" +
+		       "b.id, b.batchId, b.batchTitle, b.institutionName, b.BatchImage, b.durationInHours) " +
+		       "FROM Batch b " +
+		       "WHERE b.id = :id AND b.institutionName = :institutionName")
+		Optional<BatchDto> findBatchDtoByIdAndInstitutionName(@Param("id") Long id,
+		                                                      @Param("institutionName") String institutionName);
 
-	@Query("SELECT new com.knowledgeVista.Batch.CourseDto(c.courseId, c.courseName) " + "FROM Batch b "
+
+
+	@Query("SELECT new com.knowledgeVista.Batch.CourseDto(c.courseId, c.courseName,c.Duration) " + "FROM Batch b "
 			+ "JOIN b.courses c " + "WHERE b.id = :id AND b.institutionName = :institutionName")
 	List<CourseDto> findCoursesByBatchIdAndInstitutionName(@Param("id") Long id,
 			@Param("institutionName") String institutionName);
 
-	@Query("SELECT new com.knowledgeVista.Batch.TrainerDto(t.userId, t.username) " + "FROM Batch b "
-			+ "JOIN b.trainers t " + "WHERE b.id = :id AND b.institutionName = :institutionName")
-	List<TrainerDto> findTrainersByBatchIdAndInstitutionName(@Param("id") Long id,
-			@Param("institutionName") String institutionName);
+
 
 	@Query("SELECT b FROM Batch b  WHERE b.institutionName = :institutionName")
 	List<Batch> findAllBatchDtosByInstitution(@Param("institutionName") String institutionName);
@@ -83,18 +77,25 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	@Query("SELECT t.email FROM Batch b " + "JOIN b.trainers t " + "WHERE b.id = :id")
 	List<String> findtrainersByBatchId(@Param("id") Long id);
 
-	@Query("SELECT u.email FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	List<String> findusersByBatchId(@Param("id") Long id);
+	@Query("SELECT e.user.email FROM BatchEnrollment e WHERE e.batch.id = :batchId")
+	List<String> findUserEmailsByBatchId(@Param("batchId") Long batchId);
 
-	@Query("SELECT u FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	List<Muser> findAllusersByBatchId(@Param("id") Long id);
 
-	@Query("SELECT COUNT(u) FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	Long countAllUsersByBatchId(@Param("id") Long id);
+	@Query("SELECT e.user FROM BatchEnrollment e WHERE e.batch.id = :batchId")
+	List<Muser> findAllUsersByBatchId(@Param("batchId") Long batchId);
 
-	@Query("SELECT new com.knowledgeVista.User.MuserDto(u.userId, u.username, u.email, u.phone, u.isActive, u.dob, u.skills,u.institutionName) "
-			+ "FROM Batch b " + "JOIN b.users u " + "WHERE b.id = :id")
-	Page<MuserDto> GetMuserDetailsByBatchID(@Param("id") Long id, Pageable pageable);
+
+	@Query("SELECT COUNT(e.user) FROM BatchEnrollment e WHERE e.batch.id = :batchId")
+	Long countAllUsersByBatchId(@Param("batchId") Long batchId);
+
+
+	@Query("SELECT new com.knowledgeVista.User.MuserDto(" +
+		       "e.user.userId, e.user.username, e.user.email, e.user.phone, " +
+		       "e.user.isActive, e.user.dob, e.user.skills, e.user.institutionName) " +
+		       "FROM BatchEnrollment e " +
+		       "WHERE e.batch.id = :batchId")
+		Page<MuserDto> getMuserDetailsByBatchId(@Param("batchId") Long batchId, Pageable pageable);
+
 
 	@Query("SELECT new com.knowledgeVista.User.MuserDto(" + "m.userId, " + "m.username, " + "m.email, " + "m.phone, "
 			+ "m.isActive, " + "m.dob, " + "m.skills," + "m.institutionName) " + "FROM Muser m "
@@ -111,18 +112,16 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			@Param("skills") String skills, Pageable pageable);
 
 	@Query(value = "SELECT b.id AS id, " + "b.batch_id AS batchId, " + "b.batch_title AS batchTitle, "
-			+ "b.start_date AS startDate, " + "b.end_date AS endDate, " + "b.institution_name AS institutionName, "
-			+ "b.no_of_seats AS noOfSeats, " + "b.amount AS amount, "
+			+ "b.institution_name AS institutionName, "
 			+ "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
 			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, " + "b.batch_image AS batchImage, "
-			+ "b.paytype AS payType, "
 			+ "TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration " + "FROM batch b "
 			+ "LEFT JOIN batch_courses bc ON b.id = bc.batch_id "
 			+ "LEFT JOIN course_detail c ON c.course_id = bc.course_id "
 			+ "LEFT JOIN batch_trainers bt ON b.id = bt.batch_id " + "LEFT JOIN muser t ON t.user_id = bt.user_id "
 			+ "WHERE bt.user_id = :trainerId " + // Fetch batches assigned to the trainer
 			"GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
-			+ "b.institution_name, b.no_of_seats, b.amount, b.paytype " + "ORDER BY b.start_date DESC "
+			+ "b.institution_name, b.no_of_seats " 
 			+ "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
 	List<Map<String, Object>> findAssignedBatchesForTrainerIdWithPagination(@Param("trainerId") Long trainerId,
 			@Param("pageSize") int pageSize, @Param("offset") int offset);
@@ -132,11 +131,11 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	long countAssignedBatchesForTrainerId(@Param("trainerId") Long trainerId);
 
 	@Query(value = "SELECT b.id AS id, "
-			+ "b.batch_id AS batchId, b.batch_title AS batchTitle, b.start_date AS startDate, "
-			+ "b.end_date AS endDate, b.institution_name AS institutionName, b.no_of_seats AS noOfSeats, "
-			+ "b.amount AS amount, " + "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
+			+ "b.batch_id AS batchId, b.batch_title AS batchTitle "
+			+ " b.institution_name AS institutionName "
+			 + "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
 			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, "
-			+ "b.batch_image AS batchImage, b.paytype AS payType, "
+			+ "b.batch_image AS batchImage, "
 			+ "TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration, "
 			+ "(SELECT COUNT(bu.user_id) FROM batch_users bu WHERE bu.batch_id = b.id) AS enrolledUsers "
 			+ "FROM batch b " + "LEFT JOIN batch_courses bc ON b.id = bc.batch_id "
@@ -145,8 +144,8 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 			+ "JOIN muser u ON u.user_id = :trainerId " + "WHERE b.institution_name = u.institution_name "
 			+ "AND NOT EXISTS (" + "    SELECT 1 FROM batch_trainers bt2 "
 			+ "    WHERE bt2.batch_id = b.id AND bt2.user_id = :trainerId" + ") "
-			+ "GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
-			+ "b.institution_name, b.no_of_seats, b.amount, b.paytype " + "ORDER BY b.start_date DESC "
+			+ "GROUP BY b.id, b.batch_id, b.batch_title, "
+			+ "b.institution_name" 
 			+ "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
 	List<Map<String, Object>> findBatchesNotAssignedForTrainerIdWithPagination(@Param("trainerId") Long trainerId,
 			@Param("pageSize") int pageSize, @Param("offset") int offset);
@@ -156,54 +155,172 @@ public interface BatchRepository extends JpaRepository<Batch, Long> {
 	long countBatchesNotAssignedForTrainerId(@Param("trainerId") Long trainerId);
 
 	// =================below For users====================
-	@Query(value = "SELECT b.id AS id, " + "b.batch_id AS batchId, " + "b.batch_title AS batchTitle, "
-			+ "b.start_date AS startDate, " + "b.end_date AS endDate, " + "b.institution_name AS institutionName, "
-			+ "b.no_of_seats AS noOfSeats, " + "b.amount AS amount, "
-			+ "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
-			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, " + "b.batch_image AS batchImage, "
-			+ "b.paytype AS payType, "
-			+ "TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration " + // Format duration
-			"FROM batch b " + "LEFT JOIN batch_courses bc ON b.id = bc.batch_id "
-			+ "LEFT JOIN course_detail c ON c.course_id = bc.course_id "
-			+ "LEFT JOIN batch_trainers bt ON b.id = bt.batch_id " + "LEFT JOIN muser t ON t.user_id = bt.user_id "
-			+ "LEFT JOIN batch_users bu ON b.id = bu.batch_id " + "WHERE bu.user_id = :userId "
-			+ "GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
-			+ "b.institution_name, b.no_of_seats, b.amount, b.paytype " + "ORDER BY b.start_date DESC "
-			+ "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
-	List<Map<String, Object>> findBatchesByUserIdWithPagination(@Param("userId") Long userId,
-			@Param("pageSize") int pageSize, @Param("offset") int offset);
+	@Query(value = 
+		    "SELECT " +
+		    "    b.id AS id, " +
+		    "    b.batch_id AS batchId, " +
+		    "    b.batch_title AS batchTitle, " +
+		    "    b.duration_in_hours AS durationInHours, " +
+		    "    b.institution_name AS institutionName, " +
+		    "    COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, " +
+		    "    b.batch_image AS batchImage " +
+		    "FROM batch b " +
+		    "JOIN batch_enrollment be ON be.batch_id = b.id " +
+		    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
+		    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
+		    "WHERE be.user_id = :userId " +
+		    "AND b.institution_name = :institutionName " +
+		    "GROUP BY b.id, b.batch_id, b.batch_title, b.duration_in_hours, b.institution_name, b.batch_image " +
+		    "ORDER BY b.batch_id DESC " +
+		    "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
+		List<Map<String, Object>> findBatchesEnrolledByUser(
+		    @Param("userId") Long userId,
+		    @Param("institutionName") String institutionName,
+		    @Param("pageSize") int pageSize,
+		    @Param("offset") int offset);
 
-	@Query(value = "SELECT COUNT(DISTINCT b.id) FROM batch b " + "LEFT JOIN batch_users bu ON b.id = bu.batch_id "
-			+ "WHERE bu.user_id = :userId", nativeQuery = true)
-	long countBatchesByUserId(@Param("userId") Long userId);
 
-	@Query(value = "SELECT b.id AS id, "
-			+ "b.batch_id AS batchId, b.batch_title AS batchTitle, b.start_date AS startDate, "
-			+ "b.end_date AS endDate, b.institution_name AS institutionName, b.no_of_seats AS noOfSeats, "
-			+ "b.amount AS amount, " + "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, "
-			+ "COALESCE(STRING_AGG(DISTINCT t.username, ','), '') AS trainerNames, "
-			+ "b.batch_image AS batchImage, b.paytype AS payType, "
-			+ "TO_CHAR(b.start_date, 'Mon') || ' to ' || TO_CHAR(b.end_date, 'Mon') AS duration, "
-			+ "(SELECT COUNT(bu.user_id) FROM batch_users bu WHERE bu.batch_id = b.id) AS enrolledUsers "
-			+ "FROM batch b " + "LEFT JOIN batch_courses bc ON b.id = bc.batch_id "
-			+ "LEFT JOIN course_detail c ON c.course_id = bc.course_id "
-			+ "LEFT JOIN batch_trainers bt ON b.id = bt.batch_id " + "LEFT JOIN muser t ON t.user_id = bt.user_id "
-			+ "JOIN muser u ON u.user_id = :userId " + "WHERE b.institution_name = u.institution_name "
-			+ "AND NOT EXISTS ( " + "    SELECT 1 FROM batch_users bu "
-			+ "    WHERE bu.batch_id = b.id AND bu.user_id = :userId " + ") "
-			+ "GROUP BY b.id, b.batch_id, b.batch_title, b.start_date, b.end_date, "
-			+ "b.institution_name, b.no_of_seats, b.amount, b.paytype "
-			+ "HAVING b.no_of_seats > (SELECT COUNT(bu.user_id) FROM batch_users bu WHERE bu.batch_id = b.id) "
-			+ "ORDER BY b.start_date DESC " + "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
-	List<Map<String, Object>> findBatchesNotEnrolledByUserIdWithPagination(@Param("userId") Long userId,
-			@Param("pageSize") int pageSize, @Param("offset") int offset);
+		@Query(value = "SELECT COUNT(DISTINCT b.id) " +
+		    "FROM batch b " +
+		    "JOIN batch_enrollment be ON be.batch_id = b.id " +
+		    "WHERE be.user_id = :userId " +
+		    "AND b.institution_name = :institutionName", nativeQuery = true)
+		Long countBatchesEnrolledByUser(
+		    @Param("userId") Long userId,
+		    @Param("institutionName") String institutionName);
 
-	@Query(value = "SELECT COUNT(DISTINCT b.id) FROM batch b " + "LEFT JOIN batch_users bu ON b.id = bu.batch_id "
-			+ "WHERE (bu.user_id IS NULL OR bu.user_id != :userId) "
-			+ "AND b.no_of_seats > (SELECT COUNT(bu2.user_id) FROM batch_users bu2 WHERE bu2.batch_id = b.id)", nativeQuery = true)
-	long countBatchesNotEnrolledByUserId(@Param("userId") Long userId);
 
-	@Query("SELECT new com.knowledgeVista.Batch.BatchImageDTO(b.id,b.BatchImage) FROM Batch b WHERE b.id IN :ids")
+		@Query(value = 
+			    "SELECT " +
+			    "    b.id AS id, " +
+			    "    b.batch_id AS batchId, " +
+			    "    b.batch_title AS batchTitle, " +
+			    "    b.duration_in_hours AS durationInHours, " +
+			    "    b.institution_name AS institutionName, " +
+			    "    COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, " +
+			    "    b.batch_image AS batchImage " +
+			    "FROM batch b " +
+			    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
+			    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
+			    "WHERE NOT EXISTS ( " +
+			    "    SELECT 1 FROM batch_enrollment be " +
+			    "    WHERE be.batch_id = b.id AND be.user_id = :userId " +
+			    ") " +
+			    "AND b.institution_name = :institutionName " +
+			    "GROUP BY b.id, b.batch_id, b.batch_title, b.duration_in_hours, b.institution_name, b.batch_image " +
+			    "ORDER BY b.batch_id DESC " +
+			    "LIMIT :pageSize OFFSET :offset",
+			    nativeQuery = true)
+			List<Map<String, Object>> findBatchesNotEnrolledByUser(
+			    @Param("userId") Long userId,
+			    @Param("institutionName") String institutionName,
+			    @Param("pageSize") int pageSize,
+			    @Param("offset") int offset);
+
+
+
+		@Query(value = 
+			    "SELECT COUNT(DISTINCT b.id) " +
+			    "FROM batch b " +
+			    "WHERE NOT EXISTS ( " +
+			    "    SELECT 1 FROM batch_enrollment be " +
+			    "    WHERE be.batch_id = b.id AND be.user_id = :userId " +
+			    ") " +
+			    "AND b.institution_name = :institutionName",
+			    nativeQuery = true)
+			long countBatchesNotEnrolledByUser(
+			    @Param("userId") Long userId,
+			    @Param("institutionName") String institutionName);
+
+
+		@Query("SELECT new com.knowledgeVista.Batch.BatchImageDTO(b.id,b.BatchImage) FROM Batch b WHERE b.id IN :ids")
 	List<BatchImageDTO> findBatchImagesByIds(@Param("ids") List<Long> ids);
+	
+	
+	
+	//getting for RoleBased ALlocation
+	@Query(value = "SELECT " +
+		    "b.id AS id, " +
+		    "b.batch_id AS batchId, " +
+		    "b.batch_title AS batchTitle, " +
+		    "b.duration_in_hours AS durationInHours,"+
+		    "b.institution_name AS institutionName, " +
+		    "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, " +
+		    "b.batch_image AS batchImage, " +
+		    "(SELECT COUNT(bu.user_id) FROM batch_users bu WHERE bu.batch_id = b.id) AS enrolledUsers " +
+		    "FROM batch b " +
+		    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
+		    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
+		    "WHERE b.institution_name = :institutionName " +
+		    "AND NOT EXISTS ( " +
+		        "SELECT 1 FROM batch_role_mapping brm WHERE brm.batch_id = b.id AND brm.role_id = :roleId " +
+		    ") " +
+		    "GROUP BY b.id, b.batch_id, b.batch_title, b.institution_name, b.batch_image " +
+		    "ORDER BY b.batch_id DESC " +
+		    "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
+		List<Map<String, Object>> findBatchesNotMappedToRoleInInstitution(
+		    @Param("roleId") Long roleId,
+		    @Param("institutionName") String institutionName,
+		    @Param("pageSize") int pageSize,
+		    @Param("offset") int offset);
+
+
+	@Query(value =
+		    "SELECT COUNT(DISTINCT b.id) " +
+		    "FROM batch b " +
+		    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
+		    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
+		    "WHERE b.institution_name = :institutionName " +
+		    "AND NOT EXISTS ( " +
+		    "    SELECT 1 FROM batch_role_mapping brm WHERE brm.batch_id = b.id AND brm.role_id = :roleId " +
+		    ")",
+		    nativeQuery = true)
+		long countBatchesNotMappedToRoleInInstitution(
+		    @Param("roleId") Long roleId,
+		    @Param("institutionName") String institutionName);
+	
+	
+	//getting for RoleBased ALlocation
+	@Query(value = "SELECT " +
+		    "b.id AS id, " +
+		    "b.batch_id AS batchId, " +
+		    "b.batch_title AS batchTitle, " +
+		    "b.duration_in_hours AS durationInHours,"+
+		    "b.institution_name AS institutionName, " +
+		    "COALESCE(STRING_AGG(DISTINCT c.course_name, ','), '') AS courseNames, " +
+		    "b.batch_image AS batchImage, " +
+		    "(SELECT COUNT(bu.user_id) FROM batch_users bu WHERE bu.batch_id = b.id) AS enrolledUsers " +
+		    "FROM batch b " +
+		    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
+		    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
+		    "WHERE b.institution_name = :institutionName " +
+		    "AND  EXISTS ( " +
+		        "SELECT 1 FROM batch_role_mapping brm WHERE brm.batch_id = b.id AND brm.role_id = :roleId " +
+		    ") " +
+		    "GROUP BY b.id, b.batch_id, b.batch_title, b.institution_name, b.batch_image " +
+		    "ORDER BY b.batch_id DESC " +
+		    "LIMIT :pageSize OFFSET :offset", nativeQuery = true)
+		List<Map<String, Object>> findBatchesMappedToRoleInInstitution(
+		    @Param("roleId") Long roleId,
+		    @Param("institutionName") String institutionName,
+		    @Param("pageSize") int pageSize,
+		    @Param("offset") int offset);
+	
+	
+	@Query(value =
+		    "SELECT COUNT(DISTINCT b.id) " +
+		    "FROM batch b " +
+		    "LEFT JOIN batch_courses bc ON b.id = bc.batch_id " +
+		    "LEFT JOIN course_detail c ON c.course_id = bc.course_id " +
+		    "WHERE b.institution_name = :institutionName " +
+		    "AND  EXISTS ( " +
+		    "    SELECT 1 FROM batch_role_mapping brm WHERE brm.batch_id = b.id AND brm.role_id = :roleId " +
+		    ")",
+		    nativeQuery = true)
+		long countBatchesMappedToRoleInInstitution(
+		    @Param("roleId") Long roleId,
+		    @Param("institutionName") String institutionName);
+
+
 
 }

@@ -11,6 +11,7 @@ import CertificateInputs from "./certificate/CertificateInputs";
 import Template from "./certificate/Template";
 import EditCourse from "./course/Update/EditCourse";
 import CourseView from "./course/Components/CourseView";
+import Mystudents from "./Trainer/Mystudents.js"
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import EditCourseForm from "./course/Update/EditCourseForm.js";
@@ -44,10 +45,6 @@ import About_Us from "./AuthenticationPages/About_Us";
 import baseUrl from "./api/utils.js";
 import axios from "axios";
 import RefreshToken from "./AuthenticationPages/RefreshToken.js";
-import MyPayments from "./Student/MyPayments.js";
-import UpdatePartialPaymentSettings from "./course/Components/UpdatePartialPaymentSettings.js";
-import Paymenttransactions from "./course/Components/Paymenttransactions.js";
-import Mystudents from "./Trainer/Mystudents.js";
 import AdminRegister from "./Registration/AdminRegister.js";
 import LicenceExpired from "./AuthenticationPages/LicenceExpired.js";
 import ViewAdmin from "./SysAdmin/ViewAdmin.js";
@@ -80,9 +77,6 @@ import Approvals from "./Registration/Approvals.js";
 import SocialLoginKeysAdmin from "./UserSettings/SocialLoginKeysAdmin.js";
 import FooterDetails from "./UserSettings/FooterDetails.js";
 import pcoded from "./assets/js/pcoded.js";
-import MainPaymentSettingPage from "./course/Payments/MainPaymentSettingPage.js";
-import UpdateStripePayment from "./course/Payments/UpdateStripepayment.js";
-import UpdatePaypalPayment from "./course/Payments/UpdatePaypalPayment.js";
 import CreateBatch from "./Batch/CreateBatch.js";
 import ViewAllBatch from "./Batch/ViewAllBatch.js";
 import EditBatch from "./Batch/EditBatch.js";
@@ -114,8 +108,6 @@ import AddMoreMQuestion from "./course/ModuleTest.js/AddMoreMQuestion.js";
 import EditModuleQuestion from "./course/ModuleTest.js/EditModuleQuestion.js";
 import SheduleModuleTest from "./course/ModuleTest.js/SheduleModuleTest.js";
 import StartModuleTest from "./course/ModuleTest.js/StartModuleTest.js";
-import Partialpaymentsetting from "./course/Components/Partialpaymentsetting.js";
-import PendingInstallments from "./Student/PendingInstallments.js";
 import CreateAssignment from "./Assignment/CreateAssignment.js";
 import GetAssignments from "./Assignment/GetAssignments.js";
 import EditAssignment from "./Assignment/EditAssignment.js";
@@ -129,6 +121,9 @@ import NewRole from "./Registration/NewRole.js";
 import ViewDynamicRole from "./DynamicRole/ViewDynamicRole";
 import EditDynamicRole from "./DynamicRole/EditDynamicRole.js";
 import RoleRegistration from "./Registration/RoleRegisteration.js";
+import RoleList from "./DynamicRole/RoleList.js";
+import ManageRole from "./DynamicRole/ManageRole.js";
+import AccessRequest from "./course/Components/AccessRequest.js";
 import AddDynamicRole from "./DynamicRole/AddDynamicRole.js";
 
 function App() {
@@ -151,44 +146,18 @@ function App() {
       Noofseats: "",
     },
   ]);
-  const [filter, setFilter] = useState({ paid: true, unpaid: true }); // Filter state
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
-  const handleFilterChange = (name) => {
-    setFilter((prev) => {
-      const updatedFilter = {
-        ...prev,
-        [name]: !prev[name], // Toggle the selected filter state
-      };
-      return updatedFilter;
-    });
-  };
+ 
+
+
 
   const filteredCourses = course.filter((item) => {
     const name = item.courseName ? item.courseName.toLowerCase() : "";
-    const matchesSearchQuery = name.includes(searchQuery.toLowerCase());
-
-    // If both paid and unpaid filters are selected, show all courses that match the search query
-    if (filter.paid && filter.unpaid) {
-      return matchesSearchQuery; // No amount filtering, just search query match
-    }
-
-    // Condition for Paid courses (if filter.paid is selected)
-    const matchesPaidCondition = filter.paid ? item.amount > 0 : true;
-
-    // Condition for Unpaid courses (if filter.unpaid is selected)
-    const matchesUnpaidCondition = filter.unpaid ? item.amount == 0 : true;
-
-    // Return courses that match the search query and the appropriate paid/unpaid condition
-    return matchesSearchQuery && matchesPaidCondition && matchesUnpaidCondition;
+    return name.includes(searchQuery.toLowerCase());
   });
-
-  // const filteredCourses = course.filter((item) => {
-  //   const name = item.courseName ? item.courseName.toLowerCase() : "";
-  //   return name.includes(searchQuery.toLowerCase());
-  // });
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -226,8 +195,7 @@ function App() {
                 searchQuery={searchQuery}
                 handleSearchChange={handleSearchChange}
                 setSearchQuery={setSearchQuery}
-                filter={filter}
-                handleFilterChange={handleFilterChange}
+              
               />
             }
           >
@@ -411,7 +379,7 @@ function App() {
               }
             />
           <Route
-            path="/add/:roleName"
+            path="/add/user"
             element={
               <ErrorBoundary>
                 <PrivateRoute authenticationRequired={true} onlyadmin={true}>
@@ -426,26 +394,6 @@ function App() {
                 <ErrorBoundary>
                   <PrivateRoute authenticationRequired={true}>
                     <Mycourse />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/myGrades"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                    <Grades />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/pendingInstallments"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                    <PendingInstallments />
                   </PrivateRoute>
                 </ErrorBoundary>
               }
@@ -621,6 +569,19 @@ function App() {
             />
             <Route
               path="/assignCourse/Student/:userId"
+              element={
+                <ErrorBoundary>
+                  <PrivateRoute
+                    authenticationRequired={true}
+                    authorizationRequired={true}
+                  >
+                    <AssignCourse />
+                  </PrivateRoute>
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/assignCourse/:userId"
               element={
                 <ErrorBoundary>
                   <PrivateRoute
@@ -819,7 +780,7 @@ function App() {
               }
             />
           <Route
-            path="/view/:roleName"
+            path="/view/users"
             element={
               <ErrorBoundary>
                 <PrivateRoute authenticationRequired={true} onlyadmin={true}>
@@ -854,20 +815,7 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/payment/keys"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute
-                    onlyadmin={true}
-                    authenticationRequired={true}
-                    authorizationRequired={true}
-                  >
-                    <MainPaymentSettingPage />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
+            
             <Route
               path="/certificate"
               element={
@@ -989,26 +937,17 @@ function App() {
                 </ErrorBoundary>
               }
             />
+          
             <Route
-              path="/myPayments"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                    <MyPayments />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/payment/transactionHitory"
+              path="/view/AccessRequest"
               element={
                 <ErrorBoundary>
                   <PrivateRoute
-                    authenticationRequired={true}
                     onlyadmin={true}
+                    authenticationRequired={true}
                     authorizationRequired={true}
                   >
-                    <Paymenttransactions />
+                    <AccessRequest />
                   </PrivateRoute>
                 </ErrorBoundary>
               }
@@ -1212,29 +1151,7 @@ function App() {
                 </ErrorBoundary>
               }
             />
-            <Route
-              path="/batch/save/partpay/:batchTitle/:batchId"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute authorizationRequired={true} onlyadmin={true}>
-                    <Partialpaymentsetting />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
-            <Route
-              path="/batch/update/partpay/:batchTitle/:batchId"
-              element={
-                <ErrorBoundary>
-                  <PrivateRoute
-                    authenticationRequired={true}
-                    authorizationRequired={true}
-                  >
-                    <UpdatePartialPaymentSettings />
-                  </PrivateRoute>
-                </ErrorBoundary>
-              }
-            />
+           
             <Route
               path="/batch/addNew"
               element={
@@ -1403,6 +1320,35 @@ function App() {
               }
             />
 
+             <Route
+              path="/role/ViewAll"
+              element={
+                <ErrorBoundary>
+                  <PrivateRoute
+                    authenticationRequired={true}
+                    authorizationRequired={true}
+                  >
+                    <RoleList />
+                  </PrivateRoute>
+                </ErrorBoundary>
+              }
+            />
+            
+             <Route
+              path="/manage/role"
+              element={
+                <ErrorBoundary>
+                  <PrivateRoute
+                    authenticationRequired={true}
+                    authorizationRequired={true}
+                  >
+                    <ManageRole />
+                  </PrivateRoute>
+                </ErrorBoundary>
+              }
+            />
+
+
 
             {/* SysAdminRoutes */}
             <Route
@@ -1511,22 +1457,8 @@ function App() {
             />
             {/* SysAdminRoutes */}
           </Route>
-          <Route
-            path="/updatePayment"
-            element={
-              <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                <UpdateStripePayment />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/updatePaypalPayment"
-            element={
-              <PrivateRoute authenticationRequired={true} onlyuser={true}>
-                <UpdatePaypalPayment />
-              </PrivateRoute>
-            }
-          />
+         
+         
           <Route
             path="/"
             element={
@@ -1534,8 +1466,6 @@ function App() {
                 <RedirectComponent vpsonly={true} checkvisible={true}>
                   {" "}
                   <ViewCourseVps
-                    filter={filter}
-                    handleFilterChange={handleFilterChange}
                   />
                 </RedirectComponent>
               </ErrorBoundary>
@@ -1615,8 +1545,7 @@ function App() {
               </ErrorBoundary>
             }
           />
-          <Route path="/register/:role" element={<RoleRegistration />} />
-          <Route path="/register" element={<RoleRegistration />} />
+          <Route path="/register/user" element={  <ErrorBoundary><RoleRegistration /></ErrorBoundary>} />
           <Route
             path="/LicenceExpired"
             element={

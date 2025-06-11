@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.knowledgeVista.Course.CourseDetail;
-import com.knowledgeVista.Course.Quizz.QuizAttemptAnswer;
 import com.knowledgeVista.User.Muser;
 
 import jakarta.persistence.CascadeType;

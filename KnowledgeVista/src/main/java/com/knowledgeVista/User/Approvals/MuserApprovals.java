@@ -22,6 +22,7 @@ public class MuserApprovals {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long userId;
 	    private String username;
+	    @Column(name = "psw", nullable = false)
 	    private String psw;
 	    @Column(unique = true)
 	    private String email;

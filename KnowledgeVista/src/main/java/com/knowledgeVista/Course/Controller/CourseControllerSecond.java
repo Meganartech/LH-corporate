@@ -10,11 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import com.knowledgeVista.Course.CourseDetail;
 import com.knowledgeVista.Course.Repository.videoLessonRepo;
 import com.knowledgeVista.License.licenseRepository;
-import com.knowledgeVista.Payments.Orderuser;
-import com.knowledgeVista.Payments.repos.OrderuserRepo;
 import com.knowledgeVista.User.Muser;
 import com.knowledgeVista.User.UserStats;
 import com.knowledgeVista.User.Repository.MuserRepositories;
@@ -31,21 +28,16 @@ public class CourseControllerSecond {
 	private videoLessonRepo lessonrepo;
 	@Autowired
 	private licenseRepository licencerepo;
-	@Autowired
-	private OrderuserRepo orderrepo;
 	
 	private static final Logger logger = LoggerFactory.getLogger(CourseControllerSecond.class);
 	
 	public ResponseEntity<?> getstoragedetails(String token) {
 	    try {
-	        if (!jwtUtil.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
 	        String role = jwtUtil.getRoleFromToken(token);
 	        if (!"ADMIN".equals(role)) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	        }
-	        String email = jwtUtil.getUsernameFromToken(token);
+	        String email = jwtUtil.getEmailFromToken(token);
 	        Optional<Muser> opuser = muserRepository.findByEmail(email);
 
 	        if (opuser.isPresent()) {
@@ -104,43 +96,20 @@ public class CourseControllerSecond {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	    }
 	}
-	public double calculateRemainingAmount(Long userId) {
-	    // Fetch user by ID
-	    Muser user = muserRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-	    double totalRemainingAmount = 0.0;
-	    for (CourseDetail course : user.getCourses()) {
-	        List<Orderuser> payments = orderrepo.findByUserIdAndCourseIdAndAmountReceivedGreaterThanzero(user.getUserId(), course.getCourseId());
-
-	        int totalReceived = payments.stream()
-	                                    .mapToInt(Orderuser::getAmountReceived)
-	                                    .sum();
-	        double remainingAmount = Math.max(0, course.getAmount() - totalReceived);  // Ensure no negative amounts
-
-	        totalRemainingAmount += remainingAmount;
-
-	    }
-
-	    return totalRemainingAmount;
-	}
 	public ResponseEntity<?>getAllStudentCourseDetails( String token){
 		  try {
-		         if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
 		         String role = jwtUtil.getRoleFromToken(token);
 		         if(!"ADMIN".equals(role)) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
 		         }
-		         String email=jwtUtil.getUsernameFromToken(token);
+		         String email=jwtUtil.getEmailFromToken(token);
 		         Optional<Muser> opuser =muserRepository.findByEmail(email);
 			     if(opuser.isPresent()) {
 			    	 Muser user=opuser.get();
 			    	String institution=user.getInstitutionName();
 			    	List<UserStats> studentstats=muserRepository.findStudentStatsByInstitutionName(institution);
-			    	for(UserStats student :studentstats) {
-			    		student.setPending(this.calculateRemainingAmount(student.getUserId()));
-			    	}
+			    	
 			    	return ResponseEntity.ok(studentstats);
 			    	
 			      }else {
@@ -154,14 +123,11 @@ public class CourseControllerSecond {
 	 
 	public ResponseEntity<?>getAllTrainerhandlingUsersAndCourses( String token){
 		  try {
-		         if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
 		         String role = jwtUtil.getRoleFromToken(token);
 		         if(!"ADMIN".equals(role)) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
 		         }
-		         String email=jwtUtil.getUsernameFromToken(token);
+		         String email=jwtUtil.getEmailFromToken(token);
 		         Optional<Muser> opuser =muserRepository.findByEmail(email);
 			     if(opuser.isPresent()) {
 			    	 Muser user=opuser.get();

@@ -16,14 +16,13 @@ const EditCourseForm = ({}) => {
     courseName: "",
     courseDescription: "",
     courseCategory: "",
-    amount: "",
-    noofseats: "",
     duration: "",
+    testMandatory:false,
+    isApprovalNeeded:false,
     courseImage: null,
   });
   const [img, setimg] = useState();
-  useEffect(() => {
-    const fetchcourse = async () => {
+   const fetchcourse = async () => {
       try {
         const response = await axios.get(`${baseUrl}/course/get/${courseId}`, {
           headers: {
@@ -50,6 +49,8 @@ const EditCourseForm = ({}) => {
         throw error
       }
     };
+  useEffect(() => {
+   
     fetchcourse();
   }, [courseId]);
 
@@ -85,10 +86,7 @@ const EditCourseForm = ({}) => {
           : value.length > 50
           ? "Course Category must not exceed 50 characters"
           : "",
-      amount: (value) =>
-        value && !isNaN(value) ? "" : "Invalid Amount (must be a number)",
-      noofseats: (value) =>
-        value > 0 ? "" : "Number of Seats must be greater than 0",
+     
       duration: (value) => (value > 0 ? "" : "Duration must be greater than 0"),
     };
     return validations[fieldName](fieldValue);
@@ -157,9 +155,7 @@ const EditCourseForm = ({}) => {
     if (courseEdit.courseDescription) {
       formData.append("courseDescription", courseEdit.courseDescription);
     }
-    if (courseEdit.amount) {
-      formData.append("courseAmount", courseEdit.amount);
-    }
+   
     if (courseEdit.courseCategory) {
       formData.append("courseCategory", courseEdit.courseCategory);
     }
@@ -169,9 +165,13 @@ const EditCourseForm = ({}) => {
     if (courseEdit.duration) {
       formData.append("Duration", courseEdit.duration);
     }
-    if (courseEdit.noofseats) {
-      formData.append("Noofseats", courseEdit.noofseats);
+    if(courseEdit.isApprovalNeeded){
+      formData.append("isApprovalNeeded",courseEdit.isApprovalNeeded)
     }
+    if(courseEdit.testMandatory){
+      formData.append("testMandatory",courseEdit.testMandatory)
+    }
+   
 
     try {
       const response = await axios.patch(
@@ -187,12 +187,12 @@ const EditCourseForm = ({}) => {
       if (response.status === 200) {
         MySwal.fire({
           title: "Course Updated",
-          text: " course have Updated successfully you can check by refreshing !",
+          text: " Course have Updated Successfully !",
           icon: "success",
           confirmButtonText: "OK",
         }).then((result) => {
           if (result.isConfirmed) {
-            navigate("/dashboard/course");
+           fetchcourse()
           }
         });
       }
@@ -339,14 +339,13 @@ const EditCourseForm = ({}) => {
                 />
                 </div>
                 </div>
-            <div className="form-group row p-3">
-            <div className="col-sm-7">
-                  <div className="row">
+            <div className="form-group row ">
+           
                   <label htmlFor="duration" 
-                  className=" col-form-label  col-sm-5 p-0 pt-2">
+                  className="col-sm-3 col-form-label">
                      Duration (Hours) <span className="text-danger">*</span>
                   </label>
-                  <div className="col">
+                  <div className="col-sm-9">
                     <input
                       name="duration"
                       type="number"
@@ -358,56 +357,64 @@ const EditCourseForm = ({}) => {
                       onChange={handleChange}
                     />
                     <div className="invalid-feedback">{errors.duration}</div>
-                    </div>
-                    </div>
+                           <div className="form-group row mt-3">
+  <div className="col-sm-9">
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="isApprovalNeeded"
+        name="isApprovalNeeded"
+        checked={courseEdit.isApprovalNeeded}
+        onChange={() => {
+          setCourseEdit((prev) => ({
+            ...prev,
+            isApprovalNeeded: !prev.isApprovalNeeded
+          }));
+        }}
+      />
+      <label className="form-check-label" htmlFor="isApprovalNeeded">
+        Requires Approval
+      </label>
+      <small className="form-text text-muted">
+        Enabling this means users must request access before viewing this course.
+      </small>
+    </div>
+  </div>
+</div>
+
+    <div className="form-group row mt-3">
+  <div className="col-sm-9">
+    <div className="form-check">
+      <input
+        type="checkbox"
+        className="form-check-input"
+        id="testMandatory"
+        name="testMandatory"
+        checked={courseEdit.testMandatory}
+        onChange={() => {
+          setCourseEdit((prev) => ({
+            ...prev,
+            testMandatory: !prev.testMandatory
+          }));
+        }}
+      />
+      <label className="form-check-label" htmlFor="testMandatory">
+  Test is Mandatory
+</label>
+<small className="form-text text-muted">
+  Enabling this means users must attend the test to complete the course.
+</small>
+    </div>
+  </div>
+</div>
                 </div>
                 
-                <div className="col-sm-5">
-                <div className="row">
-                <label htmlFor="noofseats " 
-                className=" col-form-label col-sm-5">
-                  Number of Seats <span className="text-danger">*</span>
-                </label>
-              <div className="col">
-                  <input
-                    name="noofseats"
-                    type="number"
-                    id="noofseats"
-                    value={courseEdit.noofseats}
-                    className={`form-control    ${
-                      errors.noofseats && "is-invalid"
-                    }`}
-                    onChange={handleChange}
-                  />
-                  <div className="invalid-feedback">{errors.noofseats}</div>
-                  </div>
-               </div>
-              </div>
+            
              
                
                 </div>
-                <div className="form-group row">
-                  <label htmlFor="courseAmount"
-                   className=" col-sm-3 col-form-label">
-                     Course Amount  <span className="text-danger">*</span>
-                  </label>
-                 <div className="col-sm-9">
-                    <input
-                      type="number"
-                      name="amount"
-                      id="amount"
-                      className={`form-control   mt-1 ${
-                        errors.courseAmount && "is-invalid"
-                      }`}
-                      placeholder="Amount"
-                      value={courseEdit.amount}
-                      onChange={handleChange}
-                    />
-                    <div className="invalid-feedback">
-                      {errors.courseAmount}
-                    </div>
-                    </div>
-                    </div>
+              
                    
                   </div>
                 <div className="cornerbtn">

@@ -1,5 +1,6 @@
 package com.knowledgeVista.User.Controller;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -9,9 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.knowledgeVista.Batch.Enrollment.repo.BatchEnrollmentRepo;
 import com.knowledgeVista.Course.CourseDetailDto;
-import com.knowledgeVista.Course.Repository.CourseDetailRepository;
-import com.knowledgeVista.Notification.Service.NotificationService;
 import com.knowledgeVista.User.Repository.MuserRepositories;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
 
@@ -20,39 +20,26 @@ public class AssignCourse {
 	@Autowired
 	private MuserRepositories muserRepository;
 	@Autowired
-	private CourseDetailRepository courseDetailRepository;
-	@Autowired
 	 private JwtUtil jwtUtil;
 	 @Autowired
-		private NotificationService notiservice;
+	 private BatchEnrollmentRepo batchEnrollRepo;
 	 
 	 private static final Logger logger = LoggerFactory.getLogger(AssignCourse.class);
 public ResponseEntity<List<CourseDetailDto>> getCoursesForUser( String token) {
-		
-		if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        String role = jwtUtil.getRoleFromToken(token);
-        String email = jwtUtil.getUsernameFromToken(token);
-		if("USER".equals(role)) {
-			 List<CourseDetailDto> courses=muserRepository.findStudentAssignedCoursesByEmail(email);
-			  
-		        return ResponseEntity.ok(courses);
-	    
-
-	        }
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	try {
+        String email = jwtUtil.getEmailFromToken(token);
+			 List<CourseDetailDto> courses=batchEnrollRepo.findActiveCoursesWithProgressByUserEmail(email);		  
+		        return ResponseEntity.ok(courses);   
+	}catch (Exception e) {
+		logger.error("Error Getting courses  for user "+e.getMessage());
+		return ResponseEntity.ok(Collections.emptyList()); 
+	}
 	    }
+	 
 
 public ResponseEntity<List<CourseDetailDto>> getCoursesForTrainer(String token) {
-	if (!jwtUtil.validateToken(token)) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
     String role = jwtUtil.getRoleFromToken(token);
-    String email = jwtUtil.getUsernameFromToken(token);
+    String email = jwtUtil.getEmailFromToken(token);
 	if("TRAINER".equals(role)) {
 		 List<CourseDetailDto> courses=muserRepository.findAllotedCoursesByEmail(email);
   

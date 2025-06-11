@@ -73,11 +73,8 @@ public class QuizzService {
 
 	public ResponseEntity<?> SaveQuizz(Long lessonId, Quizz quizzData, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 
 				String institution = muserRepository.findinstitutionByEmail(email);
@@ -117,11 +114,8 @@ public class QuizzService {
 
 	public ResponseEntity<?> AddMoreQuestionInQuizz(Long quizzId, Quizzquestion quizzquestion, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 
 				String institution = muserRepository.findinstitutionByEmail(email);
@@ -149,11 +143,7 @@ public class QuizzService {
 
 	public ResponseEntity<?> GetQuizz(Long quizzId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
 			Optional<Quizz> opquizz = quizzRepo.findById(quizzId);
 			if (opquizz.isPresent()) {
 				Quizz quizz = opquizz.get();
@@ -165,18 +155,8 @@ public class QuizzService {
 					quizz.setQuizzquestions(questions);
 					return ResponseEntity.ok(quizz);
 				} else {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					boolean isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-					if (isalloted) {
-						quizz.setLessons(null);
-						quizz.setSchedules(null);
-						quizz.setQuizAttempts(null);
-						List<Quizzquestion> questions = quizQuestionRepo.findByQuizzId(quizzId);
-						quizz.setQuizzquestions(questions);
-						return ResponseEntity.ok(quizz);
-					} else {
 						return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You Cannot Access This Page");
-					}
+					
 				}
 			} else {
 				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No Quizz Found ");
@@ -190,27 +170,17 @@ public class QuizzService {
 
 	public ResponseEntity<?> GetQuizzQuestion(Long questionId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
 			Optional<Quizzquestion> opquest = quizQuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {
 				Quizzquestion quest = opquest.get();
 				if ("ADMIN".equals(role)) {
 					quest.setQuizz(null);
 					return ResponseEntity.ok(quest);
-				} else {
-					Long courseID = quest.getQuizz().getLessons().getCourseDetail().getCourseId();
-					boolean isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-					if (isalloted) {
-						quest.setQuizz(null);
-						return ResponseEntity.ok(quest);
-					} else {
+				} 
 						return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You Cannot Access This Page");
-					}
-				}
+					
+				
 			} else {
 				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No Quizz Found ");
 			}
@@ -223,36 +193,23 @@ public class QuizzService {
 
 	public ResponseEntity<?> DeleteQuizzQuestion(List<Long> questionIds, Long quizzId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
-			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
-			boolean isalloted = false;
+			String role = jwtUtil.getRoleFromToken(token);		
 			Optional<Quizz> opquest = quizzRepo.findById(quizzId);
 			if (opquest.isPresent()) {
-				Quizz quizz = opquest.get();
-				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
+				if ("ADMIN".equals(role)) {	
 					List<Quizzquestion> questions = quizQuestionRepo.findByQuestionIdInAndQuizzQuizzId(questionIds,
 							quizzId);
 					quizQuestionRepo.deleteAll(questions);
-					Long remainingQuestions = quizQuestionRepo.countByQuizzId(quizzId);
-					System.out.println(remainingQuestions);
+					Long remainingQuestions = quizQuestionRepo.countByQuizzId(quizzId);				
 					if (remainingQuestions == 0) {
 						quizzSheuleRepo.deleteByquizzID(quizzId);
 						quizAttemptRepo.deleteByQuizzId(quizzId);
 						quizzRepo.deleteQuizzById(quizzId);
-
 					}
 					return ResponseEntity.ok("Delted Successfully");
-				}
+				}else {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("you Are Not allowed to access This Page");
+				}
 			} else {
 				return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No Quizz Found ");
 			}
@@ -265,22 +222,12 @@ public class QuizzService {
 
 	public ResponseEntity<?> UpdateQuizzQuestion(Long questionId, Quizzquestion quizzquestion, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
-			boolean isalloted = false;
 			Optional<Quizzquestion> opquest = quizQuestionRepo.findById(questionId);
 			if (opquest.isPresent()) {
 				Quizzquestion quest = opquest.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quest.getQuizz().getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
+					
 					quest.setAnswer(quizzquestion.getAnswer());
 					quest.setOption1(quizzquestion.getOption1());
 					quest.setOption2(quizzquestion.getOption2());
@@ -303,22 +250,11 @@ public class QuizzService {
 
 	public ResponseEntity<?> UpdateQuizzName(Long QuizzId, String QuizzName, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
-			boolean isalloted = false;
 			Optional<Quizz> opquest = quizzRepo.findById(QuizzId);
 			if (opquest.isPresent()) {
 				Quizz quizz = opquest.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
 					quizz.setQuizzName(QuizzName);
 					quizzRepo.save(quizz);
 					return ResponseEntity.ok("updated Successfully");
@@ -336,22 +272,12 @@ public class QuizzService {
 
 	public ResponseEntity<?> UpdateQuizzDuration(Long QuizzId, int durationInMinutes, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
-			boolean isalloted = false;
 			Optional<Quizz> opquest = quizzRepo.findById(QuizzId);
 			if (opquest.isPresent()) {
 				Quizz quizz = opquest.get();
 				if ("ADMIN".equals(role)) {
-					isalloted = true;
-				} else if ("TRAINER".equals(role)) {
-					Long courseID = quizz.getLessons().getCourseDetail().getCourseId();
-					isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseID);
-				}
-				if (isalloted) {
+					
 					quizz.setDurationInMinutes(durationInMinutes);
 					quizzRepo.save(quizz);
 					return ResponseEntity.ok("updated Successfully");
@@ -370,7 +296,7 @@ public class QuizzService {
 	public ResponseEntity<?> getQuizzSheduleDetails(Long courseId, Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			boolean isalloted = false;
 
 			if ("ADMIN".equals(role)) {
@@ -393,7 +319,7 @@ public class QuizzService {
 	public ResponseEntity<?> SaveORUpdateSheduleQuizz(Long quizzId, Long batchId, LocalDate QuizzDate, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String insitution = muserRepository.findinstitutionByEmail(email);
 			if (insitution == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -409,7 +335,6 @@ public class QuizzService {
 			}
 			Quizz quizz = opquizz.get();
 			Batch batch = opbatch.get();
-			Long courseId = quizz.getLessons().getCourseDetail().getCourseId();
 			if ("ADMIN".equals(role)) {
 				isalloted = true;
 			} else if ("TRAINER".equals(role)) {
@@ -442,11 +367,7 @@ public class QuizzService {
 
 	public ResponseEntity<?> startQuizz(String token, Long quizzId, Long batchId) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
-
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 			if (opmuser.isEmpty()) {
@@ -526,11 +447,8 @@ public class QuizzService {
 
 	public ResponseEntity<?> saveQuizzAnswers(String token, Long quizzId, List<AnswerDto> answers) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
-
-			String email = jwtUtil.getUsernameFromToken(token);
+		
+			String email = jwtUtil.getEmailFromToken(token);
 			Long id = muserRepository.findidByEmail(email);
 			Optional<QuizAttempt> opattempt = quizAttemptRepo.findbyquizzIdandUserId(id, quizzId);
 			if (opattempt.isEmpty()) {
@@ -588,9 +506,7 @@ public class QuizzService {
 	public ResponseEntity<?> getQuizzHistoryforUserByAdmin(String token, Long batchId, String email, int page,
 			int size) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				List<Long> quizzIdlist = muserRepository.findQuizzIdsByUserEmail(email, batchId);
@@ -620,12 +536,10 @@ public class QuizzService {
 
 	public ResponseEntity<?> getQuizzHistory(String token, Long batchId, int page, int size) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institutionName = muserRepository.findinstitutionByEmail(email);
 			if (institutionName == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized User Institution Not Found");
@@ -660,9 +574,7 @@ public class QuizzService {
 
 	public ResponseEntity<?> getQuizzAnalysis(String token, Long batchId, String email) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			System.out.println(email + batchId);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {

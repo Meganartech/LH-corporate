@@ -41,15 +41,8 @@ public class NotificationController {
 	
 		    public ResponseEntity<?> GetNotiImage( String token, List<Long> notifyIds) {
 		        try {
-		            // Validate JWT token
-		            if (!jwtUtil.validateToken(token)) {
-		                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		            }
-		           
-		            
-		            
 		            // Extract email from token and get the user
-		            String email = jwtUtil.getUsernameFromToken(token);
+		            String email = jwtUtil.getEmailFromToken(token);
 		            Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 		            if (opmuser.isPresent()) {
@@ -75,22 +68,11 @@ public class NotificationController {
 		 
 		public ResponseEntity<?> GetAllNotification(String token) {
 		    try {
-		        if (!jwtUtil.validateToken(token)) {
-		            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		        }
-
-		        String email = jwtUtil.getUsernameFromToken(token);
+		        String email = jwtUtil.getEmailFromToken(token);
 		        Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 		        if (opmuser.isPresent()) {
 		            Muser user = opmuser.get();
-		            String institution = user.getInstitutionName();
-		            boolean adminIsactive = muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-
-		            if (!adminIsactive) {
-		                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		            }
-
 		            LocalDate today = LocalDate.now();
 		            List<Long> ids = notiuserRepo.findNotificationIdsByUserId(user.getUserId(), today);
 
@@ -122,17 +104,10 @@ public class NotificationController {
 	
 	public ResponseEntity<?> MarkALLasRead(String token ,  List<Long> notiIds){
 		try {
-			if (!jwtUtil.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	        }
-			String email= jwtUtil.getUsernameFromToken(token);
+			String email= jwtUtil.getEmailFromToken(token);
 		    Optional<Muser> opuser=muserRepository.findByEmail(email);
 		    if(opuser.isPresent()) {
 		    	Muser user=opuser.get();
-		    	 boolean adminIsactive=muserRepository.getactiveResultByInstitutionName("ADMIN", user.getInstitutionName());
-		   	    	if(!adminIsactive) {
-		   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		   	    	}
 				for(Long id :notiIds) {
 					NotificationUser notiuser= notiuserRepo.findbyuserIdNotificationId(user.getUserId(), id);
 					notiuser.setIs_read(true);
@@ -153,18 +128,10 @@ public class NotificationController {
 	
 	public ResponseEntity<?> UreadCount(String token) {
 		try {
-
-	         if (!jwtUtil.validateToken(token)) {
-	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	         }
-	         String email=jwtUtil.getUsernameFromToken(token);
+	         String email=jwtUtil.getEmailFromToken(token);
 	         Optional<Muser> opmuser= muserRepository.findByEmail(email);
 	         if(opmuser.isPresent()) {
 	        	 Muser user=opmuser.get();
-	        	 boolean adminIsactive=muserRepository.getactiveResultByInstitutionName("ADMIN", user.getInstitutionName());
-		   	    	if(!adminIsactive) {
-		   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		   	    	}
 	        	 LocalDate today=LocalDate.now();
 	        	 Long count=notiuserRepo.CountUnreadNotificationOftheUser(user.getUserId(), false,today);
 	        	 return ResponseEntity.ok(count);
@@ -183,17 +150,10 @@ public class NotificationController {
 	public ResponseEntity<?>ClearAll(String token){
 		 
 		try {
-			if (!jwtUtil.validateToken(token)) {
-             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-         }
-         String email=jwtUtil.getUsernameFromToken(token);
+         String email=jwtUtil.getEmailFromToken(token);
          Optional<Muser> opmuser= muserRepository.findByEmail(email);
          if(opmuser.isPresent()) {
         	 Muser user=opmuser.get();
-        	 boolean adminIsactive=muserRepository.getactiveResultByInstitutionName("ADMIN", user.getInstitutionName());
-	   	    	if(!adminIsactive) {
-	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	   	    	}
         	 Long id=user.getUserId();
         	 List<Long> ids=notiuserRepo.findprimaryIdsByUserId(id);
         	 for(Long singleid :ids) {

@@ -56,6 +56,18 @@ public class LogManagement {
 
 	private static final DateTimeFormatter LOG_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+	@Value("${spring.mail.host}")
+	private String defaultHost;
+
+	@Value("${spring.mail.port}")
+	private int defaultPort;
+
+	@Value("${spring.mail.username}")
+	private String defaultUsername;
+
+	@Value("${spring.mail.password}")
+	private String defaultPassword;
+
 	public ResponseEntity<?> logdetails(int id) {
 		try {
 			Deque<String> allLines = new LinkedList<>();
@@ -219,40 +231,39 @@ public class LogManagement {
 		boolean isvalid = (!opkeys1.isEmpty() && !opkeys1.get(0).getHostname().isEmpty()
 				&& !opkeys1.get(0).getPort().isEmpty() && !opkeys1.get(0).getEmailid().isEmpty()
 				&& !opkeys1.get(0).getPassword().isEmpty());
+		
+		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+		
 		if (isvalid) {
 			Mailkeys keys = opkeys1.get(0);
-			JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-			mailSender.setHost(keys.getHostname()); // Set host from Mailkeys
-			mailSender.setPort(Integer.parseInt(keys.getPort())); // Set port
+			mailSender.setHost(keys.getHostname());
+			mailSender.setPort(Integer.parseInt(keys.getPort()));
 			sender_mail_id = keys.getEmailid();
-			mailSender.setUsername(keys.getEmailid()); // Set username (email ID)
-			mailSender.setPassword(keys.getPassword()); // Set password
-
-			// Optional properties for TLS/SSL, protocol, etc.
-			Properties props = mailSender.getJavaMailProperties();
-			props.put("mail.transport.protocol", "smtp");
-			props.put("mail.smtp.auth", "true");
-			props.put("mail.smtp.starttls.enable", "true");
-			props.put("mail.debug", "true"); // Optional, set to true for debugging
-
-			return mailSender;
-			// Do something with firstRow
+			mailSender.setUsername(keys.getEmailid());
+			mailSender.setPassword(keys.getPassword());
 		} else {
-			JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-			mailSender.setHost("smtp.hostinger.com"); // Set host from Mailkeys
-			mailSender.setPort(587); // Set port
-			mailSender.setUsername("learnhubtechie@meganartech.com"); // Set username (email ID)
-			mailSender.setPassword("$Meganar1"); // Set password
-
-			// Optional properties for TLS/SSL, protocol, etc.
-			Properties props = mailSender.getJavaMailProperties();
-			props.put("mail.transport.protocol", "smtp");
-			props.put("mail.smtp.auth", "true");
-			props.put("mail.smtp.starttls.enable", "true");
-			props.put("mail.debug", "true"); // Optional, set to true for debugging
-
-			return mailSender;
+			// Fallback to environment variables
+			mailSender.setHost(defaultHost);
+			mailSender.setPort(defaultPort);
+			mailSender.setUsername(defaultUsername);
+			mailSender.setPassword(defaultPassword);
+			sender_mail_id = defaultUsername;
 		}
+
+		// Mail properties
+		Properties props = mailSender.getJavaMailProperties();
+		props.put("mail.transport.protocol", "smtp");
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.connectiontimeout", "30000");
+		props.put("mail.smtp.timeout", "30000");
+		props.put("mail.smtp.writetimeout", "30000");
+		props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		props.put("mail.debug", "true");
+		props.put("mail.smtp.socketFactory.fallback", "false");
+		props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+
+		return mailSender;
 	}
 
 }

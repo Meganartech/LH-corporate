@@ -6,7 +6,6 @@ import withReactContent from "sweetalert2-react-content";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import altBatchImage from "../images/altBatchImage.jpg";
-import SelectPaymentGateway from "../course/Payments/SelectPaymentGateway";
 const ViewAllBAtchForCourse = () => {
   const { courseId } = useParams();
   const userId = sessionStorage.getItem("userid");
@@ -14,73 +13,10 @@ const ViewAllBAtchForCourse = () => {
     const token = sessionStorage.getItem("token");
   const MySwal = withReactContent(Swal);
   const [batch, setbatch] = useState([]);
-  const Currency = sessionStorage.getItem("Currency");
   const navigate = useNavigate();
-  const[openselectgateway,setopenselectgateway]=useState(false)
-    const[orderData,setorderData]=useState({
-      userId:"",
-      batchId:"",
-      amount:"" ,
-      batchAmount:"",
-      batchName:"",
-      installment:"",
-      paytype:"",
-      url:""
-  })
-  const FetchOrderSummary = async (batchId, userId, paytype) => {
-    try {
-      let selectedPayType=0;//0->Full //1->PART
-      if (paytype === "PART") {
-        const result = await MySwal.fire({
-          title: "Select Payment Type",
-          text: "Do you want to pay fully or in installments?",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonText: "Full Pay",
-          cancelButtonText: "Part Pay",
-        });
-  
-        // Determine payment type based on user selection
-         selectedPayType = result.isDismissed ? 1 : 0;//0->Full //1->PART
-      
-      }
-        setsubmitting(true);
-  
-        // Prepare request data
-        const data = JSON.stringify({
-          batchId: batchId,
-          userId: userId,
-          paytype: selectedPayType, // Use local variable, not state
-        });
-  
-        // Make API call
-        const response = await axios.post(`${baseUrl}/Batch/getOrderSummary`, data, {
-          headers: {
-            Authorization: token,
-            "Content-Type": "application/json",
-          },
-        });
-  
-        setsubmitting(false);
-        setorderData(response.data);
-        console.log(response.data)
-        setopenselectgateway(true);
-      
-    } catch (error) {
-      setsubmitting(false);
-      setopenselectgateway(false);
-  
-      if (error.response && error.response.status === 400) {
-        MySwal.fire({
-          icon: "error",
-          title: "Error creating order:",
-          text: error.response.data ? error.response.data : "An error occurred",
-        });
-      } else {
-        throw error;
-      }
-    }
-  };
+  const [selectedBatchId, setSelectedBatchId] = useState(null);
+
+
   
   useEffect(() => {
     const fetchBatchforcourse = async () => {
@@ -103,6 +39,42 @@ const ViewAllBAtchForCourse = () => {
     };
     fetchBatchforcourse();
   }, []);
+  const handleSendRequest = async () => {
+  if (!selectedBatchId) return;
+
+  try {
+    const response = await axios.post(
+      `${baseUrl}/Approval/Request?batchId=${selectedBatchId}`,
+      {},
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    MySwal.fire({
+      icon: "success",
+      title: "Request Sent",
+      text: response.data,
+    });
+    navigate("/dashboard/course")
+
+    setSelectedBatchId(null); // Reset selection after success
+  } catch (err) {
+    const message =
+      err.response?.status === 404 || err.response?.status === 400
+        ? err.response.data
+        : "Something went wrong";
+
+    MySwal.fire({
+      icon: "error",
+      title: "Failed to Send Request",
+      text: message,
+    });
+  }
+};
+
   return (
     <div>
          {submitting && (
@@ -110,9 +82,7 @@ const ViewAllBAtchForCourse = () => {
           <div className="spinner"></div>
         </div>
       )}
-      {openselectgateway && (
-        <SelectPaymentGateway orderData={orderData} setorderData={setorderData} setopenselectgateway={setopenselectgateway}/>
-      )}
+    
       <div className="page-header"></div>
       <div className="card" style={{ height: "82vh", overflowY: "auto" }}>
         <div className="card-body">
@@ -135,13 +105,19 @@ const ViewAllBAtchForCourse = () => {
           </div>
           <h4>Select Your Batch</h4>
           {batch.length > 0 ? (
-            <div className="row">
+            <>
+            <div className="vh-55">
               {batch
                 .slice()
                 .reverse()
                 .map((item) => (
-                  <div className="col-md-6 col-xl-3 course" key={item.id}>
-                    <div className="card mb-3">
+                 <div
+  className={` course ${selectedBatchId === item.id ? "selectedBatch" : ""}`}
+  key={item.id}
+  onClick={() => setSelectedBatchId(item.id)}
+>
+
+                    <div className="card mb-0">
                       {item.batchImage ? (
                         <div className="img-fluid card-img-top ">
                           <div
@@ -232,50 +208,34 @@ const ViewAllBAtchForCourse = () => {
                         <p title= {item.course.join(", ")} className="batchlist">
                           <b> Courses :</b> {item.course.join(", ")}
                         </p>
-                        <p title={item.trainer.join(", ")} className="batchlist">
-                          <b>Trainers :</b> {item.trainer.join(", ")}
-                        </p>
-                        <p title={item.duration} className="batchlist">
-                          <b>Duration :</b> {item.duration}
-                        </p>
-                        <div>
-                          {item.amount === 0 ? (
-                            <a
-                              title="Enroll For Free"
-                              //onClick={(e)=>{ e.preventDefault();navigate(item.courseUrl)}}
-                              className="btn btn-sm btn-outline-success w-100"
-                            >
-                              Enroll for Free
-                            </a>
-                          ) : (
-                            <div className="amountGrid">
-                              <div className="amt">
-                                <i
-                                  className={
-                                    Currency === "INR"
-                                      ? "fa-solid fa-indian-rupee-sign pr-1"
-                                      : "fa-solid fa-dollar-sign pr-1"
-                                  }
-                                ></i>
-                                <span title={item.amount}>{item.amount}</span>
-                              </div>
-                              <button
-                                className=" btn btn-sm btn-outline-primary"
-                                onClick={() =>
-                                 FetchOrderSummary(item.id,userId,item.paytype)
-                                }
-                                title="Enroll Now"
-                              >
-                                Enroll Now
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                      <p title={item.duration} className="batchlist">
+                      <b>Duration (Hours):</b> {item.durationInHours}
+                    </p>
+                       
                       </div>
                     </div>
                   </div>
                 ))}
+   
+
             </div>
+             <div className="cornerbtn">
+  <button
+    className="btn btn-secondary"
+    type="button"
+    onClick={() => setSelectedBatchId(null)}
+  >
+    Cancel
+  </button>
+  <button
+    className="btn btn-primary"
+    disabled={!selectedBatchId}
+  onClick={handleSendRequest}
+  >
+    Send Request
+  </button>
+</div>
+</>
           ) : (
             <div>
               <h1 className="text-primary ">No Batch Found </h1>

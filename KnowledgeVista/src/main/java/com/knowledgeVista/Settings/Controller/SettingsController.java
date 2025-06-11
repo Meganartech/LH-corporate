@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.knowledgeVista.Course.Repository.CourseDetailRepository;
-import com.knowledgeVista.Meeting.zoomclass.MeetingRequest.Settings;
 import com.knowledgeVista.Settings.ViewSettings;
 import com.knowledgeVista.Settings.Repo.ViewSettingsRepo;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
@@ -43,9 +42,6 @@ public class SettingsController {
 	
 	 public Boolean updateViewCourseInLandingPage(Boolean isEnabled,String token) {
 		 try {
-			 if (!jwtUtil.validateToken(token)) {
-	             return false;
-	         }
 	         String role = jwtUtil.getRoleFromToken(token);
 	         if("ADMIN".equals(role)) {
 	        	
@@ -89,9 +85,6 @@ public class SettingsController {
 		    }
 	 public Boolean updateSocialLogin(Boolean isEnabled,String token) {
 		 try {
-			 if (!jwtUtil.validateToken(token)) {
-	             return false;
-	         }
 	         String role = jwtUtil.getRoleFromToken(token);
 	         if("ADMIN".equals(role)) {
 	        	

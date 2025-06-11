@@ -44,11 +44,7 @@ public class GoogleAuthController {
 
 public ResponseEntity<?> getSocialLoginKeys(String Provider,String token) {
 	try {
-		   if (!jwtUtil.validateToken(token)) {
-	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	         }
-
-	         String email = jwtUtil.getUsernameFromToken(token);
+	         String email = jwtUtil.getEmailFromToken(token);
 	         Optional<Muser> opuser=muserRepository.findByEmail(email);
 	         if(opuser.isPresent()) {
 	        	 Muser user=opuser.get();
@@ -82,12 +78,8 @@ public ResponseEntity<?> getSocialLoginKeys(String Provider,String token) {
 }
 public ResponseEntity<?> saveOrUpdateSocialLoginKeys(SocialLoginKeys loginKeys,  String token) {
 	
-try {
-    if (!jwtUtil.validateToken(token)) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-   
-    String email = jwtUtil.getUsernameFromToken(token);
+try { 
+    String email = jwtUtil.getEmailFromToken(token);
 Optional<Muser>opuser=muserRepository.findByEmail(email);
     if(opuser.isPresent()) {
     	Muser user=opuser.get();
@@ -193,7 +185,6 @@ System.out.println("access"+AccessToken);
             RestTemplate restTemplate = new RestTemplate();
             String url = GOOGLE_TOKEN_URL + idToken;
             Map<String, Object> googleResponse = restTemplate.getForObject(url, Map.class);
-            System.out.println("response="+googleResponse);
             if (googleResponse.containsKey("email")) {
                 String email = googleResponse.get("email").toString();
                 Optional<Muser>opuser=muserRepository.findByEmail(email);
@@ -202,7 +193,7 @@ System.out.println("access"+AccessToken);
                 	Muser user=opuser.get();
                 	 Map<String, Object> responseBody = new HashMap<>();
                 	 String Role=user.getRole().getRoleName();
-		                String jwtToken = jwtUtil.generateToken(email,Role);
+		                String jwtToken = jwtUtil.generateToken(user.getUsername(),Role,user.getInstitutionName(),user.getUserId(),user.getEmail());
 	                    user.setLastactive(LocalDateTime.now());
 	                    if(user.getIsActive().equals(false)) { 
 	                    	Map<String, Object> response = new HashMap<>();
@@ -245,7 +236,7 @@ System.out.println("access"+AccessToken);
 
             	 Map<String, Object> responseBody = new HashMap<>();
             	 String Role=user.getRole().getRoleName();
-	                String jwtToken = jwtUtil.generateToken(email,Role);
+	                String jwtToken = jwtUtil.generateToken(user.getUsername(),Role,user.getInstitutionName(),user.getUserId(),user.getEmail());
                     user.setLastactive(LocalDateTime.now());
                     muserRepository.save(user);
 	                responseBody.put("token", jwtToken);

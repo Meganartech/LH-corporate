@@ -23,11 +23,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
-
+import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +39,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.knowledgeVista.Course.Repository.CourseDetailRepository;
 import com.knowledgeVista.DownloadManagement.CustomerLeads;
@@ -102,10 +100,7 @@ public class LicenseController {
 	private Logger logger = LoggerFactory.getLogger(LicenseController.class);
 
 	public ResponseEntity<?> getAllUserSAS(String token) {
-		if (!jwtUtil.validateToken(token)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-		String uemail = jwtUtil.getUsernameFromToken(token);
+		String uemail = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> opuser = muserrepo.findByEmail(uemail);
 		if (opuser.isPresent()) {
 
@@ -286,10 +281,8 @@ public class LicenseController {
 
 	// ---------------------------------------------------------------------------------
 	public ResponseEntity<Integer> count(String token) {
-		if (!jwtUtil.validateToken(token)) {
-			return new ResponseEntity<>(401, HttpStatus.UNAUTHORIZED);
-		}
-		String uemail = jwtUtil.getUsernameFromToken(token);
+	
+		String uemail = jwtUtil.getEmailFromToken(token);
 		Optional<Muser> opuser = muserrepo.findByEmail(uemail);
 		Long course = 0L;
 		if (opuser.isPresent()) {
@@ -344,8 +337,7 @@ public class LicenseController {
 				.collect(Collectors.toList());
 		LocalDate currentDate = LocalDate.now();
 		java.util.Date Datecurrent = java.sql.Date.valueOf(currentDate);
-		long milliseconds = Datecurrent.getTime(); // Get the time in milliseconds
-		java.sql.Timestamp timestamp = new java.sql.Timestamp(milliseconds);
+		long milliseconds = Datecurrent.getTime(); 
 
 		String localFile = "";
 		for (License license : licenseList) {
@@ -395,7 +387,6 @@ public class LicenseController {
 			// Convert Date to LocalDate
 			LocalDate licenseEndDate = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			LocalDate today = LocalDate.now();
-			boolean va = licenseEndDate.isBefore(today);
 //		    -------------------------------------testarea-----------------------------
 			if ((valu.equals(valu1) || valu.equals(value2)) && !(licenseEndDate.isBefore(today))) {
 
@@ -445,14 +436,10 @@ public class LicenseController {
 
 //----------------upload VPS-------------------------------------------------------------------------
 	public ResponseEntity<License> upload(MultipartFile File, String lastModifiedDate, String token) {
-		if (!jwtUtil.validateToken(token)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
 		try {
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opuser = muserrepo.findByEmail(email);
 			if (opuser.isPresent()) {
 				Muser user = opuser.get();
@@ -595,7 +582,7 @@ public class LicenseController {
 			}
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			e.printStackTrace();
-			logger.error("", e);
+			logger.error("Error parsing XML", e);
 			;
 			return ResponseEntity.badRequest().build();
 		}
@@ -863,12 +850,7 @@ public class LicenseController {
 //--------------------------Upload licence(Optional)---------------
 	public ResponseEntity<?> uploadBysysAdmin(MultipartFile file, String token) {
 		try {
-			// Validate token and user role (same logic as before)
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> optionalUser = muserrepo.findByEmail(email);
 			if (!optionalUser.isPresent() || !optionalUser.get().getRole().getRoleName().equals("SYSADMIN")) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

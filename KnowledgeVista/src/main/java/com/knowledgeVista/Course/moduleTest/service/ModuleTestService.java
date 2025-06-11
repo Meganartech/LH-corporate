@@ -65,11 +65,9 @@ public class ModuleTestService {
 
 	public ResponseEntity<?> searchLessons(String token, String Query, Long courseId) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institution = muserRepository.findinstitutionByEmail(email);
 			if (institution == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Institution Not Found");
@@ -87,13 +85,8 @@ public class ModuleTestService {
 
 	public ResponseEntity<?> SaveModuleTest(String token, List<Long> lessonIds, ModuleTest moduleTest, Long courseId) {
 		try {
-			// Extract user details from token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-			}
-
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String institution = muserRepository.findinstitutionByEmail(email);
 
 			if (institution == null) {
@@ -136,10 +129,6 @@ public class ModuleTestService {
 
 	public ResponseEntity<?> getModuleTestById(Long mtestId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-			}
-
 			String role = jwtUtil.getRoleFromToken(token);
 			if (!"ADMIN".equals(role) && !"TRAINER".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User cannot access this page");
@@ -163,10 +152,6 @@ public class ModuleTestService {
 
 	public ResponseEntity<?> getModuleTestListByCourseId(Long courseId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-			}
-
 			String role = jwtUtil.getRoleFromToken(token);
 			if (!"ADMIN".equals(role) && !"TRAINER".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User cannot access this page");
@@ -184,12 +169,6 @@ public class ModuleTestService {
 	public ResponseEntity<?> addMoreModuleQuestion(Long mtestId, String questionText, String option1, String option2,
 			String option3, String option4, String answer, String token) {
 		try {
-// Validate JWT token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-			}
-
-// Check user role
 			String role = jwtUtil.getRoleFromToken(token);
 			if (!"ADMIN".equals(role) && !"TRAINER".equals(role)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Access denied");
@@ -215,9 +194,7 @@ public class ModuleTestService {
 	public ResponseEntity<?> deleteModuleQuestion(List<Long> questionIds, String token, Long testId) {
 		try {
 			// Validate JWT token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			int deletedQuestionsCount = 0;
 
@@ -257,15 +234,9 @@ public class ModuleTestService {
 	public ResponseEntity<?> editModuleTest(Long testId, String testName, Long noOfAttempt, Double passPercentage,
 			String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
-			}
 			String role = jwtUtil.getRoleFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				Optional<ModuleTest> optest = moduletestRepo.findById(testId);
-				System.out.println("test" + testName);
-				System.out.println("pass" + passPercentage);
-				System.out.println("noofat" + noOfAttempt);
 				if (optest.isPresent()) {
 					ModuleTest test = optest.get();
 					if (testName != null) {
@@ -298,9 +269,7 @@ public class ModuleTestService {
 
 	public ResponseEntity<?> getModuleQuestion(Long questionId, String token) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				MQuestion existingQuestion = MquestionRepo.findById(questionId).orElse(null);
@@ -325,9 +294,7 @@ public class ModuleTestService {
 			String option3, String option4, String answer, String token) {
 		try {
 // Validate JWT token
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
+			
 			String role = jwtUtil.getRoleFromToken(token);
 			if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
 				Optional<MQuestion> opexistingQuestion = MquestionRepo.findById(questionId);
@@ -358,12 +325,11 @@ public class ModuleTestService {
 			String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			String insitution = muserRepository.findinstitutionByEmail(email);
 			if (insitution == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 			}
-			boolean isalloted = false;
 			Optional<ModuleTest> opmtest = moduletestRepo.findById(mtestId);
 			Optional<Batch> opbatch = batchRepo.findBatchByIdAndInstitutionName(batchId, insitution);
 			if (!opmtest.isPresent()) {
@@ -374,13 +340,7 @@ public class ModuleTestService {
 			}
 			ModuleTest mtest = opmtest.get();
 			Batch batch = opbatch.get();
-			Long courseId = mtest.getCourseDetail().getCourseId();
 			if ("ADMIN".equals(role)) {
-				isalloted = true;
-			} else if ("TRAINER".equals(role)) {
-				isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseId);
-			}
-			if (isalloted) {
 				Optional<SheduleModuleTest> opQuizzschedule = sheduleTestRepo.findByModuleTestIdAndBatchId(mtestId,
 						batchId);
 				if (opQuizzschedule.isPresent()) {
@@ -408,15 +368,8 @@ public class ModuleTestService {
 	public ResponseEntity<?> getModuleTestSheduleDetails(Long courseId, Long batchId, String token) {
 		try {
 			String role = jwtUtil.getRoleFromToken(token);
-			String email = jwtUtil.getUsernameFromToken(token);
-			boolean isalloted = false;
-
 			if ("ADMIN".equals(role)) {
-				isalloted = true;
-			} else if ("TRAINER".equals(role)) {
-				isalloted = muserRepository.FindAllotedOrNotByUserIdAndCourseId(email, courseId);
-			}
-			if (isalloted) {
+				
 				List<MTSheduleListDto> shedule = moduletestRepo.getQuizzShedulesByCourseIdAndBatchId(courseId, batchId);
 				return ResponseEntity.ok(shedule);
 			}
@@ -432,11 +385,7 @@ public class ModuleTestService {
 
 	public ResponseEntity<?> startModuleTest(String token, Long mtestId, Long batchId) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
-
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 			if (opmuser.isEmpty()) {
@@ -491,11 +440,7 @@ public class ModuleTestService {
 
 	public ResponseEntity<?> saveModuleTestAnswers(String token, Long mtestId, List<AnswerDto> answers) {
 		try {
-			if (!jwtUtil.validateToken(token)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token Expired");
-			}
-
-			String email = jwtUtil.getUsernameFromToken(token);
+			String email = jwtUtil.getEmailFromToken(token);
 			Optional<Muser> opmuser = muserRepository.findByEmail(email);
 
 			if (opmuser.isEmpty()) {

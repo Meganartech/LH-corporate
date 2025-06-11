@@ -30,10 +30,7 @@ public class EmailController {
 	 
 	  public ResponseEntity<?>getMailkeys( String token){
 		   try {
-	    	   if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
-	    	   String email = jwtUtil.getUsernameFromToken(token);
+	    	   String email = jwtUtil.getEmailFromToken(token);
 		         Optional<Muser>opmuser=muserRepository.findByEmail(email);
 		         if(opmuser.isPresent()) {
 		        	 Muser user=opmuser.get();
@@ -44,8 +41,6 @@ public class EmailController {
 		        	 }else {
 		        		 return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 		        	 }
-		        	
-		        	 
 		         }else {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		         }
@@ -60,9 +55,6 @@ public class EmailController {
 	  }
 	  public ResponseEntity<?>UpdateMailkeys( String token, Mailkeys mailkeys){
 		  try {
-	    	   if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
 	    	   String role = jwtUtil.getRoleFromToken(token);
 		         if(!role.equals("ADMIN")) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
@@ -78,15 +70,11 @@ public class EmailController {
 	  
 	  public ResponseEntity<?> saveMail( String token, Mailkeys mailkeys) {
 	      try {
-	    	   if (!jwtUtil.validateToken(token)) {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		         }
-
 		         String role = jwtUtil.getRoleFromToken(token);
 		         if(!role.equals("ADMIN")) {
 		        	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
 		         }
-		         String email = jwtUtil.getUsernameFromToken(token);
+		         String email = jwtUtil.getEmailFromToken(token);
 		         Optional<Muser>opmuser=muserRepository.findByEmail(email);
 		         if(opmuser.isPresent()) {
 		        	 Muser user=opmuser.get();

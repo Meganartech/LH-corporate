@@ -4,8 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.knowledgeVista.Batch.SearchDto;
+import com.knowledgeVista.Batch.Enrollment.service.BatchEnrollmentService;
 import com.knowledgeVista.Batch.Repo.BatchRepository;
 import com.knowledgeVista.Email.EmailService;
 import com.knowledgeVista.User.Muser;
@@ -26,6 +28,7 @@ import com.knowledgeVista.User.Approvals.MuserApprovalRepo;
 import com.knowledgeVista.User.Approvals.MuserApprovals;
 import com.knowledgeVista.User.Repository.MuserRepoPageable;
 import com.knowledgeVista.User.Repository.MuserRepositories;
+import com.knowledgeVista.User.Repository.MuserRoleRepository;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,10 +37,15 @@ import jakarta.servlet.http.HttpServletRequest;
 public class Listview {
 	@Autowired
 	private MuserRepositories muserrepositories;
+	@Autowired
+	private MuserRoleRepository roleRepo;
+	@Autowired
+	private BatchEnrollmentService BatchenrollService;
 	 @Autowired
 	 private JwtUtil jwtUtil;
 	 @Autowired 
 	 private MuserRepoPageable muserPageRepo;
+	
 	 @Autowired
 	 private MuserApprovalRepo MuserApproval;
 	@Autowired
@@ -46,6 +54,8 @@ public class Listview {
 	private BatchRepository batchrepo;
 	@Autowired
 	private EmailService emailservice;
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 
 	 private static final Logger logger = LoggerFactory.getLogger(Listview.class);
 
@@ -55,30 +65,13 @@ public class Listview {
 
     public ResponseEntity<Page<MuserDto>> getUsersByRoleName(String token ,int pageNumber,int pageSize) {
         try {
-        	if (!jwtUtil.validateToken(token)) {
-   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-   	     }
-
    	     String role = jwtUtil.getRoleFromToken(token);
    	     String roleu="USER";
-   	     String email=jwtUtil.getUsernameFromToken(token);
-   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
-   	     String institution="";
-   	     if(opreq.isPresent()) {
-   	    	 Muser requser=opreq.get();
-   	    	institution=requser.getInstitutionName();
-   	    	boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-   	    	if(!adminIsactive) {
-   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-   	    	}
-   	     }else {
-   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
-   	     }
+   	     String institution=jwtUtil.getInstitutionFromToken(token);
+   	     
    	     if("ADMIN".equals(role)||"TRAINER".equals(role)){
    	    	Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<MuserDto> users = muserPageRepo.findByRoleNameAndInstitutionName(roleu, institution,pageable);
-           
-          
             return ResponseEntity.ok(users);
    	     }else {
 
@@ -94,26 +87,8 @@ public class Listview {
     //**************************Getting Dynamic Role***********************
     public ResponseEntity<Page<MuserDto>> getDynamicUsersByRoleName(String token, int pageNumber, int pageSize, String roleu) {
         try {
-            if (!jwtUtil.validateToken(token)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
             String role = jwtUtil.getRoleFromToken(token);
-            String email = jwtUtil.getUsernameFromToken(token);
-            Optional<Muser> opreq = muserrepositories.findByEmail(email);
-            String institution = "";
-
-            if (opreq.isPresent()) {
-                Muser requser = opreq.get();
-                institution = requser.getInstitutionName();
-                boolean adminIsactive = muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-                if (!adminIsactive) {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
+            String institution = jwtUtil.getInstitutionFromToken(token);
             if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
                 Pageable pageable = PageRequest.of(pageNumber, pageSize);
                 Page<MuserDto> users = muserPageRepo.findByRoleNameAndInstitutionName(roleu, institution, pageable);
@@ -137,23 +112,13 @@ public class Listview {
             String targetEmail) {  // email we want the data for
 
         try {
-            /* ───── 1. JWT validation ───── */
-            if (!jwtUtil.validateToken(token)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
+           
             String callerRole  = jwtUtil.getRoleFromToken(token);   // ADMIN / TRAINER / …
-            String callerEmail = jwtUtil.getUsernameFromToken(token);
+            String callerEmail = jwtUtil.getEmailFromToken(token);
 
             /* ───── 2. Institution & admin‑is‑active check ───── */
             Optional<Muser> callerOpt = muserrepositories.findByEmail(callerEmail);
             if (callerOpt.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            String institution = callerOpt.get().getInstitutionName();
-            boolean adminActive = muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-            if (!adminActive) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
@@ -189,7 +154,7 @@ public class Listview {
 //
 //            // Extract role and email from the token
 //            String role = jwtUtil.getRoleFromToken(token);
-//            String email = jwtUtil.getUsernameFromToken(token);
+//            String email = jwtUtil.getEmailFromToken(token);
 //            
 //            // Check if the user exists based on email
 //            Optional<Muser> opreq = muserrepositories.findByEmail(email);
@@ -227,11 +192,7 @@ public class Listview {
     
     public ResponseEntity<Page<MuserDto>> getUsersByRoleId(String token, int pageNumber, int pageSize, Long roleId) {
         try {
-            if (!jwtUtil.validateToken(token)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            String userEmail = jwtUtil.getUsernameFromToken(token);
+            String userEmail = jwtUtil.getEmailFromToken(token);
             Optional<Muser> currentUser = muserrepositories.findByEmail(userEmail);
 
             if (currentUser.isEmpty()) {
@@ -240,12 +201,6 @@ public class Listview {
 
             Muser loggedInUser = currentUser.get();
             String institution = loggedInUser.getInstitutionName();
-            boolean adminIsActive = muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-
-            if (!adminIsActive) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<MuserDto> users = muserPageRepo.findByRoleIdAndInstitutionName(roleId, institution, pageable);
             return ResponseEntity.ok(users);
@@ -257,21 +212,9 @@ public class Listview {
     
     public ResponseEntity<Page<MuserDto>> GetStudentsOfTrainer(String token,int page, int size) {
         try {
-        	if (!jwtUtil.validateToken(token)) {
-   	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-   	     }
-
    	     String role = jwtUtil.getRoleFromToken(token);
-   	     String email=jwtUtil.getUsernameFromToken(token);
+   	     String email=jwtUtil.getEmailFromToken(token);
    	     if("TRAINER".equals(role)){
-           Optional<Muser> opusers = muserrepositories.findByEmail(email);
-            if(opusers.isPresent()) {
-            	Muser trainer=opusers.get();
-            	String institution=trainer.getInstitutionName();
-            	boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-       	    	if(!adminIsactive) {
-       	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-       	    	}
        	        Pageable pageable = PageRequest.of(page, size);
        	    	Page<MuserDto> Uniquestudents=muserPageRepo.findStudentsOfTrainer(email, pageable);
             return ResponseEntity.ok(Uniquestudents);
@@ -279,10 +222,7 @@ public class Listview {
 
    	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
    	     }
-   	     }else {
-
-      	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-      	     }
+   	    
         } catch (Exception e) {
         	e.printStackTrace();
         	 logger.error("", e);
@@ -297,24 +237,8 @@ public class Listview {
     
     public ResponseEntity<?> getUserById( Long userId,String token) {
         try {
-        	if (!jwtUtil.validateToken(token)) {
-      	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-      	     }
-
       	     String role = jwtUtil.getRoleFromToken(token);
-      	   String email=jwtUtil.getUsernameFromToken(token);
-	   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
-	   	     String institution="";
-	   	     if(opreq.isPresent()) {
-	   	    	 Muser requser=opreq.get();
-	   	    	institution=requser.getInstitutionName();
-	   	    	boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-       	    	if(!adminIsactive) {
-       	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-       	    	}
-	   	     }else {
-	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
-	   	     }
+	   	   String institution=jwtUtil.getInstitutionFromToken(token);
       	     if("ADMIN".equals(role)||"TRAINER".equals(role)){
            Optional<MuserRequiredDto> opuser = muserrepositories.findByuserIdandInstitutionName(userId, institution);
          if(opuser.isPresent()) {
@@ -336,29 +260,10 @@ public class Listview {
 //``````````````````````````Approvals`````````````````````````````````
     public ResponseEntity<Page<MuserDto>>getallApprovals( String token ,int pageNumber,int pageSize){
     	 try {
-    	    	if (!jwtUtil.validateToken(token)) {
-    		         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    		     }
-
     		     String role = jwtUtil.getRoleFromToken(token);
-    	   	     String email=jwtUtil.getUsernameFromToken(token);
-    	   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
-    	   	     String institution="";
-    	   	     if(opreq.isPresent()) {
-    	   	    	 Muser requser=opreq.get();
-    	   	    	institution=requser.getInstitutionName();
-    	   	    	boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-    	   	    	if(!adminIsactive) {
-    	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    	   	    	}
-    	   	     }else {
-    	   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
-    	   	     }
     		     if("ADMIN".equals(role)){
     		    	 Pageable pageable = PageRequest.of(pageNumber, pageSize);
     		    		 Page<MuserDto> users = approvalpage.findAllUsers(pageable);
-    	       
-    	       
     	        return ResponseEntity.ok(users);
     	        
     		     }else {
@@ -374,30 +279,12 @@ public class Listview {
 public ResponseEntity<Page<MuserDto>> getTrainerByRoleName( String token ,int pageNumber,int pageSize) {
 	
     try {
-    	if (!jwtUtil.validateToken(token)) {
-	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	     }
-
 	     String role = jwtUtil.getRoleFromToken(token);
 	     String roleu="TRAINER";
-   	     String email=jwtUtil.getUsernameFromToken(token);
-   	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
-   	     String institution="";
-   	     if(opreq.isPresent()) {
-   	    	 Muser requser=opreq.get();
-   	    	institution=requser.getInstitutionName();
-   	    	boolean adminIsactive=muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-   	    	if(!adminIsactive) {
-   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-   	    	}
-   	     }else {
-   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); 
-   	     }
+   	     String institution=jwtUtil.getInstitutionFromToken(token);
 	     if("ADMIN".equals(role)){
 	    	 Pageable pageable = PageRequest.of(pageNumber, pageSize);
 	    		 Page<MuserDto> users = muserPageRepo.findByRoleNameAndInstitutionName(roleu, institution,pageable);
-       
-       
         return ResponseEntity.ok(users);
         
 	     }else {
@@ -412,27 +299,9 @@ public ResponseEntity<Page<MuserDto>> getTrainerByRoleName( String token ,int pa
 
 public ResponseEntity<Page<MuserDto>> getStudentByRoleName(String token, int pageNumber, int pageSize) {
     try {
-        if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
         String role = jwtUtil.getRoleFromToken(token);
         String roleu = "STUDENT";
-        String email = jwtUtil.getUsernameFromToken(token);
-
-        Optional<Muser> opreq = muserrepositories.findByEmail(email);
-        String institution = "";
-        if (opreq.isPresent()) {
-            Muser requser = opreq.get();
-            institution = requser.getInstitutionName();
-            boolean adminIsactive = muserrepositories.getactiveResultByInstitutionName("ADMIN", institution);
-            if (!adminIsactive) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
+       String institution=jwtUtil.getInstitutionFromToken(token);
         if ("ADMIN".equals(role)) {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<MuserDto> users = muserPageRepo.findByRoleNameAndInstitutionName(roleu, institution, pageable);
@@ -449,10 +318,7 @@ public ResponseEntity<Page<MuserDto>> getStudentByRoleName(String token, int pag
 
 public ResponseEntity< List<?>> SearchEmail(String token,String Query){
 	try {
-		if (!jwtUtil.validateToken(token)) {
-	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
-	     }
-		 String email=jwtUtil.getUsernameFromToken(token);
+		 String email=jwtUtil.getEmailFromToken(token);
    	     String institutionname =muserrepositories.findinstitutionByEmail(email);
    	     
    	  if (institutionname != null && !institutionname.isEmpty()) {
@@ -474,10 +340,7 @@ public ResponseEntity< List<?>> SearchEmail(String token,String Query){
 
 public ResponseEntity< List<String>> SearchEmailTrainer(String token,String query){
 	try {
-		if (!jwtUtil.validateToken(token)) {
-	         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ArrayList<>());
-	     }
-		 String email=jwtUtil.getUsernameFromToken(token);
+		 String email=jwtUtil.getEmailFromToken(token);
    	     Optional<Muser>opreq=muserrepositories.findByEmail(email);
    	     
    	     if(opreq.isPresent()) {
@@ -505,9 +368,6 @@ public ResponseEntity<Page<MuserDto>> searchUser( String username, String email,
        String skills, int page, int size,String token
         ) {
 	try{
-		if (!jwtUtil.validateToken(token)) {
-			  return ResponseEntity.ok(Page.empty());
-	    }
 		 String role=jwtUtil.getRoleFromToken(token);
 		 if(role.equals("SYSADMIN")) {
 	    Pageable pageable = PageRequest.of(page, size);
@@ -529,9 +389,6 @@ public ResponseEntity<Page<MuserDto>> searchTrainer( String username, String ema
        String skills, int page, int size,String token
         ) {
 	try{
-		if (!jwtUtil.validateToken(token)) {
-			  return ResponseEntity.ok(Page.empty());
-	    }
 		 String role=jwtUtil.getRoleFromToken(token);
 		 if(role.equals("SYSADMIN")) {
 	    Pageable pageable = PageRequest.of(page, size);
@@ -552,9 +409,6 @@ public ResponseEntity<Page<MuserDto>> searchAdmin( String username, String email
        String skills, int page, int size,String token
         ) {
 try{
-	if (!jwtUtil.validateToken(token)) {
-		  return ResponseEntity.ok(Page.empty());
-    }
 	 String role=jwtUtil.getRoleFromToken(token);
 	 if(role.equals("SYSADMIN")) {
     Pageable pageable = PageRequest.of(page, size);
@@ -579,10 +433,7 @@ public ResponseEntity<Page<MuserDto>> searchApprovalByAdmin( String username, St
 	       String skills, String roleName,int page, int size,String token
 	        ) {
 		try{
-			if (!jwtUtil.validateToken(token)) {
-				  return ResponseEntity.ok(Page.empty());
-		    }
-			 String adminemail=jwtUtil.getUsernameFromToken(token);
+			 String adminemail=jwtUtil.getEmailFromToken(token);
 			 Optional<Muser>opmuser=muserrepositories.findByEmail(adminemail);
 			 if(opmuser.isPresent()) {
 				 Muser user= opmuser.get();
@@ -607,10 +458,7 @@ public ResponseEntity<Page<MuserDto>> searchApprovalByAdmin( String username, St
 	}
 public ResponseEntity<?>RejectUser(Long id,String token){
 	try{
-		if (!jwtUtil.validateToken(token)) {
-			  return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    }
-		 String adminemail=jwtUtil.getUsernameFromToken(token);
+		 String adminemail=jwtUtil.getEmailFromToken(token);
 		 Optional<Muser>opmuser=muserrepositories.findByEmail(adminemail);
 		 if(opmuser.isPresent()) {
 			 Muser user= opmuser.get();
@@ -640,10 +488,7 @@ public ResponseEntity<?>RejectUser(Long id,String token){
 }
 public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String token){
 	try{
-		if (!jwtUtil.validateToken(token)) {
-			  return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    }
-		 String adminemail=jwtUtil.getUsernameFromToken(token);
+		 String adminemail=jwtUtil.getEmailFromToken(token);
 		 Optional<Muser>opmuser=muserrepositories.findByEmail(adminemail);
 		 if(opmuser.isPresent()) {
 			 Muser user= opmuser.get();
@@ -660,13 +505,14 @@ public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String to
 				muser.setDob(approval.getDob());
 				muser.setInstitutionName(approval.getInstitutionName());
 				muser.setProfile(approval.getProfile());
-				muser.setPsw(approval.getPsw());
+				muser.setPassword(approval.getPsw(),passwordEncoder);
 				muser.setRole(approval.getRole());
 				muser.setIsActive(true);
 				muser.setInactiveDescription("");
 				muser.setSkills(approval.getSkills());
 				muser.setCountryCode(approval.getCountryCode());
-				muserrepositories.save(muser);
+				Muser usersaved =muserrepositories.save(muser);
+				BatchenrollService.AssignDefaultBatchesPub( request,usersaved);
 				List<String> bcc = null;
 				List<String> cc = null;
 				String institutionname = approval.getInstitutionName();
@@ -685,28 +531,22 @@ public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String to
 				String body = String.format(
 				    "<html>"
 				        + "<body>"
-				        + "<h2>Welcome to LearnHub Trainer Portal!</h2>"
+				        + "<h2>Welcome to LearnHub  Portal!</h2>"
 				        + "<p>Dear %s,</p>"
-				        + "<p>We are thrilled to have you as a trainer at LearnHub. Your expertise will help shape the learning journey of many students.</p>"
+				        + "<p>We are thrilled to have you as a %s at LearnHub.</p>"
 				        + "<p>Here are your login credentials:</p>"
 				        + "<ul>"
 				        + "<li><strong>Username (Email):</strong> %s</li>"
 				        + "<li><strong>Password:</strong> %s</li>"
 				        + "</ul>"
-				        + "<p>As a trainer, you can:</p>"
-				        + "<ul>"
-				        + "<li>Create and manage courses.</li>"
-				        + "<li>Interact with students and address their queries.</li>"
-				        + "<li>Track student progress and provide valuable feedback.</li>"
-				        + "</ul>"
 				        + "<p>If you need any assistance, our support team is here to help.</p>"
-				        + "<p>We look forward to your contribution in making learning more impactful!</p>"
 	                  + "<p>Click the link below to sign in:</p>"
 	                  + "<p><a href='" + signInLink + "' style='font-size:16px; color:blue;'>Sign In</a></p>"
 				        + "<p>Best Regards,<br>LearnHub Team</p>"
 				        + "</body>"
 				        + "</html>",
 				        approval.getUsername(), // Trainer Name
+				        approval.getRole().getRoleName(),
 				    approval.getEmail(), // Trainer Username (email)
 				    approval.getPsw() // Trainer Password
 				);
@@ -720,7 +560,7 @@ public ResponseEntity<?>ApproveUser(HttpServletRequest request,Long id,String to
 				            emailList,
 				            cc, 
 				            bcc, 
-				            "Welcome to LearnHub - Trainer Access Granted!", 
+				            "Welcome to LearnHub -  Access Granted!", 
 				            body
 				        );
 				    } catch (Exception e) {
@@ -751,10 +591,7 @@ public ResponseEntity<Page<MuserDto>> searchTrainerByAdmin( String username, Str
 	       String skills, int page, int size,String token
 	        ) {
 		try{
-			if (!jwtUtil.validateToken(token)) {
-				  return ResponseEntity.ok(Page.empty());
-		    }
-			 String adminemail=jwtUtil.getUsernameFromToken(token);
+			 String adminemail=jwtUtil.getEmailFromToken(token);
 			 Optional<Muser>opmuser=muserrepositories.findByEmail(adminemail);
 			 if(opmuser.isPresent()) {
 				 Muser user= opmuser.get();
@@ -785,13 +622,7 @@ public ResponseEntity<Page<MuserDto>> searchDynamicUserByAdmin(
         String skills, String roleName, int page, int size, String token) {
 
     try {
-        // Validate the token
-        if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.ok(Page.empty());
-        }
-
-        // Get the admin email from the token
-        String adminEmail = jwtUtil.getUsernameFromToken(token);
+        String adminEmail = jwtUtil.getEmailFromToken(token);
         Optional<Muser> opmuser = muserrepositories.findByEmail(adminEmail);
 
         if (opmuser.isPresent()) {
@@ -827,10 +658,7 @@ public ResponseEntity<Page<MuserDto>> searchUserByAdminorTrainer( String usernam
 	       String skills, int page, int size,String token
 	        ) {
 		try{
-			if (!jwtUtil.validateToken(token)) {
-				  return ResponseEntity.ok(Page.empty());
-		    }
-			 String adminemail=jwtUtil.getUsernameFromToken(token);
+			 String adminemail=jwtUtil.getEmailFromToken(token);
 			 Optional<Muser>opmuser=muserrepositories.findByEmail(adminemail);
 			 if(opmuser.isPresent()) {
 				 Muser user= opmuser.get();
@@ -861,10 +689,7 @@ public ResponseEntity<Page<MuserDto>> searchStudentsOfTrainer( String username, 
 	       String skills, int page, int size,String token
 	        ) {
 		try{
-			if (!jwtUtil.validateToken(token)) {
-				  return ResponseEntity.ok(Page.empty());
-		    }
-			 String traineremail=jwtUtil.getUsernameFromToken(token);
+			 String traineremail=jwtUtil.getEmailFromToken(token);
 			 Optional<Muser>opmuser=muserrepositories.findByEmail(traineremail);
 			 if(opmuser.isPresent()) {
 				 Muser user= opmuser.get();
@@ -892,11 +717,6 @@ public ResponseEntity<Page<MuserDto>> searchStudentsOfTrainer( String username, 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 public List<SearchDto> getBatchesOfUser(String token, String email) {
     try {
-        // Validate token
-        if (!jwtUtil.validateToken(token)) {
-            return Collections.emptyList(); // Return an empty list if token is invalid
-        }
-
         // Fetch batches for the user
         return muserrepositories.getBatchOfUser(email);
         
@@ -905,6 +725,25 @@ public List<SearchDto> getBatchesOfUser(String token, String email) {
         return Collections.emptyList(); // Return an empty list in case of an error
     }
 }
+
+
+public ResponseEntity<?> getRoleList(String token) {
+    try {
+        String role = jwtUtil.getRoleFromToken(token);
+        if ("ADMIN".equals(role) || "TRAINER".equals(role)) {
+           List<Map<String,Object>> roles= roleRepo.fetchAllRoles();
+           
+           return ResponseEntity.ok(roles);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        logger.error("Error fetching users by role", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+    }
+}
+
 
 
 }

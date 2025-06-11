@@ -24,7 +24,7 @@ public class MuserRoles {
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long roleId;
 	    private String roleName;
-	    private Boolean isActive;
+	    private Boolean isActive = true;
 	    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
 	    @JsonIgnore
 	    private List<Muser> users;

@@ -61,6 +61,7 @@ const EditCourse = ({ filteredCourses }) => {
       }
     });
   };
+  
   return (
     <>
       <div className="page-header"></div>
@@ -154,24 +155,6 @@ const EditCourse = ({ filteredCourses }) => {
                     <p  className="courseDescription">
                     {item.courseDescription}
                     </p>
-                    <div className="card-text">
-                      {item.amount === 0 ? (
-                        <a
-                        href="#"
-                        onClick={(e)=>{e.preventDefault();  navigate(item.courseUrl)}}
-                          className=" btn btn-sm btn-outline-success w-100"
-                        >
-                          <label>
-                          Free
-                          </label>
-                        </a>
-                      ) : (
-                        <a className="btn btn-sm  btn-outline-primary w-100">
-                       <i className={Currency === "INR" ? "fa-solid fa-indian-rupee-sign mr-1 " : "fa-solid fa-dollar-sign mr-1"}></i>
-                          <label>{item.amount}</label>
-                        </a>
-                      )}
-                    </div>
                   </div>
                 </div>
               </div>

@@ -8,14 +8,22 @@ import axios from "axios";
 import PhoneInput, { parsePhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const RoleRegistration = () => {
   const MySwal = withReactContent(Swal);
-  const { role } = useParams(); // Get role from URL
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const roleName = queryParams.get('rolename');
+  const roleId = queryParams.get('roleid');
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpError, setOtpError] = useState("");
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   
   const [formData, setFormData] = useState({
     username: "",
@@ -27,8 +35,7 @@ const RoleRegistration = () => {
     skills: "",
     profile: null,
     countryCode: "",
-    isActive: true,
-    role: role ? role.toUpperCase() : "TRAINER", // Dynamic role from URL or default
+    isActive: true
   });
 
   const [errors, setErrors] = useState({
@@ -53,11 +60,7 @@ const RoleRegistration = () => {
   const [defaultCountry, setDefaultCountry] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
-  // Dynamic heading based on role
-  const getRoleTitle = () => {
-    if (!role) return "Trainer Registration";
-    return `${role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()} Registration`;
-  };
+ 
 
   const fetchUserCountryCode = async () => {
     try {
@@ -205,8 +208,83 @@ const RoleRegistration = () => {
       });
   };
 
+  const handleSendOTP = async () => {
+    if (!formData.email || errors.email) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        email: !formData.email ? "Email is required" : errors.email,
+      }));
+      return;
+    }
+
+    setIsSendingOtp(true);
+    try {
+      const response = await axios.post(`${baseUrl}/auth/send-otp`, null, {
+        params: {
+          email: formData.email
+        }
+      });
+
+      if (response.status === 200) {
+        setOtpSent(true);
+        setOtpError("");
+        MySwal.fire({
+          icon: "success",
+          title: "OTP Sent!",
+          text: "Please check your email for the OTP.",
+        });
+      }
+    } catch (error) {
+      if (error.response?.data === "EMAIL") {
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email: "Email already exists",
+        }));
+      } else {
+        setOtpError("Failed to send OTP. Please try again.");
+      }
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!otp) {
+      setOtpError("Please enter the OTP");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${baseUrl}/auth/verify-otp`, null, {
+        params: {
+          email: formData.email,
+          otp: otp
+        }
+      });
+
+      if (response.status === 200) {
+        setOtpVerified(true);
+        setOtpError("");
+        MySwal.fire({
+          icon: "success",
+          title: "OTP Verified",
+          text: "You can now proceed with registration",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
+    } catch (error) {
+      setOtpError(error.response?.data || "Invalid OTP. Please try again.");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!otpVerified) {
+      setOtpError("Please verify your email with OTP first");
+      return;
+    }
 
     let hasErrors = false;
     const requiredFields = ["email", "psw", "confirm_password", "phone"];
@@ -231,48 +309,43 @@ const RoleRegistration = () => {
     formDataToSend.append("psw", formData.psw);
     formDataToSend.append("email", formData.email);
     formDataToSend.append("dob", formData.dob);
-    formDataToSend.append("role", formData.role);
+    formDataToSend.append("roleId", roleId);
     formDataToSend.append("phone", formData.phone);
     formDataToSend.append("isActive", formData.isActive);
     formDataToSend.append("profile", formData.profile);
     formDataToSend.append("skills", formData.skills);
     formDataToSend.append("countryCode", formData.countryCode);
+    formDataToSend.append("otp", otp);
 
     try {
       const response = await axios.post(
-        `${baseUrl}/register`, // Changed to generic endpoint
+        `${baseUrl}/register`,
         formDataToSend
       );
 
       if (response.status === 200) {
         MySwal.fire({
-          title: "Success!",
-          text: "Your request has been sent to the administrator. You can log in after approval!",
           icon: "success",
-          confirmButtonText: "OK",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            navigate("/");
-          } else {
-            resetForm();
-          }
+          title: "Registration Successful",
+          text: "You have been registered successfully",
+          showConfirmButton: false,
+          timer: 2000,
+        }).then(() => {
+          navigate("/login");
         });
       }
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        const data = error.response.data;
-        if (data === "EMAIL") {
-          setErrors(prevErrors => ({ ...prevErrors, email: "This email is already registered." }));
-        } else {
-          MySwal.fire({
-            title: "Error!",
-            text: data,
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        }
+      if (error.response?.data === "EMAIL") {
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email: "Email already exists",
+        }));
       } else {
-        throw error;
+        MySwal.fire({
+          icon: "error",
+          title: "Registration Failed",
+          text: error.response?.data || "An error occurred during registration",
+        });
       }
     }
   };
@@ -287,233 +360,300 @@ const RoleRegistration = () => {
       phone: "",
       skills: "",
       profile: null,
-      isActive: true,
       countryCode: "",
-      base64Image: null,
+      isActive: true
     });
+    setErrors({
+      username: "",
+      email: "",
+      dob: "",
+      psw: "",
+      skills: "",
+      confirm_password: "",
+      phone: "",
+      fileInput: "",
+      profile: "",
+    });
+    setOtp("");
+    setOtpSent(false);
+    setOtpVerified(false);
+    setOtpError("");
     setPhoneNumber("");
     fetchUserCountryCode();
   };
 
   const scrollToError = () => {
-    const errorField = Object.entries(errors).find(([_, value]) => value);
-    if (!errorField) return;
+    const errorField = Object.keys(errors).find(key => errors[key]);
+    if (errorField) {
+      const ref = {
+        username: nameRef,
+        email: emailRef,
+        dob: dobRef,
+        psw: pswRef,
+        confirm_password: confirmPswRef,
+        skills: skillsRef,
+        phone: phoneRef,
+      }[errorField];
 
-    const [fieldName] = errorField;
-    const refMap = {
-      username: nameRef,
-      email: emailRef,
-      dob: dobRef,
-      psw: pswRef,
-      confirm_password: confirmPswRef,
-      skills: skillsRef,
-      phone: phoneRef,
-    };
-
-    if (refMap[fieldName]?.current) {
-      refMap[fieldName].current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "start",
-      });
+      if (ref && ref.current) {
+        ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   };
-
-  useEffect(() => {
-    scrollToError();
-  }, [errors]);
 
   return (
     <div style={{ backgroundColor: "transparent", padding: "15px" }}>
       <div className="card">
         <div className="card-body">
-          <div className="innerFrame">
-            <h4>{getRoleTitle()}</h4>
-            <div className="mainform">
-              <div className="profile-picture">
-                <div className="image-group">
-                  {formData.base64Image ? (
-                    <img src={formData.base64Image} alt="Selected" />
-                  ) : (
-                    <img src={profile} alt="Default Profile" />
-                  )}
-                </div>
-                <div style={{ textAlign: "center" }}>
-                  <label htmlFor="fileInput" className="file-upload-btn">
-                    Upload
-                  </label>
-                  <div className="text-danger">{errors.profile}</div>
-                  <input
-                    type="file"
-                    id="fileInput"
-                    style={{ display: "none" }}
-                    className={`file-upload ${errors.fileInput && "is-invalid"}`}
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </div>
+          <div className="row">
+            <div className="col-12">
+              <div className='navigateheaders'>
+                <div onClick={()=>{navigate(-1)}}><i className="fa-solid fa-arrow-left"></i></div>
+                <div></div>
+                <div onClick={()=>{navigate(-1)}}><i className="fa-solid fa-xmark"></i></div>
               </div>
-              <div>
-                <div className="form-group row" ref={nameRef}>
-                  <label className="col-sm-3 col-form-label">Name</label>
-                  <div className="col-sm-9">
-                    <input
-                      type="text"
-                      value={formData.username}
-                      onChange={handleChange}
-                      name="username"
-                      className={`form-control mt-1 ${errors.username && "is-invalid"}`}
-                      placeholder="Full Name"
-                      autoFocus
-                      required
-                    />
-                    <div className="invalid-feedback">{errors.username}</div>
-                  </div>
-                </div>
-
-                <div className="form-group row" ref={emailRef}>
-                  <label className="col-sm-3 col-form-label">
-                    Email<span className="text-danger">*</span>
-                  </label>
-                  <div className="col-sm-9">
-                    <input
-                      type="email"
-                      autoComplete="off"
-                      className={`form-control ${errors.email && "is-invalid"}`}
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="Email Address"
-                      required
-                    />
-                    <div className="invalid-feedback">{errors.email}</div>
-                  </div>
-                </div>
-
-                <div className="form-group row" ref={pswRef}>
-                  <label className="col-sm-3 col-form-label">
-                    Password<span className="text-danger">*</span>
-                  </label>
-                  <div className="col-sm-9">
-                    <div className={`inputpsw form-control p-1 ${errors.psw && "is-invalid"}`}>
+              <div className="innerFrame">
+                <h4>Join with us</h4>
+                <div className="mainform">
+                  <div className="profile-picture">
+                    <div className="image-group">
+                      {formData.base64Image ? (
+                        <img src={formData.base64Image} alt="Selected Image" />
+                      ) : (
+                        <img src={profile} alt="Default Profile Picture" />
+                      )}
+                    </div>
+                    <div style={{textAlign:'center'}}>
+                      <label htmlFor="fileInput" className="file-upload-btn">
+                        Upload
+                      </label>
+                      <div className="text-danger">{errors.profile}</div>
                       <input
-                        type={showPassword ? "text" : "password"}
-                        name="psw"
-                        style={{ outline: "none" }}
-                        value={formData.psw}
-                        onChange={handleChange}
-                        placeholder="Password"
-                        className="form-control"
-                        autoComplete="new-password"
-                        required
-                      />
-                      <i
-                        className={showPassword ? "fa fa-eye-slash" : "fa fa-eye"}
-                        style={{ display: "flex", alignItems: "center" }}
-                        onClick={togglePasswordVisibility}
+                        type="file"
+                        name="fileInput"
+                        id="fileInput"
+                        style={{ display: "none" }}
+                        className={`file-upload ${errors.fileInput && "is-invalid"}`}
+                        accept="image/*"
+                        onChange={handleFileChange}
                       />
                     </div>
-                    <div className="invalid-feedback">{errors.psw}</div>
                   </div>
-                </div>
 
-                <div className="form-group row" ref={confirmPswRef}>
-                  <label className="col-sm-3 col-form-label">
-                    Re-type password<span className="text-danger">*</span>
-                  </label>
-                  <div className="col-sm-9">
-                    <div className={`inputpsw form-control p-1 ${errors.confirm_password && "is-invalid"}`}>
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        name="confirm_password"
-                        value={formData.confirm_password}
-                        style={{ outline: "none" }}
-                        className="form-control"
-                        onChange={handleChange}
-                        autoComplete="new-password"
-                        placeholder="Repeat Password"
-                        required
-                      />
-                      <i
-                        className={showConfirmPassword ? "fa fa-eye-slash" : "fa fa-eye"}
-                        style={{ display: "flex", alignItems: "center" }}
-                        onClick={toggleConfirmPasswordVisibility}
-                      />
+                  <div>
+                    <div className="form-group row">
+                      <label htmlFor="Name" className="col-sm-3 col-form-label" ref={nameRef}>
+                        Name
+                      </label>
+                      <div className="col-sm-9">
+                        <input
+                          type="text"
+                          id="Name"
+                          value={formData.username}
+                          onChange={handleChange}
+                          name="username"
+                          className={`form-control mt-1 ${errors.username && "is-invalid"}`}
+                          placeholder="Full Name"
+                          autoFocus
+                          required
+                        />
+                        <div className="invalid-feedback">{errors.username}</div>
+                      </div>
                     </div>
-                    <div className="invalid-feedback">{errors.confirm_password}</div>
-                  </div>
-                </div>
 
-                <div className="form-group row" ref={phoneRef}>
-                  <label className="col-sm-3 col-form-label">
-                    Phone<span className="text-danger">*</span>
-                  </label>
-                  <div className="col-sm-9">
-                    <div className="inputlikeeffect">
-                      <PhoneInput
-                        placeholder="Enter phone number"
-                        value={phoneNumber || ""}
-                        onChange={handlePhoneChange}
-                        className={`form-control ${errors.phone && "is-invalid"}`}
-                        defaultCountry={defaultCountry}
-                        international
-                        countryCallingCodeEditable={true}
-                        onCountryChange={fetchCountryDialingCode}
-                      />
-                      <div className="invalid-feedback">{errors.phone}</div>
+                    <div className="form-group row" ref={emailRef}>
+                      <label htmlFor="email" className="col-sm-3 col-form-label">
+                        Email<span className="text-danger">*</span>
+                      </label>
+                      <div className="col-sm-9">
+                        <div className="d-flex">
+                          <input
+                            type="email"
+                            autoComplete="off"
+                            className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Email Address"
+                            required
+                            disabled={otpVerified}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-primary ms-2 col-sm-2"
+                            onClick={handleSendOTP}
+                            disabled={!formData.email || errors.email || otpVerified || isSendingOtp}
+                          >
+                            {isSendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
+                          </button>
+                        </div>
+                        {errors.email && <div className="text-danger mt-1">{errors.email}</div>}
+                      </div>
+                    </div>
+
+                    {otpSent && !otpVerified && (
+                      <div className="form-group row">
+                        <label htmlFor="otp" className="col-sm-3 col-form-label">
+                          OTP<span className="text-danger">*</span>
+                        </label>
+                        <div className="col-sm-9">
+                          <div className="d-flex">
+                            <input
+                              type="text"
+                              className={`form-control ${errors.otp ? "is-invalid" : ""}`}
+                              name="otp"
+                              value={otp}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                setOtp(value);
+                                if (errors.otp) {
+                                  setErrors(prev => ({ ...prev, otp: "" }));
+                                }
+                              }}
+                              placeholder="Enter 6-digit OTP"
+                              maxLength="6"
+                              required
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-primary ms-2 col-sm-2"
+                              onClick={handleVerifyOTP}
+                              disabled={otp.length !== 6}
+                            >
+                              Verify OTP
+                            </button>
+                          </div>
+                          {errors.otp && <div className="text-danger mt-1">{errors.otp}</div>}
+                          {otpSent && !errors.otp && (
+                            <small className="text-muted">
+                              Please enter the 6-digit OTP sent to your email
+                            </small>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="form-group row">
+                      <label htmlFor="Password" className="col-sm-3 col-form-label">
+                        Password<span className="text-danger" ref={pswRef}>*</span>
+                      </label>
+                      <div className="col-sm-9">
+                        <div className={`inputpsw form-control p-1 ${errors.psw && "is-invalid"}`}>
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            name="psw"
+                            className="form-control"
+                            style={{outline:"none"}}
+                            value={formData.psw}
+                            onChange={handleChange}
+                            placeholder="Password"
+                            id="pswinp"
+                            autoComplete="new-password"
+                            required
+                          />
+                          <i 
+                            className={showPassword ? "fa fa-eye-slash" : "fa fa-eye"} 
+                            style={{display:"flex",alignItems:"center"}} 
+                            onClick={togglePasswordVisibility}
+                          ></i>
+                        </div>
+                        <div className="invalid-feedback">{errors.psw}</div>
+                      </div>
+                    </div>
+
+                    <div className="form-group row">
+                      <label htmlFor="confirm_password" className="col-sm-3 col-form-label">
+                        Re-type password<span className="text-danger" ref={confirmPswRef}>*</span>
+                      </label>
+                      <div className="col-sm-9">
+                        <div className={`inputpsw form-control p-1 ${errors.confirm_password && "is-invalid"}`}>
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            name="confirm_password"
+                            className="form-control"
+                            value={formData.confirm_password}
+                            style={{outline:"none"}}
+                            id="pswinp"
+                            onChange={handleChange}
+                            autoComplete="new-password"
+                            placeholder="Repeat Password"
+                            required
+                          />
+                          <i
+                            className={showConfirmPassword ? "fa fa-eye-slash" : "fa fa-eye"}
+                            style={{display:"flex",alignItems:"center"}}
+                            onClick={toggleConfirmPasswordVisibility}
+                          ></i>
+                        </div>
+                        <div className="invalid-feedback">{errors.confirm_password}</div>
+                      </div>
+                    </div>
+
+                    <div className="form-group row" ref={phoneRef}>
+                      <label htmlFor="Phone" className="col-sm-3 col-form-label">
+                        Phone<span className="text-danger">*</span>
+                      </label>
+                      <div className="col-sm-9">
+                        <div className="inputlikeeffect">
+                          <PhoneInput
+                            placeholder="Enter phone number"
+                            id="phone"
+                            value={phoneNumber || ''}
+                            onChange={handlePhoneChange}
+                            className={`form-control ${errors.phone && "is-invalid"}`}
+                            defaultCountry={defaultCountry}
+                            international
+                            countryCallingCodeEditable={true}
+                            onCountryChange={fetchCountryDialingCode}
+                          />
+                          <div className="invalid-feedback">{errors.phone}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="form-group row" ref={dobRef}>
+                      <label htmlFor="dob" className="col-sm-3 col-form-label">
+                        Date of Birth
+                      </label>
+                      <div className="col-sm-9">
+                        <input
+                          type="date"
+                          name="dob"
+                          className={`form-control ${errors.dob && "is-invalid"}`}
+                          placeholder="Starting year"
+                          value={formData.dob}
+                          onChange={handleChange}
+                          required
+                        />
+                        <div className="invalid-feedback">{errors.dob}</div>
+                      </div>
+                    </div>
+
+                    <div className="form-group row" ref={skillsRef}>
+                      <label htmlFor="skills" className="col-sm-3 col-form-label">
+                        Skills
+                      </label>
+                      <div className="col-sm-9">
+                        <input
+                          type="text"
+                          id="skills"
+                          value={formData.skills}
+                          onChange={handleChange}
+                          name="skills"
+                          className={`form-control ${errors.skills && "is-invalid"}`}
+                          placeholder="skills"
+                          required
+                        />
+                        <div className="invalid-feedback">{errors.skills}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="form-group row" ref={dobRef}>
-                  <label className="col-sm-3 col-form-label">Date of Birth</label>
-                  <div className="col-sm-9">
-                    <input
-                      type="date"
-                      name="dob"
-                      className={`form-control ${errors.dob && "is-invalid"}`}
-                      value={formData.dob}
-                      onChange={handleChange}
-                      required
-                    />
-                    <div className="invalid-feedback">{errors.dob}</div>
-                  </div>
+                <div className="btngrp">
+                  <button className="btn btn-primary" onClick={handleSubmit}>
+                    Add
+                  </button>
                 </div>
-
-                <div className="form-group row" ref={skillsRef}>
-                  <label className="col-sm-3 col-form-label">Skills</label>
-                  <div className="col-sm-9">
-                    <input
-                      type="text"
-                      value={formData.skills}
-                      onChange={handleChange}
-                      name="skills"
-                      className={`form-control mt-1 ${errors.skills && "is-invalid"}`}
-                      placeholder="Skills"
-                      required
-                    />
-                    <div className="invalid-feedback">{errors.skills}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="btngrp" style={{ display: "inline" }}>
-              <div className="cornerbtn">
-                <button
-                  className="btn btn-secondary"
-                  type="button"
-                  onClick={() => navigate(-1)}
-                >
-                  Cancel
-                </button>
-                <button className="btn btn-primary" onClick={handleSubmit}>
-                  Register
-                </button>
-              </div>
-              <div className="w-100 alignright">
-                <a className="small" href="#" onClick={(e) => { e.preventDefault(); navigate("/login"); }}>
-                  Already have an account? Login!
-                </a>
               </div>
             </div>
           </div>

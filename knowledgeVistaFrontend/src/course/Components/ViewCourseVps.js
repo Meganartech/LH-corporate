@@ -8,8 +8,7 @@ import Header from "../../Common Components/Header";
 import pcoded from "../../assets/js/pcoded.js"
 import Sidebar from "../../Common Components/Sidebar.js";
 import { useNavigate } from "react-router-dom";
-import SelectPaymentGateway from "../Payments/SelectPaymentGateway.js";
-const ViewCourseVps = (filter,handleFilterChange) => {
+const ViewCourseVps = () => {
   useEffect(() => {
       pcoded();  
       },[]);
@@ -63,145 +62,9 @@ const ViewCourseVps = (filter,handleFilterChange) => {
 
   const userId = sessionStorage.getItem("userid");
   const token = sessionStorage.getItem("token");
-
-  useEffect(() => {
-    const pendingPayment = JSON.parse(sessionStorage.getItem("pendingPayment"));
-  
-    if (pendingPayment) {
-      const { courseId, paytype } = pendingPayment;
-  
-      // Clear pending payment data from localStorage
-      sessionStorage.removeItem("pendingPayment");
-      const userId = sessionStorage.getItem("userid");
-      // Resume the payment process
-      handlepaytype(courseId, userId, paytype);
-    }
-  }, []);  // Empty dependency array ensures this only runs once when the component mounts
-  
- 
-  const handlepaytype =(courseId, userId,paytype)=>{
-   
-    if (!token) {
-      // Save payment data to localStorage or sessionStorage
-      sessionStorage.setItem("pendingPayment", JSON.stringify({ courseId,  paytype }));
-     
-      navigate("/login");
-      return;
-    }
-    let url = "";
-    if (paytype === "FULL") {
-      url = "/Full/getOrderSummary";
-      FetchOrderSummary(courseId, userId, url);
-    } else {
-      MySwal.fire({
-        icon: "question",
-        title: "Payment Type?",
-        text: "Want To Pay the Amount Partially or Fully? ",
-        showDenyButton: true,
-        showCancelButton: true,
-        confirmButtonColor: "#4e73df",
-        denyButtonColor: "#4e73df",
-        confirmButtonText: `Pay Fully `,
-        denyButtonText: `Pay in  Part`,
-      }).then((result) => {
-        if (result.isConfirmed) {
-          url = "/Full/getOrderSummary";
-          FetchOrderSummary(courseId, userId, url);
-        } else if (result.isDenied) {
-          url = "/Part/getOrderSummary";
-
-          FetchOrderSummary(courseId, userId, url);
-        }
-      });
-    }
-  };
-  const FetchOrderSummary=async(courseId, userId, url) =>{
-    try {
-          setsubmitting(true);
-          const data = JSON.stringify({
-            courseId: courseId,
-            userId: userId,
-          });
-    
-          const response = await axios.post(`${baseUrl}${url}`, data, {
-            headers: {
-              Authorization: token,
-              "Content-Type": "application/json",
-            },
-          });
-          setsubmitting(false);
-
-setorderData(response.data)
-        }catch(error){
-          setsubmitting(false);
-              if(error.response && error.response.status===400){
-              MySwal.fire({
-                icon: "error",
-                title: "Error creating order:",
-                text: error.response.data ? error.response.data : "error occured",
-              });
-            }else{
-              throw error
-            }
-        }
-  }
- 
-  
- 
-
-const handleClick = async (event, id,amount,url,paytype) => {
-  if (!token) {
-    // Save payment data to localStorage or sessionStorage
-    sessionStorage.setItem("pendingPayment", JSON.stringify({ id,  paytype }));
-   
-    navigate("/login");
-    return;
-  }
-  event.preventDefault();
-if(amount===0){
-navigate(url);
-}else{
-  try {
-    if(token){
-    const formdata=JSON.stringify({ courseId: id})
-      const response = await axios.post(`${baseUrl}/CheckAccess/match`, formdata,{
-
-          headers: {
-              'Content-Type': 'application/json',
-              "Authorization":token
-          } 
-      });
-    
-      if (response.status===200) {
-          const message = response.data;
-          navigate(message);
-      } 
-    }
-  } catch (error) {
-    if(error.response.status===401){
-      MySwal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: "cannot Access Course "
-    });
-    
-    }else{
-    
-  //   MySwal.fire({
-  //     icon: 'error',
-  //     title: 'Not Found',
-  //     text: error
-  // });
-  throw error
-}
-  }
-}
-};
-
 return (
   <>
-    {islogedin && <Sidebar  filter={filter}
-    handleFilterChange={handleFilterChange}/>}
+    {islogedin && <Sidebar />}
     <Header searchQuery={searchQuery}
         handleSearchChange={handleSearchChange}
         setSearchQuery={setSearchQuery} />
@@ -214,14 +77,12 @@ return (
     
     {filteredCourses && filteredCourses.length > 0 ? (
       <div>
-         {orderData.amount && (
-        <SelectPaymentGateway orderData={orderData} setorderData={setorderData}/>
-      )}
+       
         <h4 style={{color:"white"}}>Courses For You</h4>
-        < div className="course-grid ">
+        < div className="row ">
         { filteredCourses
   .map((item, index) => (
-    <div className="course" key={index}>
+    <div className="course " key={index}>
       <div className="card mb-3">
         <img
           className="img-fluid card-img-top"
@@ -237,15 +98,7 @@ return (
             className="courseName"
             title={item.courseName}
             style={{ cursor: "pointer" }}
-            onClick={(e) =>
-              handleClick(
-                e,
-                item.courseId,
-                item.amount,
-                item.courseUrl,
-                item.paytype
-              )
-            }
+          
           >
             {item.courseName}
           </h5>
@@ -276,14 +129,7 @@ return (
                   ></i>
                   <span>{item.amount}</span>
                 </div>
-                <button
-                  className="btn btn-sm btn-outline-primary"
-                  onClick={() =>
-                    handlepaytype(item.courseId, userId, item.paytype)
-                  }
-                >
-                  Enroll Now
-                </button>
+               
               </div>
             )}
           </div>

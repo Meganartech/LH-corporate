@@ -159,45 +159,11 @@ const ViewAllBatch = () => {
                     <p title={item.course.join(", ")} className="batchlist">
                       <b>Courses &nbsp;:</b> {item.course.join(", ")}
                     </p>
-                    <p title={item.trainer.join(", ")} className="batchlist">
-                      <b>Trainers &nbsp;:</b> {item.trainer.join(", ")}
-                    </p>
+                   
                     <p title={item.duration} className="batchlist">
-                      <b>Duration :</b> {item.duration}
+                      <b>Duration (Hours):</b> {item.durationInHours}
                     </p>
-                    <div>
-                      {item.amount === 0 ? (
-                        <a
-                          title="Enroll For Free"
-                          //onClick={(e)=>{ e.preventDefault();navigate(item.courseUrl)}}
-                          className="btn btn-sm btn-outline-success w-100"
-                        >
-                          Enroll for Free
-                        </a>
-                      ) : (
-                        <div className="amountGrid">
-                          <div className="amt">
-                            <i
-                              className={
-                                Currency === "INR"
-                                  ? "fa-solid fa-indian-rupee-sign pr-1"
-                                  : "fa-solid fa-dollar-sign pr-1"
-                              }
-                            ></i>
-                            <span title={item.amount}>{item.amount}</span>
-                          </div>
-                          <button
-                            className=" btn btn-sm btn-outline-primary"
-                            // onClick={() =>
-                            //   handlepaytype(item.courseId, userId, item.paytype)
-                            // }
-                            title="Enroll Now"
-                          >
-                            Enroll Now
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                 
                   </div>
                 </div>
             ))}

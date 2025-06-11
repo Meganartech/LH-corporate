@@ -42,25 +42,8 @@ public class certificateController {
 		// @RequestParam("certificateTemplate") MultipartFile certificateTemplate
 	    try {
 	    	
-	    	 if (!jwtUtil.validateToken(token)) {return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                    .body("Unauthorized access");
-	            
-	         }
-
 	         String role = jwtUtil.getRoleFromToken(token);
-	         String email=jwtUtil.getUsernameFromToken(token); 
-	         String userinstitution="";
-		     Optional<Muser> opuser =muserRepository.findByEmail(email);
-		     if(opuser.isPresent()) {
-		    	 Muser user=opuser.get();
-		    	 userinstitution=user.getInstitutionName();
-		    	 boolean adminIsactive=muserRepository.getactiveResultByInstitutionName("ADMIN", userinstitution);
-		   	    	if(!adminIsactive) {
-		   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		   	    	}
-		     }else {
-	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		     }
+	         String userinstitution=jwtUtil.getInstitutionFromToken(token);
 	         if("ADMIN".equals(role)) {
 	        	 Optional<certificate> opcertificate=certificaterepo.findByInstitution(userinstitution);
 	         if(opcertificate.isPresent()) {
@@ -100,38 +83,18 @@ public class certificateController {
 			MultipartFile authorizedSign,Long certificateId, String token
 	) {
 	    try {
-	        // Validate the token
-	        if (!jwtUtil.validateToken(token)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                    .body("Invalid token");
-	        }
 
 	        // Get the role from the token
 	        String role = jwtUtil.getRoleFromToken(token);
-	        String email=jwtUtil.getUsernameFromToken(token);
-	      
-	         String institution="";
-		     Optional<Muser> opuser =muserRepository.findByEmail(email);
-		     if(opuser.isPresent()) {
-		    	 Muser user=opuser.get();
-		    	 institution=user.getInstitutionName();
-		    	 boolean adminIsactive=muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-		   	    	if(!adminIsactive) {
-		   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		   	    	}
-		     }else {
-	             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		     }
+	         String institution=jwtUtil.getInstitutionFromToken(token);
 	        // Check if the user is an admin
-	        if (!"Admin".equalsIgnoreCase(role)) {
+	        if (!"ADMIN".equals(role)) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 	                    .body("Unauthorized access");
 	        }
 
 	        // Find the certificate by ID
 	        Optional<certificate> optionalCertificate = certificaterepo.findByIdAndInstitution(certificateId, institution);
-	       System.out.println(certificateId);
-	       System.out.println(institutionName);
 	        if (optionalCertificate.isPresent()) {
 	            certificate certificate = optionalCertificate.get();
                 if(authorizedSign!=null) {
@@ -171,25 +134,7 @@ public class certificateController {
 //````````````````````````````WORING````````````````````````````````````````````````````````)
 	public ResponseEntity<?> viewCoursecertificate(String token) {
 		 try {
-			 if (!jwtUtil.validateToken(token)) {
-		            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-		                    .body("Invalid token");
-		        }
-
-		        jwtUtil.getRoleFromToken(token);
-		        String email=jwtUtil.getUsernameFromToken(token);
-		         String institution="";
-			     Optional<Muser> opuser =muserRepository.findByEmail(email);
-			     if(opuser.isPresent()) {
-			    	 Muser user=opuser.get();
-			    	 institution=user.getInstitutionName();
-			    	 boolean adminIsactive=muserRepository.getactiveResultByInstitutionName("ADMIN", institution);
-			   	    	if(!adminIsactive) {
-			   	    	 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			   	    	}
-			     }else {
-		             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			     }
+		         String institution=jwtUtil.getInstitutionFromToken(token);
 	    Optional<certificate> opcertificate = certificaterepo.findByInstitution(institution);
 	    
 	    if (opcertificate.isPresent()) {
@@ -221,7 +166,7 @@ public class certificateController {
 	public ResponseEntity<?> sendAllCertificate( String token) {
 		 try {
 	
-	    String username = jwtUtil.getUsernameFromToken(token);
+	    String username = jwtUtil.getEmailFromToken(token);
 	    Optional<Muser> opuser = muserRepository.findByEmail(username);
 	    if (opuser.isPresent()) {
 	        Muser user = opuser.get();
@@ -263,7 +208,6 @@ public class certificateController {
 	
 public ResponseEntity<?> getByActivityId( Long activityId, String token) {
 	 try {
-    if (jwtUtil.validateToken(token)) {
         Optional<MuserTestActivity> opActivity = activityrepo.findById(activityId);
         if (opActivity.isPresent()) {
             MuserTestActivity activity = opActivity.get();
@@ -279,10 +223,7 @@ public ResponseEntity<?> getByActivityId( Long activityId, String token) {
 		
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Activity not found");
         }
-    } else {
-        // Invalid token
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-    }
+    
 	 } catch (Exception e) {
 	        // Handle internal server error and return a JSON response
 		 e.printStackTrace();    logger.error("", e);;

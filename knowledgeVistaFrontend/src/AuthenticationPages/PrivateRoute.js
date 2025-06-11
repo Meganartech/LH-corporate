@@ -53,7 +53,7 @@ const PrivateRoute = ({sysadmin, authenticationRequired, authorizationRequired,o
             
     return <Navigate to="/unauthorized" />;
     }   
-    if(sysadmin && (userRole ==="TRAINER" || userRole==="USER"|| userRole==="ADMIN")){
+    if(sysadmin && (userRole !="SYSADMIN")){
       return <Navigate to="/unauthorized" />;
       } 
 

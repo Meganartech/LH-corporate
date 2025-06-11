@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import axios from "axios";
@@ -8,14 +8,13 @@ import { GlobalStateContext } from "../Context/GlobalStateProvider";
 
 const ViewDynamicRole = () => {
   const navigate = useNavigate();
-  const { roleName } = useParams();
   const MySwal = withReactContent(Swal);
   const token = sessionStorage.getItem("token");
   const { displayname } = useContext(GlobalStateContext);
-  
-  // Get display name for the role or fallback to roleName
-  const roleDisplay = displayname?.[`${roleName.toLowerCase()}_name`] || roleName;
-  
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const roleName = queryParams.get('rolename') || 'undefined';
+  const roleId = queryParams.get('roleid') || '0';
   // State variables
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -54,12 +53,11 @@ const ViewDynamicRole = () => {
         });
       } else {
         // Regular list API call
-        response = await axios.get(`${baseUrl}/view/${roleName.charAt(0).toUpperCase() + roleName.slice(1).toLowerCase()}`, {
+        response = await axios.get(`${baseUrl}/view/${roleName}`, {
           headers: { Authorization: token },
           params: { pageNumber: page, pageSize: itemsperpage },
         });
       }
-      //console.log("payload", response.data);
       setUsers(response.data.content);
       setTotalPages(response.data.totalPages);
       setdatacounts({
@@ -72,7 +70,7 @@ const ViewDynamicRole = () => {
         navigate("/unauthorized");
       } else {
         console.error("Error fetching users:", error);
-        MySwal.fire("Error", `Failed to fetch ${roleDisplay}s`, "error");
+        MySwal.fire("Error", `Failed to fetch ${roleName}s`, "error");
       }
     } finally {
       setLoading(false);
@@ -123,7 +121,7 @@ const ViewDynamicRole = () => {
 
     MySwal.fire({
       title: "Deactivate?",
-      text: `Are you sure you want to deactivate ${roleDisplay} ${username}`,
+      text: `Are you sure you want to deactivate ${roleName} ${username}`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -161,7 +159,7 @@ const ViewDynamicRole = () => {
           if (response.status === 200) {
             MySwal.fire(
               "Deactivated",
-              `${roleDisplay} ${username} deactivated successfully`,
+              `${roleName} ${username} deactivated successfully`,
               "success"
             ).then(() => fetchUsers(currentPage));
           }
@@ -169,8 +167,8 @@ const ViewDynamicRole = () => {
           MySwal.fire(
             "Error",
             error.response?.status === 404 
-              ? `${roleDisplay} not found` 
-              : `Error deactivating ${roleDisplay}`,
+              ? `${roleName} not found` 
+              : `Error deactivating ${roleName}`,
             "error"
           );
         }
@@ -185,7 +183,7 @@ const ViewDynamicRole = () => {
 
     MySwal.fire({
       title: "Activate?",
-      text: `Are you sure you want to activate ${roleDisplay} ${username}`,
+      text: `Are you sure you want to activate ${roleName} ${username}`,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#28a745",
@@ -203,7 +201,7 @@ const ViewDynamicRole = () => {
           if (response.status === 200) {
             MySwal.fire(
               "Activated",
-              `${roleDisplay} ${username} activated successfully`,
+              `${roleName} ${username} activated successfully`,
               "success"
             ).then(() => fetchUsers(currentPage));
           }
@@ -211,8 +209,8 @@ const ViewDynamicRole = () => {
           MySwal.fire(
             "Error",
             error.response?.status === 404 
-              ? `${roleDisplay} not found` 
-              : `Error activating ${roleDisplay}`,
+              ? `${roleName} not found` 
+              : `Error activating ${roleName}`,
             "error"
           );
         }
@@ -248,7 +246,7 @@ const ViewDynamicRole = () => {
                   </a>
                 </li>
                 <li className="breadcrumb-item">
-                  <a href="#">{roleDisplay.charAt(0).toUpperCase().slice(1).toLowerCase()} Details</a>
+                  <a href="#">{roleName} Details</a>
                 </li>
               </ul>
             </div>
@@ -271,7 +269,7 @@ const ViewDynamicRole = () => {
               </div>
               
               <div className="tableheader">
-                <h4>{roleDisplay.charAt(0).toUpperCase()+roleDisplay.slice(1).toLowerCase()} Details</h4>
+                <h4>{roleName} Details</h4>
                 <div className="selectandadd">
                   <select
                     className="selectstyle btn btn-success text-left"
@@ -287,10 +285,10 @@ const ViewDynamicRole = () => {
                     className="btn btn-primary mybtn"
                     onClick={(e) => {
                       e.preventDefault();
-                      navigate(`/add/${roleName}`);
+                      navigate(`/add/user?rolename=${roleName}&roleid=${roleId}`);
                     }}
                   >
-                    <i className="fa-solid fa-plus"></i> Add {roleDisplay}
+                    <i className="fa-solid fa-plus"></i> Add {roleName}
                   </a>
                 </div>
               </div>
@@ -408,7 +406,7 @@ const ViewDynamicRole = () => {
                             </td>
                             <td className="text-center">
                               <Link
-                                to={`/assignCourse/${roleName}/${user.userId}`}
+                                to={`/assignCourse/${user.userId}`}
                                 className="hidebtn"
                               >
                                 <i className="fas fa-plus"></i>
@@ -450,7 +448,7 @@ const ViewDynamicRole = () => {
                       ) : (
                         <tr>
                           <td colSpan="11" className="text-center py-4">
-                            No {roleDisplay.toLowerCase()}s found
+                            No {roleName.toLowerCase()}s found
                           </td>
                         </tr>
                       )}

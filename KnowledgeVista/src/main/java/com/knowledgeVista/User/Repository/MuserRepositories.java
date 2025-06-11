@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -218,6 +220,9 @@ public interface MuserRepositories extends JpaRepository<Muser, Long> {
 
 	@Query("SELECT u FROM Muser u WHERE u.role.roleId = ?1")
 	Optional<Muser> findByroleid(Long roleId);
+	
+	@Query("SELECT u FROM Muser u WHERE u.role.roleId = ?1")
+	List<Muser> findAllByroleid(Long roleId);
 
 	@Query("SELECT u FROM Muser u WHERE u.role.roleId = ?1")
 	List<Muser> findByroleidSAS(Long roleId);
@@ -243,13 +248,13 @@ public interface MuserRepositories extends JpaRepository<Muser, Long> {
 			""")
 	boolean FindEnrolledOrNotByUserIdAndCourseId(@Param("email") String email, @Param("courseId") Long courseId);
 
-	@Query("""
-			    SELECT COUNT(c) > 0
-			    FROM Muser u
-			    JOIN u.allotedCourses c
-			    WHERE u.email = :email AND c.courseId = :courseId
-			""")
-	boolean FindAllotedOrNotByUserIdAndCourseId(@Param("email") String email, @Param("courseId") Long courseId);
+//	@Query("""
+//			    SELECT COUNT(c) > 0
+//			    FROM Muser u
+//			    JOIN u.allotedCourses c
+//			    WHERE u.email = :email AND c.courseId = :courseId
+//			""")
+//	boolean FindAllotedOrNotByUserIdAndCourseId(@Param("email") String email, @Param("courseId") Long courseId);
 
 	@Query("""
 			    SELECT new com.knowledgeVista.Batch.SearchDto(b.id, b.batchTitle, 'BATCH')
@@ -266,5 +271,7 @@ public interface MuserRepositories extends JpaRepository<Muser, Long> {
 			    WHERE u.email = :email AND b.id = :batchId
 			""")
 	boolean FindAllotedOrNotByUserIdAndBatchId(@Param("email") String email, @Param("batchId") Long batchId);
+
+	Page<Muser> findByRoleRoleId(Long roleId, Pageable pageable);
 
 }

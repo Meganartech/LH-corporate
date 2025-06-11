@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import profile from "../images/profile.png";
@@ -9,18 +9,26 @@ import PhoneInput, { parsePhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { GlobalStateContext } from "../Context/GlobalStateProvider";
-import { useNavigate } from "react-router-dom";
 
-const AddDynamicRole = ({ displayDynamicName }) => {
-  
-  const navigate=useNavigate();
+const AddDynamicRole = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const token = sessionStorage.getItem("token");
   const MySwal = withReactContent(Swal);
-  const { roleName } = useParams();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { displayname } = useContext(GlobalStateContext);
-  const roleDisplay = displayname?.[`${roleName.toLowerCase()}_name`] || roleName;
+  
+  // Get roleName and roleId from query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const roleName = queryParams.get('rolename');
+  const roleId = queryParams.get('roleid');
+  
+  const roleDisplay = displayname?.[`${roleName?.toLowerCase()}_name`] || roleName;
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   
   const [formData, setFormData] = useState({
     username: "",
@@ -298,219 +306,181 @@ const AddDynamicRole = ({ displayDynamicName }) => {
     scrollToError();
   }, [errors]);
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   console.log("Form Submitted", formData);
-  //   let hasErrors = false;
-  //   const requiredFields = [
-  //     "email",
-  //     "psw",
-  //     "confirm_password",
-  //     "phone",
-  //     "countryCode",
-  //   ];
+  const handleSendOTP = async () => {
+    if (!formData.email || errors.email) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        email: !formData.email ? "Email is required" : errors.email
+      }));
+      return;
+    }
 
-  //   requiredFields.forEach((field) => {
-  //     if (!formData[field] || formData[field].length === 0 || errors[field]) {
-  //       hasErrors = true;
-  //       setErrors((prevErrors) => ({
-  //         ...prevErrors,
-  //         [field]: !formData[field] ? "This field is required" : errors[field],
-  //       }));
-  //     }
-  //   });
+    setIsSendingOtp(true);
+    try {
+      const response = await axios.post(`${baseUrl}/auth/send-otp`, null, {
+        params: {
+          email: formData.email
+        }
+      });
 
-  //   if (hasErrors) {
-  //     scrollToError(); // Scroll to the first error field
-  //     return;
-  //   }
-  //   const formDataToSend = new FormData();
-  //   formDataToSend.append("username", formData.username);
-  //   formDataToSend.append("psw", formData.psw);
-  //   formDataToSend.append("email", formData.email);
-  //   formDataToSend.append("dob", formData.dob);
-  //   formDataToSend.append("phone", formData.phone);
-  //   formDataToSend.append("isActive", formData.isActive);
-  //   formDataToSend.append("profile", formData.profile);
-  //   formDataToSend.append("skills", formData.skills);
-  //   formDataToSend.append("countryCode", formData.countryCode);
-  //   try {
-  //     const response = await axios.post(
-  //       `${baseUrl}admin/add/${roleName}`,
-  //       formDataToSend,
-  //       {
-  //         headers: {
-  //           Authorization: token,
-  //         },
-  //       }
-  //     );
+      if (response.data === "EMAIL") {
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email: "This email is already registered. Try a new one."
+        }));
+      } else {
+        setOtpSent(true);
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email:""
+        }));
+        MySwal.fire({
+          icon: "success",
+          title: "OTP Sent!",
+          text: "Please check your email for the OTP.",
+        });
+      }
+    } catch (error) {
+      if (error.response?.data === "EMAIL") {
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email: "This email is already registered. Try a new one."
+        }));
+      } else {
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email: "Failed to send OTP. Please try again."
+        }));
+      }
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
 
-  //     const data = response.data;
+  const handleVerifyOTP = async () => {
+    if (!otp) {
+       setErrors(prevErrors => ({
+          ...prevErrors,
+          email: "Please enter the OTP"
+        }));
+      return;
+    }
 
-  //     if (response.status === 200) {
-  //       MySwal.fire({
-  //         title: "Added !",
-  //         text: `New ${roleDisplay.charAt(0).toUpperCase()+roleDisplay.slice(1).toLowerCase()} Added successfully!`,
-  //         icon: "success",
-  //         confirmButtonText: "OK",
-  //       }).then((Assignment) => {
-  //         if (Assignment.isConfirmed) {
-  //           navigate("/view/:roleName");
-  //         }
-  //       });
-  //     }
-  //   } catch (error) {
-  //     const errorData = error.response;
-  //     if (errorData) {
-  //       if (error.response.status === 400) {
-  //         if (error.response.data === "EMAIL") {
-  //           setErrors((prevErrors) => ({
-  //             ...prevErrors,
-  //             email: "This email is already registered.",
-  //           }));
-  //         }
-  //       } else if (errorData.status === 500) {
-  //         MySwal.fire({
-  //           title: "Server Error!",
-  //           text: "Unexpected Error Occured",
-  //           icon: "error",
-  //           confirmButtonText: "OK",
-  //         });
-  //       } else if (errorData.status === 401) {
-  //         MySwal.fire({
-  //           title: "Un Authorized!",
-  //           text: `you are unable to Add a ${roleDisplay.charAt(0).toUpperCase()+roleDisplay.slice(1).toLowerCase()}`,
-  //           icon: "error",
-  //           confirmButtonText: "OK",
-  //         });
-  //       } else {
-  //         throw error
-  //       }
-  //     }
-  //   }
-  // };
+    try {
+      const response = await axios.post(`${baseUrl}/auth/verify-otp`, null, {
+        params: {
+          email: formData.email,
+          otp: otp
+        }
+      });
+
+      if (response.status === 200) {
+        setOtpVerified(true);
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email:""
+        }));
+        MySwal.fire({
+          icon: "success",
+          title: "OTP Verified",
+          text: "You can now proceed with registration",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+      }
+    } catch (error) {
+     setErrors(prevErrors => ({
+          ...prevErrors,
+          email: error.response?.data || "Invalid OTP. Please try again."
+        }));
+    }
+  };
+
+ 
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  console.log("Form Submitted", formData);
-  
-  // Validate form data
-  let hasErrors = false;
-  const requiredFields = ["email", "psw", "confirm_password", "phone", "countryCode"];
-
-  requiredFields.forEach((field) => {
-    if (!formData[field] || formData[field].length === 0 || errors[field]) {
-      hasErrors = true;
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        [field]: !formData[field] ? "This field is required" : errors[field],
-      }));
+    e.preventDefault();
+    console.log("Form Submitted", formData);
+    
+    if (!otpVerified) {
+       setErrors(prevErrors => ({
+          ...prevErrors,
+          email:"Please verify your email with OTP first"
+        }));
+      return;
     }
-  });
 
-  if (hasErrors) {
-    scrollToError();
-    return;
-  }
+    let hasErrors = false;
+    const requiredFields = ["email", "psw", "confirm_password", "phone", "countryCode"];
 
-  try {
-    // Convert the form data to URLSearchParams format
-    const params = new URLSearchParams();
-    params.append("username", formData.username || "");
-    params.append("psw", formData.psw);
-    params.append("email", formData.email);
-    params.append("dob", formData.dob || "");
-    params.append("phone", formData.phone);
-    params.append("skills", formData.skills || "");
-    params.append("isActive", formData.isActive.toString());
-    params.append("countryCode", formData.countryCode);
+    requiredFields.forEach((field) => {
+      if (!formData[field] || formData[field].length === 0 || errors[field]) {
+        hasErrors = true;
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [field]: !formData[field] ? "This field is required" : errors[field],
+        }));
+      }
+    });
 
-    // Handle file upload separately if exists
-    if (formData.profile) {
-      const fileFormData = new FormData();
-      fileFormData.append("profile", formData.profile);
-      
-      // First upload the file if needed
-      await axios.post(
-        `${baseUrl}/admin/upload-profile`, // You'll need this endpoint
-        fileFormData,
+    if (hasErrors) {
+      scrollToError();
+      return;
+    }
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("username", formData.username);
+      formDataToSend.append("psw", formData.psw);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("dob", formData.dob);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("isActive", formData.isActive);
+      formDataToSend.append("profile", formData.profile);
+      formDataToSend.append("skills", formData.skills);
+      formDataToSend.append("countryCode", formData.countryCode);
+      formDataToSend.append("otp", otp);
+      formDataToSend.append("roleId", roleId);
+
+      const response = await axios.post(
+        `${baseUrl}/admin/adduser`,
+        formDataToSend,
         {
           headers: {
             Authorization: token,
-            "Content-Type": "multipart/form-data",
-          },
+          }
         }
       );
-    }
 
-    // Make the main request
-    const response = await axios.post(
-      `${baseUrl}/admin/add/${roleName.replace(/\s+/g, '-')}`,
-      params,
-      {
-        headers: {
-          Authorization: token,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    if (response.status === 200) {
-      MySwal.fire({
-        title: "Added!",
-        text: `New ${roleDisplay.charAt(0).toUpperCase() + roleDisplay.slice(1).toLowerCase()} added successfully!`,
-        icon: "success",
-        confirmButtonText: "OK",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate(`/view/${roleName.replace(/\s+/g, '-')}`);
-        }
-      });
-    }
-  } catch (error) {
-    console.error("Submission error:", error);
-    
-    if (error.response) {
-      const errorData = error.response;
-      if (errorData.status === 400) {
-        if (errorData.data === "EMAIL") {
-          setErrors((prevErrors) => ({
-            ...prevErrors,
-            email: "This email is already registered.",
-          }));
-        } else {
-          MySwal.fire({
-            title: "Validation Error",
-            text: errorData.data?.message || "Please check your input data",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        }
-      } else if (errorData.status === 401) {
+      if (response.status === 200) {
         MySwal.fire({
-          title: "Unauthorized!",
-          text: `You are unable to add a ${roleDisplay.charAt(0).toUpperCase() + roleDisplay.slice(1).toLowerCase()}`,
-          icon: "error",
+          title: "Added!",
+          text: `New ${roleName} added successfully!`,
+          icon: "success",
           confirmButtonText: "OK",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate(`/view/users?rolename=${roleName}&roleid=${roleId}`);
+          }
         });
-      } else if (errorData.status === 500) {
+      }
+    } catch (error) {
+      if (error.response?.data === "EMAIL") {
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          email: "This email is already registered. Try a new one."
+        }));
+      } else {
         MySwal.fire({
-          title: "Server Error!",
-          text: "Unexpected error occurred",
+          title: "Error!",
+          text: error.response?.data || "An error occurred during registration",
           icon: "error",
           confirmButtonText: "OK",
         });
       }
-    } else {
-      MySwal.fire({
-        title: "Error!",
-        text: error.message || "Network error or server unavailable",
-        icon: "error",
-        confirmButtonText: "OK",
-      });
     }
-  }
-};
+  };
+
   return (
         <div>
       <div className="page-header"></div>
@@ -590,32 +560,79 @@ const AddDynamicRole = ({ displayDynamicName }) => {
                       </div>
                     </div>
                     <div className="form-group row" ref={emailRef}>
-                      <label
-                        htmlFor="email"
-                        className="col-sm-3 col-form-label"
-                      >
-                        {" "}
+                      <label htmlFor="email" className="col-sm-3 col-form-label">
                         Email<span className="text-danger">*</span>
                       </label>
                       <div className="col-sm-9">
-                        {" "}
-                        <input
-                          type="email"
-                          autoComplete="off"
-                          className={`form-control   ${
-                            errors.email && "is-invalid"
-                          }`}
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          placeholder="Email Address"
-                          required
-                        />
-                        <div className="invalid-feedback">{errors.email}</div>
+                        <div className="d-flex align-items-center">
+                          <input
+                            type="email"
+                            autoComplete="off"
+                            className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Email Address"
+                            required
+                            disabled={otpVerified}
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-primary ms-2"
+                            style={{ height: '38px',width: '150px', padding: '0 15px' }}
+                            onClick={handleSendOTP}
+                            disabled={!formData.email || errors.email || otpVerified || isSendingOtp}
+                          >
+                            {isSendingOtp ? "Sending..." : otpSent ? "Resend OTP" : "Send OTP"}
+                          </button>
+                        </div>
+                        {errors.email && <div className="text-danger mt-1">{errors.email}</div>}
                       </div>
                     </div>
 
-                    <div className="form-group row">
+                    {otpSent && !otpVerified && (
+                      <div className="form-group row">
+                        <label htmlFor="otp" className="col-sm-3 col-form-label">
+                          OTP<span className="text-danger">*</span>
+                        </label>
+                        <div className="col-sm-9">
+                          <div className="d-flex align-items-center">
+                            <input
+                              type="text"
+                              className={`form-control ${errors.otp ? "is-invalid" : ""}`}
+                              name="otp"
+                              value={otp}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                setOtp(value);
+                                if (errors.otp) {
+                                  setErrors(prev => ({ ...prev, otp: "" }));
+                                }
+                              }}
+                              placeholder="Enter 6-digit OTP"
+                              maxLength="6"
+                              required
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-primary ms-2"
+                              style={{ height: '38px', width: '150px', padding: '0 15px' }}
+                              onClick={handleVerifyOTP}
+                              disabled={otp.length !== 6}
+                            >
+                              Verify OTP
+                            </button>
+                          </div>
+                          {errors.otp && <div className="text-danger mt-1">{errors.otp}</div>}
+                          {otpSent && !errors.otp && (
+                            <small className="text-muted">
+                              Please enter the 6-digit OTP sent to your email
+                            </small>
+                          )}
+                        </div>
+                      </div>
+                    )}
+<div className="form-group row">
                       <label
                         htmlFor="Password"
                         className="col-sm-3 col-form-label"
@@ -696,7 +713,7 @@ const AddDynamicRole = ({ displayDynamicName }) => {
                         </div>
                       </div>
                     </div>
-                    <div className="form-group row " ref={phoneRef}>
+                    <div className="form-group row" ref={phoneRef}>
                       <label
                         htmlFor="Phone"
                         className="col-sm-3 col-form-label"
@@ -744,6 +761,7 @@ const AddDynamicRole = ({ displayDynamicName }) => {
                         <div className="invalid-feedback">{errors.dob}</div>
                       </div>
                     </div>
+
                     <div className="form-group row" ref={skillsRef}>
                       <label
                         htmlFor="skills"

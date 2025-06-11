@@ -1,20 +1,20 @@
 package com.knowledgeVista;
 import java.io.InputStream;
 import java.time.LocalDate;
-
-import javax.annotation.PostConstruct;
-import javax.xml.parsers.DocumentBuilder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import jakarta.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilderFactory;
-
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import org.xml.sax.SAXException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
 import com.knowledgeVista.SocialLogin.SocialKeyRepo;
 import com.knowledgeVista.SocialLogin.SocialLoginKeys;
 import com.knowledgeVista.User.Muser;
@@ -32,6 +32,8 @@ public class DataLoaderService {
     private MuserRepositories muserrepositories;
    @Autowired
    private SocialKeyRepo SocialKeysRepo;
+   @Autowired
+	private BCryptPasswordEncoder passwordEncoder;
     @PostConstruct
     @Transactional
     public void init() {
@@ -107,7 +109,7 @@ public class DataLoaderService {
                     // Create new user instance
                     Muser newUser = new Muser();
                     newUser.setUsername(username);
-                    newUser.setPsw(password);
+                    newUser.setPassword(password,passwordEncoder);
                     newUser.setEmail(email);
                     newUser.setDob(dob);
                     newUser.setPhone(phone);
