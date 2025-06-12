@@ -8,15 +8,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
-import jakarta.mail.internet.MimeMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,9 +38,7 @@ import com.knowledgeVista.User.Approvals.MuserApprovals;
 import com.knowledgeVista.User.Repository.MuserRepositories;
 import com.knowledgeVista.User.Repository.MuserRoleRepository;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
-
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.mail.MessagingException;
 
 @RestController
 public class MserRegistrationController {
@@ -68,9 +63,6 @@ private EmailService emailservice;
 	
 	@Autowired
 	private MuserRoleRepository muserRole;
-	
-	@Autowired
-	private AddUsers addUser;
 	
 	  @Value("${spring.environment}")
 	    private String environment;

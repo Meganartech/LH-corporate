@@ -19,7 +19,6 @@ public class ViewService {
     public void initializeView() {
         try {
             viewRepository.createCombinedView();
-            System.out.println("✅ SQL View Created Successfully!");
         } catch (Exception e) {
             System.err.println("❌ Error Creating SQL View: " + e.getMessage());
         }

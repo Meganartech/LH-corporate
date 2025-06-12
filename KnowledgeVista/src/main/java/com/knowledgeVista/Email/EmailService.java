@@ -10,9 +10,9 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.knowledgeVista.config.SecurityConfig;
+import com.knowledgeVista.config.SecretConfig;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -23,10 +23,10 @@ public class EmailService {
     private MailkeysRepo mailkeyrepo;
     
     @Autowired
-    private SecurityConfig securityConfig;
+    private SecretConfig secretConfig;
     
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private BCryptPasswordEncoder passwordEncoder;
     
     @Value("${spring.mail.host}")
     private String defaultHost;
@@ -46,10 +46,10 @@ public class EmailService {
         if (opkeys.isPresent()) {
             Mailkeys keys = opkeys.get();
             Mailkeys maskedKeys = new Mailkeys();
-            maskedKeys.setHostname(securityConfig.maskSensitiveData(keys.getHostname(), "host"));
-            maskedKeys.setPort(securityConfig.maskSensitiveData(keys.getPort(), "port"));
-            maskedKeys.setEmailid(securityConfig.maskSensitiveData(keys.getEmailid(), "email"));
-            maskedKeys.setPassword(securityConfig.maskSensitiveData(keys.getPassword(), "password"));
+            maskedKeys.setHostname(secretConfig.maskSensitiveData(keys.getHostname(), "host"));
+            maskedKeys.setPort(secretConfig.maskSensitiveData(keys.getPort(), "port"));
+            maskedKeys.setEmailid(secretConfig.maskSensitiveData(keys.getEmailid(), "email"));
+            maskedKeys.setPassword(secretConfig.maskSensitiveData(keys.getPassword(), "password"));
             return maskedKeys;
         }
         return null;
@@ -68,10 +68,10 @@ public class EmailService {
     }
 
     private boolean validateMailSettings(Mailkeys keys) {
-        return securityConfig.validateSensitiveData(keys.getHostname(), "host") &&
-               securityConfig.validateSensitiveData(keys.getPort(), "port") &&
-               securityConfig.validateSensitiveData(keys.getEmailid(), "email") &&
-               securityConfig.validateSensitiveData(keys.getPassword(), "password");
+        return secretConfig.validateSensitiveData(keys.getHostname(), "host") &&
+               secretConfig.validateSensitiveData(keys.getPort(), "port") &&
+               secretConfig.validateSensitiveData(keys.getEmailid(), "email") &&
+               secretConfig.validateSensitiveData(keys.getPassword(), "password");
     }
 
     @Async

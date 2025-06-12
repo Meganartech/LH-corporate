@@ -2,7 +2,6 @@ package com.knowledgeVista.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import java.util.Base64;
@@ -35,9 +34,51 @@ public class SecretConfig {
             return Base64.getEncoder().encodeToString(key.getEncoded());
         }
     }
-    
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public String maskSensitiveData(String data, String type) {
+        if (data == null || data.isEmpty()) {
+            return "••••••••";
+        }
+        
+        switch (type) {
+            case "email":
+                String[] parts = data.split("@");
+                return parts[0].substring(0, Math.min(3, parts[0].length())) + "...@" + parts[1];
+            case "password":
+                return "••••••••";
+            case "host":
+                String[] hostParts = data.split("\\.");
+                return hostParts[0] + "...";
+            case "port":
+                return "••••";
+            default:
+                return data.substring(0, Math.min(3, data.length())) + "...";
+        }
     }
+    
+    // Method to validate sensitive data
+    public boolean validateSensitiveData(String data, String type) {
+        if (data == null || data.isEmpty()) {
+            return false;
+        }
+        
+        switch (type) {
+            case "email":
+                return data.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+            case "password":
+                return data.length() >= 8;
+            case "host":
+                return data.matches("^[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+            case "port":
+                try {
+                    int port = Integer.parseInt(data);
+                    return port > 0 && port < 65536;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            default:
+                return true;
+        }
+    }
+
+  
 } 
