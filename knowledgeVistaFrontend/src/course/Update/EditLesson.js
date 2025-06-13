@@ -199,8 +199,19 @@ const EditLesson = () => {
         newDocumentFiles: [...(prevData.newDocumentFiles || []), file], // Store the actual file, not an object
       }));
     } else {
-      alert("Only PDF or PPT files are allowed!");
-      // Optionally, clear the input if invalid
+   MySwal.fire({
+                   toast:true,
+             position: 'top-end', 
+             icon: 'warning',
+             title: 'Only PDF or PPT files are allowed!',
+             showConfirmButton: false,
+             timer: 3000,
+             timerProgressBar: true,
+             didOpen: (toast) => {
+               toast.addEventListener('mouseenter', Swal.stopTimer);
+               toast.addEventListener('mouseleave', Swal.resumeTimer);
+             }
+           });
       e.target.value = null;
     }
    
@@ -220,8 +231,19 @@ const EditLesson = () => {
         newDocumentFiles: [...(prevData.newDocumentFiles || []), file], // Store the actual file, not an object
       }));
     } else {
-      alert("Only PDF or PPT files are allowed!");
-      // Optionally, clear the input if invalid
+   MySwal.fire({
+                   toast:true,
+             position: 'top-end', 
+             icon: 'warning',
+             title: 'Only PDF or PPT files are allowed!',
+             showConfirmButton: false,
+             timer: 3000,
+             timerProgressBar: true,
+             didOpen: (toast) => {
+               toast.addEventListener('mouseenter', Swal.stopTimer);
+               toast.addEventListener('mouseleave', Swal.resumeTimer);
+             }
+           });
       e.target.value = null;
     }
   };
@@ -414,7 +436,19 @@ const EditLesson = () => {
     const file = e.dataTransfer.files[0];
     const maxSize = 1024 * 1024 * 1024;
       if (file && file.size > maxSize) {
-      alert("File size exceeds 1 GB limit.");
+     MySwal.fire({
+                    toast:true,
+              position: 'top-end', 
+              icon: 'warning',
+              title: 'File Size Exceeds 1GB Limit!',
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+              }
+            });
     } else {
       if (file && file.type.includes("video")) {
         // Set the selected file name in state
@@ -430,7 +464,19 @@ const EditLesson = () => {
           fileUrl: "", // Clear file URL if necessary
         }));
       } else {
-        alert("Please select a video file.");
+         MySwal.fire({
+                        toast:true,
+                  position: 'top-end', 
+                  icon: 'warning',
+                  title: 'Please Select a Video File',
+                  showConfirmButton: false,
+                  timer: 3000,
+                  timerProgressBar: true,
+                  didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                  }
+                });
       }
     }
   };
@@ -439,7 +485,19 @@ const EditLesson = () => {
     const maxSize = 1024 * 1024 * 1024; // 1 GB in bytes
   
     if (file && file.size > maxSize) {
-      alert("File size exceeds 1 GB limit.");
+    MySwal.fire({
+                   toast:true,
+             position: 'top-end', 
+             icon: 'warning',
+             title: 'File Size Exceeds 1GB Limit!',
+             showConfirmButton: false,
+             timer: 3000,
+             timerProgressBar: true,
+             didOpen: (toast) => {
+               toast.addEventListener('mouseenter', Swal.stopTimer);
+               toast.addEventListener('mouseleave', Swal.resumeTimer);
+             }
+           });
     } else {
       if (file && file.type.includes("video")) {
         // Set the selected file name in state
@@ -455,7 +513,20 @@ const EditLesson = () => {
           fileUrl: "", // Clear file URL if necessary
         }));
       } else {
-        alert("Please select a video file.");
+      
+         MySwal.fire({
+                        toast:true,
+                  position: 'top-end', 
+                  icon: 'warning',
+                  title: 'Please Select a Video File',
+                  showConfirmButton: false,
+                  timer: 3000,
+                  timerProgressBar: true,
+                  didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                  }
+                });
       }
     }
   };

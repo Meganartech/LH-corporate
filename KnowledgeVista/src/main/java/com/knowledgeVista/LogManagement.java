@@ -47,9 +47,6 @@ public class LogManagement {
 
 	@Value("${error.sender.mail_id}")
 	private String sender_mail_id;
-
-//	  private String From;
-
 	@Autowired
 	private MailkeysRepo mailkeyrepo;
 	private static final Logger logger = LoggerFactory.getLogger(LogManagement.class);
@@ -100,16 +97,12 @@ public class LogManagement {
 			List<String> last10MinuteLines = new ArrayList<>();
 			for (String line : allLines) {
 				String lineTimeStr = extractTimeFromLog(line);
-//     	        	 System.out.println("lineTimeStr"+lineTimeStr);
-
 				if (lineTimeStr != null) {
 					if (lineTimeStr.matches(".*[a-zA-Z].*")) {
-//     	        						 System.out.println("value A");
 						if (lastlinevalue != null) {
 							long minutesDiff = ChronoUnit.MINUTES.between(lastlinevalue, lastLogTime);
 							if (minutesDiff <= id) {
 								last10MinuteLines.add(line);
-//     	            	                     System.out.println("value has a-z  minutesDiff :"+minutesDiff+" line added "+line);
 							}
 						}
 					} else {
@@ -117,22 +110,12 @@ public class LogManagement {
 						long minutesDiff = ChronoUnit.MINUTES.between(lineTime, lastLogTime);
 						if (minutesDiff <= id) {
 							last10MinuteLines.add(line);
-//     	                     System.out.println("minutesDiff :"+minutesDiff+" line added "+line);
 							lastlinevalue = lineTime;
-//     	                     System.out.println(lineTime);
-						}
+					}
 					}
 
 				}
-//     	        		 }
 			}
-//     	            }
-
-//     	        // Print the last 10 Minutesdata
-//     	        for (String line : last10MinuteLines) {
-//     	            System.out.println(line);
-//     	        }
-//     		   String destinationFilePath = lastLineTime.replace(":", ".") + ".log";
 			String destinationFilePath = "last10line.log";
 			// Write the last 10 lines to the new file
 			try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(destinationFilePath))) {
@@ -143,8 +126,6 @@ public class LogManagement {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-//     	       System.out.println(receiving_mail_id);
-			
 			 Optional<Muser> data=muserrepositories.findByroleid(1L);
 			 Muser dataset = data.get();
 			 
@@ -216,15 +197,6 @@ public class LogManagement {
 		mailSender.send(mimeMessage);
 		return ResponseEntity.ok("Mail Sent :"+"To Mail ID: "+to+" Mail response :"+helper);
 	}
-//  	  public String getfrom(String institution) {
-//  		  Optional<Mailkeys> opkeys = mailkeyrepo.FindMailkeyByInstituiton(institution);
-//  		  if(opkeys.isPresent()) {
-//  			  Mailkeys keys =opkeys.get();
-//  			  return keys.getEmailid();
-//  		  } else {
-//  			    return null;   
-//  			    }
-//  	  }
 
 	public JavaMailSender getJavaMailSender() {
 		List<Mailkeys> opkeys1 = mailkeyrepo.findAll();

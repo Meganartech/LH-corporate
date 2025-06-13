@@ -26,6 +26,7 @@ import com.knowledgeVista.User.Repository.MuserRepositories;
 import com.knowledgeVista.User.Repository.MuserRoleRepository;
 import com.knowledgeVista.User.SecurityConfiguration.CacheService;
 import com.knowledgeVista.User.SecurityConfiguration.JwtUtil;
+import com.knowledgeVista.User.SecurityConfiguration.OtpService;
 
 import io.jsonwebtoken.io.DecodingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,8 +49,12 @@ public class AddUsers {
 		private BCryptPasswordEncoder passwordEncoder;
 		@Autowired
 		private CacheService cacheService;
+		@Autowired
+		private OtpService otpService;
 	 private static final Logger logger = LoggerFactory.getLogger(AddUsers.class);
 	 
+	
+
 	 public MuserRoles addRole(String roleName, Long parentRoleId) {
 	    	roleName = roleName.toUpperCase(Locale.ROOT);
 
@@ -74,9 +79,13 @@ public class AddUsers {
 	    }
 	 
 	 public ResponseEntity<?> addTrainer(HttpServletRequest request, String username, String psw,String email,
-	          LocalDate dob, String phone, String skills, MultipartFile profile, Boolean isActive, String countryCode,String token) {
+	          LocalDate dob, String phone, String skills, MultipartFile profile, Boolean isActive, String countryCode,String token,String otp) {
 	      try {
-
+	    	  if (!otpService.validateOtp(email, otp)) {
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired OTP");
+				}
+				// Remove OTP after successful verification
+				otpService.clearOtp(email);
 	          String role = jwtUtil.getRoleFromToken(token);
               String adminemail=jwtUtil.getEmailFromToken(token);
              
@@ -211,10 +220,13 @@ public class AddUsers {
 	
 	  public ResponseEntity<?> addStudent(HttpServletRequest request,String username, String psw, String email,
 	          LocalDate dob,String phone, String skills,
-	           MultipartFile profile, Boolean isActive,String countryCode, String token) {
+	           MultipartFile profile, Boolean isActive,String countryCode, String token,String otp) {
 	      try {
-	         
-
+	    	  if (!otpService.validateOtp(email, otp)) {
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired OTP");
+				}
+				// Remove OTP after successful verification
+				otpService.clearOtp(email);
 	          String role = jwtUtil.getRoleFromToken(token);
 	          String emailofadd=jwtUtil.getEmailFromToken(token);
 	          String usernameofadding="";

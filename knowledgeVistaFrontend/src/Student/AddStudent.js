@@ -373,7 +373,20 @@ const AddStudent = () => {
           ...prev,
           otp: ""
         }));
-        alert("Email verified successfully!");
+       
+                        MySwal.fire({
+                                       toast:true,
+                                 position: 'top-end', 
+                                 icon: 'success',
+                                 title: 'Email verified sucessfully',
+                                 showConfirmButton: false,
+                                 timer: 3000,
+                                 timerProgressBar: true,
+                                 didOpen: (toast) => {
+                                   toast.addEventListener('mouseenter', Swal.stopTimer);
+                                   toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                 }
+                               });
       }
     } catch (error) {
       setErrors(prev => ({
@@ -387,7 +400,20 @@ const AddStudent = () => {
     e.preventDefault();
 
     if (!otpVerified) {
-      alert( "Please verify your email first");
+   
+                    MySwal.fire({
+                                   toast:true,
+                             position: 'top-end', 
+                             icon: 'warning',
+                             title: 'please verify your email First',
+                             showConfirmButton: false,
+                             timer: 3000,
+                             timerProgressBar: true,
+                             didOpen: (toast) => {
+                               toast.addEventListener('mouseenter', Swal.stopTimer);
+                               toast.addEventListener('mouseleave', Swal.resumeTimer);
+                             }
+                           });
       emailRef.current?.scrollIntoView({ behavior: 'smooth' });
       return;
     }

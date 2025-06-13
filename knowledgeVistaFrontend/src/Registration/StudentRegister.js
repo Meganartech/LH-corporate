@@ -49,10 +49,7 @@ const StudentRegister = () => {
   const phoneRef = useRef(null);
   const [defaultCountry, setDefaultCountry] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [showOtpInput, setShowOtpInput] = useState(false);
   const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
-  const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -322,7 +319,20 @@ setErrors((prevErrors) => ({
           ...prev,
           otp: ""
         }));
-        alert("Email verified successfully!");
+       
+                        MySwal.fire({
+                                       toast:true,
+                                 position: 'top-end', 
+                                 icon: 'success',
+                                 title: 'Email verified sucessfully',
+                                 showConfirmButton: false,
+                                 timer: 3000,
+                                 timerProgressBar: true,
+                                 didOpen: (toast) => {
+                                   toast.addEventListener('mouseenter', Swal.stopTimer);
+                                   toast.addEventListener('mouseleave', Swal.resumeTimer);
+                                 }
+                               });
       }
     } catch (error) {
       setErrors(prev => ({
@@ -336,7 +346,20 @@ setErrors((prevErrors) => ({
     e.preventDefault();
 
     if (!otpVerified) {
-     alert("Please verify your email first");
+   
+                    MySwal.fire({
+                                   toast:true,
+                             position: 'top-end', 
+                             icon: 'warning',
+                             title: 'please verify your email First',
+                             showConfirmButton: false,
+                             timer: 3000,
+                             timerProgressBar: true,
+                             didOpen: (toast) => {
+                               toast.addEventListener('mouseenter', Swal.stopTimer);
+                               toast.addEventListener('mouseleave', Swal.resumeTimer);
+                             }
+                           });
       emailRef.current?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
@@ -385,31 +408,37 @@ setErrors((prevErrors) => ({
       );
 
       if (response.status === 200) {
-        alert("Registration successful!");
-        const shouldGoToLogin = window.confirm("Would you like to go to the login page?");
-        if (shouldGoToLogin) {
-          navigate("/login");
-        } else {
-          setFormData({
-            username: "",
-            psw: "",
-            confirm_password: "",
-            email: "",
-            dob: "",
-            phone: "",
-            skills: "",
-            profile: null,
-            isActive: true,
-            countryCode: "",
-            base64Image: null,
-          });
-          setPhoneNumber("");
-          fetchUserCountryCode()
-           setOtpSent(false);
+        MySwal.fire({
+          title: "Welcome to our Family!",
+          text: "You have been registered successfully!",
+          icon: "success",
+          confirmButtonText: "Go to Login",
+          showCancelButton: true,
+          cancelButtonText: "Cancel",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate("/login");
+          } else {
+            setFormData({
+              username: "",
+              psw: "",
+              confirm_password: "",
+              email: "",
+              dob: "",
+              phone: "",
+              skills: "",
+              profile: null,
+              isActive: true,
+              countryCode:"",
+              base64Image: null,
+            });
+            setPhoneNumber("")
+            fetchUserCountryCode()
+             setOtpSent(false);
           setOtpVerified(false);
           setOtp("");
           }
-        
+        });
       }
     } catch (error) {
       if (error.response && error.response.status === 400) {
@@ -419,15 +448,16 @@ setErrors((prevErrors) => ({
             ...prevErrors,
             email: "This email is already registered.",
           }));
-        } else if (data === "No Institution Found") {
-          alert("No Institution Found. Please contact administrator.");
-        } else if (data === "Cannot Register as Student in Sas Environment") {
-          alert("Cannot Register as Student in this environment.");
-        } else {
-          alert(data || "An error occurred while registering.");
-        }
+        } else{
+          MySwal.fire({
+          title: "Error!",
+          text: data ||"An error occurred while registering.",
+          icon: "error",
+          confirmButtonText: "OK",
+        })
+      }
       } else {
-        alert("An error occurred while registering. Please try again later.");
+     throw error
       }
     }
   };

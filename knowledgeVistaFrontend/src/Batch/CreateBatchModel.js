@@ -14,7 +14,19 @@ const CreateBatchModel = ({ setSelectedBatches, closeModal,setErrors }) => {
     const token = sessionStorage.getItem('token'); // Get the token from sessionStorage
 
     if (!batchTitle || !durationInHours) {
-      alert('Please fill all fields before submitting!');
+           MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'warning',
+          title: 'Please fill all Fields before Submitting !',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
       return;
     }
 
@@ -50,7 +62,19 @@ const CreateBatchModel = ({ setSelectedBatches, closeModal,setErrors }) => {
       }
     } catch (error) {
       console.error('Error creating batch:', error);
-      alert('An error occurred while creating the batch.');
+           MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'error',
+          title: 'Error occured whiled creating the batch !',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
     }
   };
 

@@ -556,15 +556,16 @@ public class FrontController {
 
 	
 //--------------------AddUser---------------------------
-	@PostMapping("/admin/addTrainer")
+		@PostMapping("/admin/addTrainer")
 	@CheckAccessAnnotation
 	public ResponseEntity<?> addTrainer(HttpServletRequest request, @RequestParam(required = false) String username,
 			@RequestParam String psw, @RequestParam String email, @RequestParam(required = false) LocalDate dob,
 			@RequestParam String phone, @RequestParam(required = false) String skills,
 			@RequestParam(required = false) MultipartFile profile, @RequestParam Boolean isActive,
-			@RequestParam(defaultValue = "+91") String countryCode, @RequestHeader("Authorization") String token) {
+			@RequestParam(defaultValue = "+91") String countryCode, @RequestHeader("Authorization") String token,
+			@RequestParam String otp) {
 		return adduser.addTrainer(request, username, psw, email, dob, phone, skills, profile, isActive, countryCode,
-				token);
+				token, otp);
 	}
 
 	@PostMapping("/admin/addStudent")
@@ -573,9 +574,10 @@ public class FrontController {
 			@RequestParam String psw, @RequestParam String email, @RequestParam(required = false) LocalDate dob,
 			@RequestParam String phone, @RequestParam(required = false) String skills,
 			@RequestParam(required = false) MultipartFile profile, @RequestParam Boolean isActive,
-			@RequestParam(defaultValue = "+91") String countryCode, @RequestHeader("Authorization") String token) {
+			@RequestParam(defaultValue = "+91") String countryCode, @RequestHeader("Authorization") String token,
+			@RequestParam String otp) {
 		return adduser.addStudent(request, username, psw, email, dob, phone, skills, profile, isActive, countryCode,
-				token);
+				token, otp);
 
 	}
 	
@@ -995,9 +997,10 @@ public class FrontController {
 			@RequestParam(required = false) String username, @RequestParam String psw, @RequestParam String email,
 			@RequestParam(required = false) LocalDate dob, @RequestParam String role, @RequestParam String phone,
 			@RequestParam(required = false) String skills, @RequestParam(required = false) MultipartFile profile,
-			@RequestParam Boolean isActive, @RequestParam(defaultValue = "+91") String countryCode) {
+			@RequestParam Boolean isActive, @RequestParam(defaultValue = "+91") String countryCode,
+		    @RequestParam String otp) {
 		return muserreg.RegisterTrainer(request, username, psw, email, dob, role, phone, skills, profile, isActive,
-				countryCode);
+				countryCode,otp);
 	}
 
 	@PostMapping("/admin/register")

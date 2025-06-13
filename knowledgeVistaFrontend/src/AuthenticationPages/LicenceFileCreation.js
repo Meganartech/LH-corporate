@@ -4,6 +4,7 @@ import baseUrl from '../api/utils';
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 const LicenceFileCreation = () => {
+   const  MySwal=withReactContent(Swal);
     const [formData, setFormData] = useState({
         companyName: "",
         productName: "",
@@ -78,7 +79,19 @@ const LicenceFileCreation = () => {
 
          // Prevent editing other fields if 'type' is not selected
     if (!formData.type && id !== "type") {
-        alert("Please select a type first.");
+             MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'warning',
+          title: 'Please Select a type first!',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
         return;
     }
 
@@ -151,7 +164,19 @@ const LicenceFileCreation = () => {
     // Handle form submission
     const handleSubmit = async () => {
         if (!isValid()) {
-            alert("Please fill out all required fields.");
+                 MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'warning',
+          title: 'Please fill out all required fields !',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
             return;
         }
         try {
@@ -162,9 +187,6 @@ const LicenceFileCreation = () => {
                   "Accept": "application/xml", // Expecting XML file from the server
                 },
               });
-    //         alert("Licence file created successfully!");
-    //         console.log(response.data);
-              // Create a Blob from the file response
       const blob = new Blob([response.data], { type: "application/xml" });
 
       // Create an anchor tag to trigger the download
@@ -176,7 +198,19 @@ const LicenceFileCreation = () => {
         document.body.removeChild(link);
         } catch (error) {
             console.error("Error creating licence file:", error);
-            alert("An error occurred. Please try again.");
+                 MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'error',
+          title: 'Error occured Please try again later !',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
         }
     };
 

@@ -18,7 +18,6 @@ const AdminRegister = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otp, setOtp] = useState("");
-  const [otpError, setOtpError] = useState("");
   const [formData, setFormData] = useState({
     username: "",
     psw: "",
@@ -329,7 +328,20 @@ setErrors((prevErrors) => ({
           ...prev,
           otp: ""
         }));
-        alert("Email verified successfully!");
+        
+                 MySwal.fire({
+                                toast:true,
+                          position: 'top-end', 
+                          icon: 'success',
+                          title: 'Email verified sucessfully',
+                          showConfirmButton: false,
+                          timer: 3000,
+                          timerProgressBar: true,
+                          didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                          }
+                        });
       }
     } catch (error) {
       setErrors(prev => ({
@@ -343,7 +355,20 @@ setErrors((prevErrors) => ({
     e.preventDefault();
 
     if (!otpVerified) {
-     alert( "Please verify your email first");
+      
+                 MySwal.fire({
+                                toast:true,
+                          position: 'top-end', 
+                          icon: 'warning',
+                          title: 'please verify your email First',
+                          showConfirmButton: false,
+                          timer: 3000,
+                          timerProgressBar: true,
+                          didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                          }
+                        });
       emailRef.current?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
@@ -440,10 +465,36 @@ setErrors((prevErrors) => ({
             institution: "This institution is already registered.",
           }));
         } else if (data === "ADMIN") {
-          alert("Admin Already Registered.");
+          
+                 MySwal.fire({
+                                toast:true,
+                          position: 'top-end', 
+                          icon: 'warning',
+                          title: 'Admin Already Registered !',
+                          showConfirmButton: false,
+                          timer: 3000,
+                          timerProgressBar: true,
+                          didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                          }
+                        });
         }
       } else {
-        alert("An error occurred while registering. Please try again later.");
+        
+                 MySwal.fire({
+                                toast:true,
+                          position: 'top-end', 
+                          icon: 'error',
+                          title: 'Error occured While Registering. please try again later .!',
+                          showConfirmButton: false,
+                          timer: 3000,
+                          timerProgressBar: true,
+                          didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer);
+                            toast.addEventListener('mouseleave', Swal.resumeTimer);
+                          }
+                        });
       }
     }
   };

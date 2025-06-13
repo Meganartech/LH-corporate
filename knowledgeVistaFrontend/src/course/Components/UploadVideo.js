@@ -46,7 +46,19 @@ const UploadVideo = () => {
         documentContent: [...(prevData.documentContent || []), file], // Store the actual file, not an object
       }));
     } else {
-      alert("Only PDF or PPT files are allowed!");
+           MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'warning',
+          title: 'Only PDF or PPT files are allowed!',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
       // Optionally, clear the input if invalid
       e.target.value = null;
     }
@@ -167,7 +179,20 @@ const UploadVideo = () => {
     if(
       (!videodata.videoFile && !videodata.fileUrl)
     ) {
-      alert("Either a video file or file URL must be provided.");
+      
+               MySwal.fire({
+                              toast:true,
+                        position: 'top-end', 
+                        icon: 'warning',
+                        title: 'Either Video File or youtube Url must be Provided',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                          toast.addEventListener('mouseenter', Swal.stopTimer);
+                          toast.addEventListener('mouseleave', Swal.resumeTimer);
+                        }
+                      });
       return;
     }
 
@@ -266,8 +291,19 @@ const UploadVideo = () => {
         documentContent: [...(prevData.documentContent || []), file], // Store the actual file, not an object
       }));
     } else {
-      alert("Only PDF or PPT files are allowed!");
-      // Optionally, clear the input if invalid
+    MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'warning',
+          title: 'Only PDF or PPT files are allowed!',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
       e.target.value = null;
     }
   };
@@ -277,7 +313,20 @@ const UploadVideo = () => {
     if (file && file.type.includes("video")) {
       setSelectedFile(file);
     } else {
-      alert("Please select a video file.");
+    
+             MySwal.fire({
+                            toast:true,
+                      position: 'top-end', 
+                      icon: 'warning',
+                      title: 'Please Select a Video File',
+                      showConfirmButton: false,
+                      timer: 3000,
+                      timerProgressBar: true,
+                      didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                      }
+                    });
     }
   };
   const handleFileInputChange = (e) => {
@@ -285,12 +334,37 @@ const UploadVideo = () => {
     const maxSize = 1024 * 1024 * 1024; // 1 GB in bytes
 
     if (file && file.size > maxSize) {
-      alert("File size exceeds 1 GB limit.");
+      MySwal.fire({
+                toast:true,
+          position: 'top-end', 
+          icon: 'warning',
+          title: 'File Size Exceeds 1GB Limit!',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+          }
+        });
     } else if (file.type.includes("video")) {
       setSelectedFile(file);
       setvideodata({ ...videodata, videoFile: file, fileUrl: "" });
     } else {
-      alert("Please select a video file.");
+   
+            MySwal.fire({
+                           toast:true,
+                     position: 'top-end', 
+                     icon: 'warning',
+                     title: 'Please Select a Video File',
+                     showConfirmButton: false,
+                     timer: 3000,
+                     timerProgressBar: true,
+                     didOpen: (toast) => {
+                       toast.addEventListener('mouseenter', Swal.stopTimer);
+                       toast.addEventListener('mouseleave', Swal.resumeTimer);
+                     }
+                   });
     }
   };
 

@@ -43,7 +43,6 @@ public class JwtUtil {
 	}
 	public String getInstitutionFromToken(String token) {
 	    try {
-	        if (!validateToken(token)) return null;
 	        Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecretKey()).parseClaimsJws(token).getBody();
 	        return claims.get("institution", String.class);
 	    } catch (Exception e) {
@@ -55,7 +54,6 @@ public class JwtUtil {
 
 	public Long getUserIdFromToken(String token) {
 	    try {
-	        if (!validateToken(token)) return null;
 	        Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecretKey()).parseClaimsJws(token).getBody();
 	        return claims.get("userId", Long.class);
 	    } catch (Exception e) {
@@ -89,8 +87,6 @@ public class JwtUtil {
 
 	public String getRoleFromToken(String token) {
 		try {
-			if (!validateToken(token))
-				return null;
 			Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecretKey()).parseClaimsJws(token).getBody();
 			return claims.get("role", String.class);
 		} catch (Exception e) {
@@ -103,8 +99,6 @@ public class JwtUtil {
 
 	public String getUsernameFromToken(String token) {
 		try {
-			if (!validateToken(token))
-				return null;
 			Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecretKey()).parseClaimsJws(token).getBody();
 			return claims.get("username", String.class);
 		} catch (Exception e) {
@@ -117,8 +111,6 @@ public class JwtUtil {
 	
 	public String getEmailFromToken(String token) {
 		try {
-			if (!validateToken(token))
-				return null;
 			Claims claims = Jwts.parser().setSigningKey(jwtConfig.getSecretKey()).parseClaimsJws(token).getBody();
 			return claims.get("email", String.class);
 		} catch (Exception e) {
