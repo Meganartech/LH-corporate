@@ -407,7 +407,7 @@ useEffect(()=>{
                     <input
                       type="number"
                       name="durationInHours"
-                      placeholder="Duration in Months"
+                      placeholder="Duration in Hours"
                       className={`form-control ${errors.durationInHours && "is-invalid"} `}
                       value={batch.durationInHours}
                       onChange={handleBatchChange}
